@@ -355,7 +355,8 @@
         }
       ],
       "done": "All countries' population data verified!",
-      "outro": "Great! All the population records are ready!"
+      "outro": "Great! All the population records are ready!",
+      "narrator": "Level 1: From Lakhs to Crores."
     },
     "reported": "REPORTED NUMBER: {n}"
   },
@@ -396,7 +397,8 @@
   "names": {
     "rill": "OFFICER",
     "team": "TEAM MEMBER",
-    "computer": "COMPUTER"
+    "computer": "COMPUTER",
+    "narrator": "NARRATOR"
   },
   "story": {
     "centre": "WORLD POPULATION CONTROL CENTRE",
@@ -412,7 +414,8 @@
       "huge": "The data is huge! How do we check them?",
       "check": "Let's check the value of each digit before sending the reports!",
       "closer": "Let's take a closer look before sending the reports!",
-      "started": "Verification started!"
+      "started": "Verification started!",
+      "narrator": "Your mission: verify the population reports by finding out how much each digit is worth."
     },
     "end": {
       "team": "ALL POPULATION REPORTS DELIVERED SUCCESSFULLY!",
@@ -519,6 +522,7 @@
     "wrong3in": "Group the remaining digits in pairs.",
     "wrong3intl": "Continue grouping three digits at a time.",
     "idle": "Complete Country {c}'s report.",
-    "done": "All population reports for both the headquarters are ready!"
+    "done": "All population reports for both the headquarters are ready!",
+    "narrator": "Level 2: The Indian and International Number Systems."
   }
 }

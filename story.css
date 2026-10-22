@@ -10,6 +10,7 @@
 /* ---- the two new speakers -------------------------------------------- */
 #dialog.team     { --c: #7cf29a; }
 #dialog.computer { --c: #ff9f5a; }
+#dialog.narrator { --c: #b692ff; }
 
 /* ---- LEVEL 1: the country's data and the wrong report ---------------- */
 #teach .tc-ask { display: grid; gap: calc(var(--u) * 0.45); }
@@ -149,6 +150,13 @@
   text-shadow: 0 0 calc(var(--u) * 0.8) rgba(47,216,255,0.9);
 }
 #story .sy-btn:active, #commas .cm-btn:active { transform: translateY(1px); }
+#story.gate .sy-screen { opacity: 0.5; }
+#story .sy-start {
+  position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%);
+  font-size: calc(var(--u) * 3); padding: calc(var(--u) * 1.2) calc(var(--u) * 5);
+  animation: syBlink 1.6s ease-in-out infinite;
+}
+#story .sy-start:active { transform: translate(-50%, -50%) translateY(1px); }
 
 /* ---- LEVEL 2: THE COMMA REPORTS -------------------------------------- */
 #commas .cm-hq {

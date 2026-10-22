@@ -2027,8 +2027,47 @@ var VOICE = (function () {
        type   ms per letter the box types at
        read   ms per word, the reading time a line is given at the least
        tail   ms the finished line stands before the next thing happens  */
-  var PACE = { type: 34, read: 330, tail: 1100, min: 1600 };
+  var PACE = { type: 34, read: 330, tail: 1100, min: 1600, clipTail: 500 };
   var cur = null, held = false, quietAt = -Infinity, lastK = '', tick = null;
+
+  /* 22 Oct 2026: SAMPLE VOICES. A line with a clip in assets/voice (made by
+     tools/make_voices.py, listed in manifest.json by the line's wording)
+     plays it, and lasts as long as the clip; a line without one stays a
+     silent timer as above. The timer is still what says a line is over, so
+     everything that waits on VOICE waits on the clip the same way. */
+  var CLIPS = {}, audio = null, muted = false, unlocked = false;
+  (function () {
+    var x = new XMLHttpRequest();
+    x.open('GET', 'assets/voice/manifest.json');
+    x.onload = function () {
+      if (x.status !== 200 && !(x.status === 0 && x.responseText)) return;
+      try { CLIPS = JSON.parse(x.responseText) || {}; } catch (e) { CLIPS = {}; }
+    };
+    x.send();
+  })();
+  function startAudio(c, fromMs) {
+    stopAudio();
+    var a = audio = new Audio(ASSET('assets/voice/' + c.file));
+    a.muted = muted;
+    if (fromMs > 0) a.addEventListener('loadedmetadata', function () { a.currentTime = fromMs / 1000; }, { once: true });
+    var p = a.play();
+    if (p && p.catch) p.catch(function () {});
+  }
+  function stopAudio() {
+    if (audio) { audio.pause(); audio = null; }
+  }
+  /* A BROWSER WILL NOT PLAY SOUND BEFORE THE FIRST TAP. If a line started
+     before it, the first tap picks the clip up from where the line is. */
+  function unlock() {
+    if (unlocked) return;
+    unlocked = true;
+    if (cur && cur.clip && !held && (!audio || audio.paused) && elapsed() < cur.clip.ms - 200) {
+      startAudio(cur.clip, elapsed());
+    }
+  }
+  ['pointerdown', 'keydown'].forEach(function (ev) {
+    document.addEventListener(ev, unlock, { capture: true, once: true });
+  });
 
   function key(t) {
     return String(t || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
@@ -2060,6 +2099,7 @@ var VOICE = (function () {
     }, 40);
   }
   function stop() {
+    stopAudio();
     if (cur) { cur = null; quietAt = now(); }
   }
   function play(text, onEnd) {
@@ -2073,6 +2113,14 @@ var VOICE = (function () {
     stop();
     lastK = k;
     cur = { k: k, ms: lineMs(text), type: typeMs(text), acc: 0, from: now(), pausedAt: held ? 0 : null, onEnd: onEnd || null };
+    var c = CLIPS[k];
+    if (c && c.ms) {
+      /* the clip sets the line's length, and the words type along with it */
+      cur.clip = c;
+      cur.ms = Math.max(PACE.min, c.ms + PACE.clipTail);
+      cur.type = c.ms * 0.85;
+      if (!held) startAudio(c, 0);
+    }
     if (held) cur.pausedAt = 0;
     loop();
     return cur.ms;
@@ -2094,13 +2142,21 @@ var VOICE = (function () {
       if (held) return;
       held = true;
       if (cur) { cur.acc += now() - cur.from; cur.pausedAt = 1; }
+      if (audio) audio.pause();
     },
     unhold: function () {
       if (!held) return;
       held = false;
       if (cur) { cur.from = now(); cur.pausedAt = null; }
+      if (audio && cur && cur.clip) {
+        var p = audio.play();
+        if (p && p.catch) p.catch(function () {});
+      }
     },
-    mute: function () {},
+    mute: function (m) { muted = !!m; if (audio) audio.muted = muted; },
+    /* the START press: the tap that lets the browser play sound */
+    unlock: unlock,
+    hasClip: function (text) { return !!CLIPS[key(text)]; },
     /* the typewriter follows this: 0..1 across the typing part of the line */
     progress: function (text) {
       var k = key(text);
@@ -2406,9 +2462,14 @@ var DIALOG = (function () {
   /* NUMBER POPULATION: Rill plays the storyboard's Officer; the team member
      and the control-centre computer speak too (names in locales.json) */
   var NAMES = { veth: 'COMMANDER VETH', rill: i18n('names.rill'), nova: 'NOVA',
-                team: i18n('names.team'), computer: i18n('names.computer') };
+                team: i18n('names.team'), computer: i18n('names.computer'),
+                narrator: i18n('names.narrator') };
   /* the two with no artwork get a drawn face */
   var DRAWN = {
+    narrator: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#2a1f3d"/>' +
+          '<rect x="25" y="12" width="14" height="24" rx="7" fill="#d9c7ff"/>' +
+          '<path d="M19 30 Q19 44 32 44 Q45 44 45 30" fill="none" stroke="#d9c7ff" stroke-width="3"/>' +
+          '<rect x="30" y="44" width="4" height="8" fill="#d9c7ff"/><rect x="22" y="51" width="20" height="4" rx="2" fill="#d9c7ff"/></svg>',
     team: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#1d3a5c"/>' +
           '<circle cx="32" cy="26" r="12" fill="#f2c39a"/><path d="M20 22 Q32 6 44 22 Q40 14 32 14 Q24 14 20 22Z" fill="#3b2a20"/>' +
           '<path d="M12 64 Q14 42 32 42 Q50 42 52 64Z" fill="#2fd8ff"/>' +
@@ -5545,6 +5606,7 @@ var NP_LEVEL = 4;
   var L4_TITLES = i18n('teach.level4.beatTitles');
   SCRIPT[4] = {
     chartFrom: 3, chart: 4,
+    intro: { who: 'narrator', text: i18n('teach.level4.narrator') },
     context: { who: 'rill', text: i18n('teach.level4.context'),
                title: i18n('teach.level4.contextTitle') },
     lead: { who: 'rill', text: '' },
@@ -6733,17 +6795,23 @@ var NP_LEVEL = 4;
     /* ?dev=1&go=teach:L:b:N / teach:L:t:N (dev.js) opens at a later step */
     if (from) return jump(from);
 
-    var t = 0;
-    if (script.context && script.context.text) {
-      setTitle(script.context.title);
-      t = say(script.context.who, script.context.text) + T.settle;
-    }
-    after(Math.max(t, VOICE.left() + 300), function () {
-      runBeats(script.beats, 0, function () {
-        if (script.tries.length) startTry(0);
-        else lead();
+    /* the narrator names the level first, where the script has a line */
+    var opening = function () {
+      var t = 0;
+      if (script.context && script.context.text) {
+        setTitle(script.context.title);
+        t = say(script.context.who, script.context.text) + T.settle;
+      }
+      after(Math.max(t, VOICE.left() + 300), function () {
+        runBeats(script.beats, 0, function () {
+          if (script.tries.length) startTry(0);
+          else lead();
+        });
       });
-    });
+    };
+    if (script.intro && script.intro.text) {
+      say(script.intro.who, script.intro.text, function () { after(T.settle, opening); });
+    } else opening();
   }
 
   /* DEV JUMP: start at beat N, or straight at Try N. The chart is first put
@@ -9371,7 +9439,9 @@ var NP_LEVEL = 4;
         }
         if (p[0] === 'end') return window.STORY.end();
         if (p[0] === 'teach') return window.TEACH_SCREEN.play(lv, null, from);
-        window.STORY.open(function () { window.TEACH_SCREEN.play(lv, null, null); });
+        window.STORY.gate(function () {
+          window.STORY.open(function () { window.TEACH_SCREEN.play(lv, null, null); });
+        });
       });
     }
     return;
@@ -10715,11 +10785,29 @@ var STORY = (function () {
     SFX.play('whir');
   }
 
+  /* START: one tap before the story, because a browser plays no sound
+     until the player has touched the page */
+  function gate(then) {
+    build('gate');
+    var b = el('button', 'sy-btn sy-start', root);
+    b.type = 'button';
+    b.textContent = i18n('ui.start');
+    b.addEventListener('click', function (e) {
+      e.stopPropagation();
+      SFX.arm();
+      VOICE.unlock();
+      TRACK.send('game_start');
+      stop();
+      if (then) then();
+    });
+  }
+
   function open(then) {
     build('opening');
     TRACK.at('story');
     var L = function (k) { return i18n('story.lines.' + k); };
     run([
+      { who: 'narrator', text: L('narrator') },
       { who: 'rill', text: L('hello'), act: lightMarks },
       { who: 'team', text: L('ready'), act: showRecords },
       { who: 'computer', text: L('error'), act: alarm },
@@ -10771,7 +10859,7 @@ var STORY = (function () {
     root = null; screen = null; marks = []; recs = null; focus = null;
   }
 
-  return { open: open, end: end, stop: stop };
+  return { gate: gate, open: open, end: end, stop: stop };
 })();
 window.STORY = STORY;
 
@@ -10953,6 +11041,7 @@ var COMMAS = (function () {
       };
     };
     var beats = [
+      { who: 'narrator', text: i18n('commas.narrator') },
       { who: 'computer', text: t[0], act: function () { setSys('both'); SFX.play('chime'); } },
       { who: 'rill', text: t[1], act: function () {
           demo(); titleEl.textContent = i18n('commas.country', { c: 'A' }); } },

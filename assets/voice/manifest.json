@@ -1,0 +1,567 @@
+{
+ "your mission: verify the population reports by finding out how much each digit is worth.": {
+  "file": "narrator-810b13d687.m4a",
+  "ms": 5354,
+  "who": "narrator"
+ },
+ "hello, team! countries around the world need population reports!": {
+  "file": "rill-2518cb160f.m4a",
+  "ms": 4381,
+  "who": "rill"
+ },
+ "the report is ready!": {
+  "file": "team-bbdec3b348.m4a",
+  "ms": 1080,
+  "who": "team"
+ },
+ "error! error!": {
+  "file": "computer-e2c31fd101.m4a",
+  "ms": 2079,
+  "who": "computer"
+ },
+ "we need to verify the reports!": {
+  "file": "team-35bd578d0a.m4a",
+  "ms": 1029,
+  "who": "team"
+ },
+ "the data is huge! how do we check them?": {
+  "file": "team-52b590d6e9.m4a",
+  "ms": 2532,
+  "who": "team"
+ },
+ "let's check the value of each digit before sending the reports!": {
+  "file": "rill-dd1dffad2b.m4a",
+  "ms": 3526,
+  "who": "rill"
+ },
+ "let's take a closer look before sending the reports!": {
+  "file": "rill-3d2ff27f63.m4a",
+  "ms": 2922,
+  "who": "rill"
+ },
+ "verification started!": {
+  "file": "computer-44213743c6.m4a",
+  "ms": 2328,
+  "who": "computer"
+ },
+ "level 1: from lakhs to crores.": {
+  "file": "narrator-c6306bf953.m4a",
+  "ms": 2231,
+  "who": "narrator"
+ },
+ "let's look at this country's population.": {
+  "file": "rill-44c0840a21.m4a",
+  "ms": 2319,
+  "who": "rill"
+ },
+ "watch! when a digit moves one place to the left, its value becomes ten times its previous value.": {
+  "file": "rill-067efc349b.m4a",
+  "ms": 6346,
+  "who": "rill"
+ },
+ "now move it one more place left! 40,00,000 becomes 4,00,00,000. that's ten times bigger than 40,00,000!": {
+  "file": "rill-a6b7da4593.m4a",
+  "ms": 6208,
+  "who": "rill"
+ },
+ "the digit 4 is in the crores place. it shows 4,00,00,000!": {
+  "file": "rill-a51fdc4703.m4a",
+  "ms": 3445,
+  "who": "rill"
+ },
+ "now it's your turn! let's check the population reports from different countries!": {
+  "file": "rill-fc6aaeb9ba.m4a",
+  "ms": 4676,
+  "who": "rill"
+ },
+ "the population numbers don't match the data.": {
+  "file": "rill-0802fa434c.m4a",
+  "ms": 2667,
+  "who": "rill"
+ },
+ "read each country's data, set the correct number with the arrows, and tap verify.": {
+  "file": "rill-f07c009e63.m4a",
+  "ms": 5198,
+  "who": "rill"
+ },
+ "to change a number, swipe it up or down.": {
+  "file": "rill-e7fa52cc91.m4a",
+  "ms": 2918,
+  "who": "rill"
+ },
+ "check country a's population data.": {
+  "file": "rill-faa2dc305f.m4a",
+  "ms": 2156,
+  "who": "rill"
+ },
+ "country a data verified!": {
+  "file": "computer-c5d74cf597.m4a",
+  "ms": 2392,
+  "who": "computer"
+ },
+ "the number doesn't match the country's data. try again! start with four crore, then thirty-two lakh.": {
+  "file": "rill-88d2af9d51.m4a",
+  "ms": 6185,
+  "who": "rill"
+ },
+ "check each group: 4 crore, 32 lakh, 56 thousand and 781.": {
+  "file": "rill-6b642cba29.m4a",
+  "ms": 6220,
+  "who": "rill"
+ },
+ "read country a's data and enter the correct population.": {
+  "file": "rill-052ac06fe4.m4a",
+  "ms": 3468,
+  "who": "rill"
+ },
+ "check country b's population data.": {
+  "file": "computer-af422ee00c.m4a",
+  "ms": 2852,
+  "who": "computer"
+ },
+ "country b data verified!": {
+  "file": "computer-dbf6ab2fb4.m4a",
+  "ms": 2323,
+  "who": "computer"
+ },
+ "the number doesn't match the country's data. try again! look at the crore and lakh groups in the data.": {
+  "file": "rill-6353df0826.m4a",
+  "ms": 6220,
+  "who": "rill"
+ },
+ "the data says five crore sixty-two lakh.": {
+  "file": "rill-c4e7f9467d.m4a",
+  "ms": 2505,
+  "who": "rill"
+ },
+ "enter the population number shown in country b's data.": {
+  "file": "rill-9d0b42e158.m4a",
+  "ms": 3260,
+  "who": "rill"
+ },
+ "check country c's population data.": {
+  "file": "computer-9d1f833a78.m4a",
+  "ms": 2898,
+  "who": "computer"
+ },
+ "country c data verified!": {
+  "file": "computer-cf40699850.m4a",
+  "ms": 2369,
+  "who": "computer"
+ },
+ "the number doesn't match the country's data. try again! check the lakhs in the population data.": {
+  "file": "rill-c26e144f95.m4a",
+  "ms": 5779,
+  "who": "rill"
+ },
+ "the number begins with two crore seventy-six lakh.": {
+  "file": "rill-8c6179e139.m4a",
+  "ms": 2888,
+  "who": "rill"
+ },
+ "check the data and enter the correct number.": {
+  "file": "rill-6d31913342.m4a",
+  "ms": 2574,
+  "who": "rill"
+ },
+ "check country d's population data.": {
+  "file": "computer-f279553c80.m4a",
+  "ms": 2852,
+  "who": "computer"
+ },
+ "country d data verified!": {
+  "file": "computer-bf97b49c10.m4a",
+  "ms": 2323,
+  "who": "computer"
+ },
+ "the number doesn't match the country's data. try again! look at the lakhs group.": {
+  "file": "rill-3c5980aa7c.m4a",
+  "ms": 5001,
+  "who": "rill"
+ },
+ "the population begins with 43 lakh.": {
+  "file": "rill-34b12af1b1.m4a",
+  "ms": 2516,
+  "who": "rill"
+ },
+ "enter the number written in country d's data.": {
+  "file": "rill-8b26e0d779.m4a",
+  "ms": 2505,
+  "who": "rill"
+ },
+ "check country e's population data.": {
+  "file": "computer-b7eda05c1a.m4a",
+  "ms": 2829,
+  "who": "computer"
+ },
+ "country e data verified!": {
+  "file": "computer-5e7486f1dd.m4a",
+  "ms": 2346,
+  "who": "computer"
+ },
+ "the number doesn't match the country's data. try again! check how many lakhs are written in the data.": {
+  "file": "rill-7c3e5a9d54.m4a",
+  "ms": 6011,
+  "who": "rill"
+ },
+ "the number starts with 85 lakh.": {
+  "file": "rill-52bfb58e2a.m4a",
+  "ms": 2307,
+  "who": "rill"
+ },
+ "read the data and enter the correct population.": {
+  "file": "rill-c8213e83b5.m4a",
+  "ms": 2922,
+  "who": "rill"
+ },
+ "check country f's population data.": {
+  "file": "computer-4b6ebf3250.m4a",
+  "ms": 2875,
+  "who": "computer"
+ },
+ "country f data verified!": {
+  "file": "computer-08e5bc2e67.m4a",
+  "ms": 2358,
+  "who": "computer"
+ },
+ "the number doesn't match the country's data. try again! look at the thousands written in the data.": {
+  "file": "rill-5cce8617c6.m4a",
+  "ms": 5756,
+  "who": "rill"
+ },
+ "the data says seven lakh twenty-four thousand.": {
+  "file": "rill-42b5cc48eb.m4a",
+  "ms": 2795,
+  "who": "rill"
+ },
+ "complete country f's population record.": {
+  "file": "rill-04fbaafcfb.m4a",
+  "ms": 2452,
+  "who": "rill"
+ },
+ "check country g's population data.": {
+  "file": "computer-4306dead71.m4a",
+  "ms": 2875,
+  "who": "computer"
+ },
+ "country g data verified!": {
+  "file": "computer-2c39a62155.m4a",
+  "ms": 2358,
+  "who": "computer"
+ },
+ "the number doesn't match the data. try again! check the crore and lakh groups.": {
+  "file": "rill-593a6253de.m4a",
+  "ms": 4850,
+  "who": "rill"
+ },
+ "the data says six crore forty-three lakh.": {
+  "file": "rill-623d80d3c5.m4a",
+  "ms": 2505,
+  "who": "rill"
+ },
+ "read country g's data and enter the correct population.": {
+  "file": "rill-38dde69b7e.m4a",
+  "ms": 3491,
+  "who": "rill"
+ },
+ "check country h's population data.": {
+  "file": "computer-dc02547894.m4a",
+  "ms": 3061,
+  "who": "computer"
+ },
+ "country h data verified!": {
+  "file": "computer-bb85d3eb35.m4a",
+  "ms": 2416,
+  "who": "computer"
+ },
+ "check the population number again. look at the lakhs group in the data.": {
+  "file": "rill-f5c23838c2.m4a",
+  "ms": 4327,
+  "who": "rill"
+ },
+ "the population begins with 57 lakh.": {
+  "file": "rill-f7e3008d1b.m4a",
+  "ms": 2667,
+  "who": "rill"
+ },
+ "enter the number written in country h's data.": {
+  "file": "rill-28133a316c.m4a",
+  "ms": 2679,
+  "who": "rill"
+ },
+ "check country i's population data.": {
+  "file": "computer-21680da32b.m4a",
+  "ms": 2898,
+  "who": "computer"
+ },
+ "country i data verified!": {
+  "file": "computer-e312bada20.m4a",
+  "ms": 2288,
+  "who": "computer"
+ },
+ "that number doesn't match. try again! check the lakhs written in the data.": {
+  "file": "rill-bcc09b2c08.m4a",
+  "ms": 4629,
+  "who": "rill"
+ },
+ "the number begins with eight crore twenty-six lakh.": {
+  "file": "rill-862f5e93c6.m4a",
+  "ms": 2899,
+  "who": "rill"
+ },
+ "all countries' population data verified!": {
+  "file": "team-aefd2b8ac5.m4a",
+  "ms": 2127,
+  "who": "team"
+ },
+ "great! all the population records are ready!": {
+  "file": "rill-132ce8092a.m4a",
+  "ms": 2934,
+  "who": "rill"
+ },
+ "level 2: the indian and international number systems.": {
+  "file": "narrator-143ee67648.m4a",
+  "ms": 3508,
+  "who": "narrator"
+ },
+ "requests from indian and international headquarters!": {
+  "file": "computer-8c8809e682.m4a",
+  "ms": 3855,
+  "who": "computer"
+ },
+ "both headquarters need population reports!": {
+  "file": "rill-b737567e89.m4a",
+  "ms": 2644,
+  "who": "rill"
+ },
+ "oh! there is an error in the data.": {
+  "file": "rill-7c8f374ba9.m4a",
+  "ms": 2311,
+  "who": "rill"
+ },
+ "let's add commas the way each headquarters needs, to make the reports easier to read!": {
+  "file": "rill-e36b9eba86.m4a",
+  "ms": 4911,
+  "who": "rill"
+ },
+ "both headquarters follow a different way of grouping digits.": {
+  "file": "rill-600ae179d2.m4a",
+  "ms": 3387,
+  "who": "rill"
+ },
+ "indian headquarters uses thousands, lakhs and crores to read large numbers.": {
+  "file": "rill-ef4e9e1900.m4a",
+  "ms": 4920,
+  "who": "rill"
+ },
+ "start from the right. count three digits and put a comma. this is the ones group.": {
+  "file": "rill-43bc6f9c3e.m4a",
+  "ms": 5127,
+  "who": "rill"
+ },
+ "now count two digits and put another comma. this is the thousands group.": {
+  "file": "rill-fe266861fb.m4a",
+  "ms": 4374,
+  "who": "rill"
+ },
+ "count two more digits for the lakhs group. the remaining digit is in crores!": {
+  "file": "rill-45038d59c0.m4a",
+  "ms": 4581,
+  "who": "rill"
+ },
+ "we read this as four crore thirty-two lakh fifty-six thousand seven hundred eighty-one.": {
+  "file": "rill-eeb7c79e0f.m4a",
+  "ms": 5151,
+  "who": "rill"
+ },
+ "international headquarters uses thousands, millions and billions. here, commas follow a different pattern!": {
+  "file": "rill-468cdbf097.m4a",
+  "ms": 6893,
+  "who": "rill"
+ },
+ "start from the right again. count three digits and put a comma. this is the ones group.": {
+  "file": "rill-d2a529d64b.m4a",
+  "ms": 5510,
+  "who": "rill"
+ },
+ "now count three more digits and add a comma. this is the thousands group.": {
+  "file": "rill-d63f26f8fc.m4a",
+  "ms": 4409,
+  "who": "rill"
+ },
+ "the remaining 43 belongs to the millions group. for even bigger numbers, we use billions!": {
+  "file": "rill-dd2ed35a8d.m4a",
+  "ms": 6023,
+  "who": "rill"
+ },
+ "we read this as forty-three million two hundred fifty-six thousand seven hundred eighty-one.": {
+  "file": "rill-81c23355b5.m4a",
+  "ms": 5256,
+  "who": "rill"
+ },
+ "indian grouping uses three digits, then pairs of two. international grouping uses groups of three throughout!": {
+  "file": "rill-f2858733f8.m4a",
+  "ms": 6789,
+  "who": "rill"
+ },
+ "now prepare the population reports for both headquarters!": {
+  "file": "rill-0fca8d7d11.m4a",
+  "ms": 3387,
+  "who": "rill"
+ },
+ "tap continue to prepare the reports.": {
+  "file": "rill-adddec2bc2.m4a",
+  "ms": 2117,
+  "who": "rill"
+ },
+ "tap the gap between two digits to add a comma. tap it again to remove it. then tap send.": {
+  "file": "rill-a41c1b7d30.m4a",
+  "ms": 5414,
+  "who": "rill"
+ },
+ "prepare the population report for indian headquarters!": {
+  "file": "rill-5b4e18a600.m4a",
+  "ms": 3111,
+  "who": "rill"
+ },
+ "prepare the population report for international headquarters!": {
+  "file": "rill-ff731a5e4d.m4a",
+  "ms": 3436,
+  "who": "rill"
+ },
+ "check the comma positions.": {
+  "file": "rill-9b15080c93.m4a",
+  "ms": 1378,
+  "who": "rill"
+ },
+ "start with three digits from the right.": {
+  "file": "rill-b359fd6863.m4a",
+  "ms": 2085,
+  "who": "rill"
+ },
+ "group the remaining digits in pairs.": {
+  "file": "rill-948434e331.m4a",
+  "ms": 2087,
+  "who": "rill"
+ },
+ "continue grouping three digits at a time.": {
+  "file": "rill-2ca63aba6b.m4a",
+  "ms": 2440,
+  "who": "rill"
+ },
+ "country a population report ready!": {
+  "file": "computer-4dc062cb91.m4a",
+  "ms": 2973,
+  "who": "computer"
+ },
+ "complete country a's report.": {
+  "file": "rill-b0ee5a9e21.m4a",
+  "ms": 1755,
+  "who": "rill"
+ },
+ "country b population report ready!": {
+  "file": "computer-9733444af4.m4a",
+  "ms": 2961,
+  "who": "computer"
+ },
+ "complete country b's report.": {
+  "file": "rill-52f3510a8f.m4a",
+  "ms": 1755,
+  "who": "rill"
+ },
+ "country c population report ready!": {
+  "file": "computer-9737521de2.m4a",
+  "ms": 3008,
+  "who": "computer"
+ },
+ "complete country c's report.": {
+  "file": "rill-a555ffca8d.m4a",
+  "ms": 1790,
+  "who": "rill"
+ },
+ "country d population report ready!": {
+  "file": "computer-1c1b21ce7d.m4a",
+  "ms": 2961,
+  "who": "computer"
+ },
+ "complete country d's report.": {
+  "file": "rill-ac8a05d0d7.m4a",
+  "ms": 1755,
+  "who": "rill"
+ },
+ "country e population report ready!": {
+  "file": "computer-0cc1403085.m4a",
+  "ms": 2938,
+  "who": "computer"
+ },
+ "complete country e's report.": {
+  "file": "rill-813f993005.m4a",
+  "ms": 1755,
+  "who": "rill"
+ },
+ "country f population report ready!": {
+  "file": "computer-ab6ef1365b.m4a",
+  "ms": 2996,
+  "who": "computer"
+ },
+ "complete country f's report.": {
+  "file": "rill-9029e13a85.m4a",
+  "ms": 1790,
+  "who": "rill"
+ },
+ "country g population report ready!": {
+  "file": "computer-f2e0ab4528.m4a",
+  "ms": 2996,
+  "who": "computer"
+ },
+ "complete country g's report.": {
+  "file": "rill-bb2d94146d.m4a",
+  "ms": 1778,
+  "who": "rill"
+ },
+ "country h population report ready!": {
+  "file": "computer-196d4f3853.m4a",
+  "ms": 3054,
+  "who": "computer"
+ },
+ "complete country h's report.": {
+  "file": "rill-bed98992d3.m4a",
+  "ms": 1906,
+  "who": "rill"
+ },
+ "country i population report ready!": {
+  "file": "computer-bcf3c367c8.m4a",
+  "ms": 2880,
+  "who": "computer"
+ },
+ "complete country i's report.": {
+  "file": "rill-9c6d2d460d.m4a",
+  "ms": 1755,
+  "who": "rill"
+ },
+ "country j population report ready!": {
+  "file": "computer-166f911c15.m4a",
+  "ms": 3031,
+  "who": "computer"
+ },
+ "complete country j's report.": {
+  "file": "rill-e299fc4ce5.m4a",
+  "ms": 1767,
+  "who": "rill"
+ },
+ "all population reports for both the headquarters are ready!": {
+  "file": "team-fca408bfc9.m4a",
+  "ms": 5694,
+  "who": "team"
+ },
+ "all population reports delivered successfully!": {
+  "file": "team-72ed155c90.m4a",
+  "ms": 2536,
+  "who": "team"
+ },
+ "great work, team!": {
+  "file": "rill-e50ecc44c4.m4a",
+  "ms": 1437,
+  "who": "rill"
+ }
+}
