@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Number Population</title>
+<!-- an inline icon: no /favicon.ico request (it was a 404 on every load) -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%9A%80%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="console.css">
+<link rel="stylesheet" href="teach.css">
+<link rel="stylesheet" href="start.css">
+<link rel="stylesheet" href="post.css">
+<!-- the celebration's rounded face, fetched early so the headline never pops
+     in the fallback font -->
+<link rel="preload" href="assets/fonts/fredoka-latin.woff2" as="font" type="font/woff2" crossorigin>
+<!-- the place names on the console plates (condensed, so they can be big) -->
+<link rel="preload" href="assets/fonts/roboto-condensed-latin-700.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="flight.css">
+<!-- the storyboard's story, Level 2's comma reports, and the chart's country data -->
+<link rel="stylesheet" href="story.css">
+</head>
+<body class="pre-game">
+
+<div id="viewport">
+  <!-- A fixed 16:9 box scaled to fit the window. All four artworks are 16:9
+       too, so at scale 1 each fills it exactly and image % and stage % are the
+       same number. The area around it is painted with Titan's own haze, so it
+       never reads as a letterbox bar. -->
+  <div id="stage">
+
+    <!-- ============ THE TWO PICTURE LAYERS ============
+         These are the swap. Both are full-stage, both carry one transform, and
+         only the close-up's opacity ever animates — the map is left opaque
+         underneath until the dive is over.
+
+         Nothing is drawn over the artwork. No rings, no dots, no outline: the
+         settlements are the pictures, and anything laid on top of them was
+         landing on the thing it was supposed to be pointing at. -->
+    <div id="mapWrap">
+      <img id="mapImg" alt="" draggable="false">
+    </div>
+
+    <div id="closeWrap" hidden>
+      <img id="closeImg" alt="" draggable="false">
+    </div>
+
+    <!-- The screens that are a picture rather than a camera move: 1, 5 and 6.
+         It sits over both camera layers, so showing it is the whole of putting
+         the map away for those beats. The art is 1.833 against a 16:9 stage,
+         so it is laid in with cover and centred — see SLIDE_ART. -->
+    <div id="still" hidden></div>
+
+    <!-- ============ CHARACTERS AND SPEECH ============ -->
+    <div id="ui">
+      <!-- The bubble sits beside whoever is speaking, up at head height. -->
+      <!-- The sizer carries the WHOLE line, invisibly, so the box is the size
+           of the finished sentence from the first character. Without it a
+           bubble that shrink-wraps its text grows as the typewriter runs, and
+           the whole panel jitters for a second and a half. -->
+      <div id="bubble" hidden>
+        <div class="bub-face">
+          <p id="bubbleText"></p>
+          <p id="bubbleSizer" class="sizer" aria-hidden="true"></p>
+        </div>
+        <i class="tail"></i>
+      </div>
+    </div>
+
+    <!-- After #ui on purpose: the readout is never under a character. It is
+         pinned low and left, which is open ground on all three close-ups —
+         see the framing note in config.js. -->
+    <div id="tag" hidden></div>
+
+    <!-- THE NARRATOR'S CAPTION BAND. Screens 1 to 4 are narration and there is
+         nobody on stage to point a tail at, so those lines do not use the
+         bubble at all. Low and left of the controls, centred, no tail. The
+         sizer does the same job as the bubble's: it holds the whole line
+         invisibly so the band is its finished size from the first character. -->
+    <div id="caption" hidden>
+      <div class="cap-face">
+        <p id="captionText"></p>
+        <p id="captionSizer" class="sizer" aria-hidden="true"></p>
+      </div>
+    </div>
+
+    <!-- ============ Controls ============ -->
+    <!-- Jump straight to any run. Populated from the LEVELS registry, so it
+         grows by itself when Levels 2 and 3 land. Hidden until a level is
+         running. -->
+    <div id="jumpWrap" class="ctl">
+      <span class="jump-label" data-i18n="ui.run">RUN</span>
+      <span class="jump-value"></span>
+      <i class="jump-caret">&#9662;</i>
+      <select id="jump" aria-label="Jump to a run"></select>
+    </div>
+
+    <!-- Nothing starts until every picture is decoded: a dive that hits an
+         undecoded image stutters, and a stutter at the hand-off is exactly
+         what exposes the swap. -->
+    <div id="loader"><div class="lt" data-i18n="ui.loading">LOADING</div><div class="bar"><i></i></div></div>
+
+    <!-- Level 1 builds itself in here when the intro calls startLevel(1).
+         It sits above the intro's own layers and below the controls. -->
+    <div id="level" hidden></div>
+
+  </div>
+</div>
+
+<!-- QA Bug 27 (13 Oct 2026): the game is landscape-only. Held upright, this
+     covers it and asks for the device to be turned; the game is paused
+     underneath until it is (PAUSE.JS). Outside #viewport, so it is never
+     scaled with the stage. -->
+<div id="rotate" aria-live="polite">
+  <svg viewBox="0 0 120 120" aria-hidden="true">
+    <rect class="r-phone" x="42" y="18" width="36" height="64" rx="7"/>
+    <rect class="r-screen" x="47" y="26" width="26" height="46" rx="2"/>
+    <path class="r-arrow" d="M30 92 A40 40 0 0 0 92 96" />
+    <path class="r-head" d="M86 88 L94 97 L83 101" />
+  </svg>
+  <p data-i18n="ui.rotate">Turn your device sideways to play</p>
+</div>
+
+<!-- The only script tag. game.js is the whole game: it reads locales.json —
+     every word on screen lives there — and then starts. Open the game through
+     a local server: browsers will not read a .json file from file://. -->
+<script src="preload.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,952 @@
+/* ============================================================================
+   TITAN RUN — the opening map sequence.
+
+   HOUSE RULE: no overlay draws a border, an outline or a visible box-shadow
+   edge. Depth is glow, gradient and cast shadow.
+
+   Only transform, opacity and filter are animated anywhere in this file.
+   ========================================================================= */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* A hidden element is hidden. Several things here set their own display, and a
+   display declaration beats the user agent's [hidden] rule — which is how a
+   loader that had been dismissed carried on swallowing every click. */
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0; height: 100%;
+  overflow: hidden;
+  background: #140d07;
+  font-family: var(--ui);
+  -webkit-font-smoothing: antialiased;
+  color: #f4e8d6;
+}
+
+:root {
+  /* 100dvh rather than 100vh so a phone's collapsing address bar cannot crop
+     the bottom of the frame. */
+  --stage-w: min(100vw, calc(100dvh * 16 / 9));
+  --stage-h: calc(var(--stage-w) * 9 / 16);
+  --u: calc(var(--stage-w) / 100);          /* 1% of stage width, as a length */
+
+  --display: "Bahnschrift", "DIN Alternate", "Roboto Condensed",
+             "Segoe UI Semibold", system-ui, sans-serif;
+  --mono: "Cascadia Mono", "Consolas", "SF Mono", ui-monospace,
+          "DejaVu Sans Mono", monospace;
+  --ui: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+
+  /* THE SKY PLATE, before and after the game. Both screens stand on the
+     same picture and are pulled toward black by the same amount: the
+     brightness it keeps (1 is the art as painted), and a vignette that
+     takes the edges down further still. */
+  --plate-dim: 0.55;
+  --plate-vignette: radial-gradient(ellipse 78% 72% at 50% 46%,
+                    rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.55) 100%);
+
+  --blue: #2FD8FF;
+  --blue-hot: #CFF6FF;
+  --armour: #e8dccb;
+}
+
+/* The window behind the stage is Titan's own haze, so a window that is not
+   16:9 shows more atmosphere rather than a black bar. */
+#viewport {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse 130% 130% at 50% 44%,
+    #5c4322 0%, #3a2b16 40%, #20170d 74%, #140d07 100%);
+}
+
+#stage {
+  position: relative;
+  width: var(--stage-w); height: var(--stage-h);
+  overflow: hidden;
+  /* The map's own deep ochre, sampled off its lower edge, NOT black. The
+     coverage clamp in intro.js is what stops a picture edge entering the
+     frame at all; this is the backstop behind it, so that if one ever does
+     the seam is a shade of ground rather than a hole. */
+  background: #55311a;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  /* QA Bug 3: the arrow everywhere, and the hand only over things that can
+     be pressed. The stage itself still takes a tap to move the intro on. */
+  cursor: default;
+  box-shadow: 0 0 calc(var(--u) * 7) calc(var(--u) * 3) #140d07;
+}
+
+/* ============================================================================
+   THE TWO PICTURE LAYERS
+
+   Both are the full stage and both are 16:9 like the art, so at scale 1 each
+   one covers exactly. BOTH use transform-origin 0 0, because intro.js does all
+   the anchoring arithmetic itself — the map's pan onto its anchor, and the
+   close-up's framing, which translates the picture so the settlement's centre
+   lands on FRAME and scales it up far enough that no edge follows it in.
+   ========================================================================= */
+#mapWrap, #closeWrap {
+  position: absolute; inset: 0;
+  transform-origin: 0 0;
+  backface-visibility: hidden;
+}
+#closeWrap { opacity: 0; }
+#mapWrap img, #closeWrap img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ============================================================================
+   THE TAG CARD — dark glass, off-white armour edge, cyan type.
+   No border: the armour IS the edge.
+
+   TOP RIGHT, one place on every location, and it sits above the character
+   layer so nothing can cover it. The framing holds Veth in the left 26%, so
+   the reason it was moved away from here — hiding behind him on two of the
+   three — cannot happen any more.
+
+   It is pushed hard into the corner rather than sitting where it used to,
+   because the settlements are framed centre-right and reach x 83-91 and y 10
+   upward: the corner is the only part of the top right that is not over one
+   of them. Titan City's outermost north-east edge crosses the card's bottom
+   line at x 74.4%, so the card sits at 74.5 rather than 73.5 — a one-point
+   nudge that is invisible and puts it clear of all three. The two icon
+   controls moved to the bottom right to keep out of its way.
+   ========================================================================= */
+#tag {
+  position: absolute;
+  right: calc(var(--u) * 1.5);
+  top: calc(var(--u) * 2);
+  width: calc(var(--u) * 30);
+  opacity: 0;
+  transform: translateY(calc(var(--u) * -0.6));
+  transition: opacity 280ms ease, transform 280ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+#tag.on { opacity: 1; transform: translateY(0); }
+.tag-face {
+  position: relative;
+  padding: calc(var(--u) * 0.8) calc(var(--u) * 1.2) calc(var(--u) * 0.85);
+  background:
+    linear-gradient(90deg, var(--armour) 0 calc(var(--u) * 0.34), transparent calc(var(--u) * 0.34)),
+    linear-gradient(0deg, rgba(232,220,203,0.30) 0 calc(var(--u) * 0.12), transparent calc(var(--u) * 0.12)),
+    linear-gradient(135deg, rgba(20,32,44,0.94), rgba(7,12,18,0.96));
+  box-shadow: calc(var(--u) * 0.5) calc(var(--u) * 0.7) calc(var(--u) * 1.8) rgba(0,0,0,0.6);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--u) * 1.1),
+                     calc(100% - var(--u) * 1.1) 100%, 0 100%);
+}
+.tag-name {
+  display: flex; align-items: baseline; gap: calc(var(--u) * 0.7);
+  font-family: var(--display);
+  font-size: calc(var(--u) * 1.9);
+  letter-spacing: 0.055em;
+  color: #eafaff;
+  text-shadow: 0 0 calc(var(--u) * 0.9) rgba(47,216,255,0.55);
+  min-height: calc(var(--u) * 2);
+}
+.tag-name .glyph { color: var(--blue); font-style: normal; font-size: 0.8em; }
+.tag-row {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: calc(var(--u) * 1.18);
+  letter-spacing: 0.04em;
+  color: var(--blue);
+  opacity: 0.92;
+  margin-top: calc(var(--u) * 0.42);
+  min-height: calc(var(--u) * 1.35);
+  white-space: pre;
+}
+.tag-row.tag-ord { color: #bfe9f6; opacity: 0.8; }
+
+/* ============================================================================
+   SPEECH
+
+   Class-scoped, not id-scoped, because Level 1 uses the same bubble for
+   Rill. The intro's element already carries class="bubble left|right", so
+   nothing about the intro changed when these selectors did.
+
+   The bubble sits at the speaker's HEAD, not at the foot of the frame, and it
+   stays in that character's own column. Veth stands in the left 22% and the
+   framing holds every settlement right of 32%, so a bubble 31.6% wide down
+   the left edge cannot reach a settlement however long the line runs. It
+   grows UPWARD from its bottom edge, which is pinned just above his head, so
+   a long line gets taller without ever growing down across the picture.
+   ========================================================================= */
+#ui { position: absolute; inset: 0; pointer-events: none; }
+.bubble {
+  position: absolute;
+  /* Fits the line. The ceiling is what keeps it out of the settlement's
+     column, and it only has to be narrow while a settlement is on screen —
+     see the close-up rule below. On the wide map it can run wider, which is
+     what stops the longest line stacking up four deep and running off the
+     top of the frame. */
+  width: max-content;
+  max-width: calc(var(--u) * 62);
+  /* The tail sits 9 in from its own near edge, so a box narrower than that
+     would hang it off the cut corner — which is what a one-word line like
+     "Understood." does. The floor keeps every box wide enough to carry it. */
+  min-width: calc(var(--u) * 14);
+  opacity: 0;
+  transform: scale(0.94);
+  transition: opacity 320ms ease, transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bubble.on { opacity: 1; transform: scale(1); }
+/* Veth's head tops out at 22% of the stage height; Nova is shorter and hers
+   is at 38%. Each bubble's bottom edge sits just above its own speaker. */
+/* Veth's head tops out at 22% of the stage height, Nova's at 38%. Each bubble
+   is pinned far enough above its own speaker that the TAIL clears the head
+   too — the tail hangs about 2.2% below the box, and it was the thing that
+   was resting on his hair. */
+.bubble.left  {
+  /* in from the edge so the tail lands on Veth's head, not beside it */
+  left: calc(var(--u) * 10);
+  bottom: 83%;
+  transform-origin: 0 100%;
+}
+.bubble.right {
+  right: calc(var(--u) * 1.6);
+  bottom: 68%;
+  transform-origin: 100% 100%;
+}
+/* Rill stands between the two of them, so her bubble is centred on her rather
+   than pinned to an edge — the tail has to come down on HER head. */
+.bubble.mid {
+  /* `left` is set by intro.js from where she is actually standing on this
+     screen — she has two places, and a figure here would be a copy of one of
+     them that goes stale the moment either moves. This is only the fallback
+     for a frame before the first one is written. */
+  left: 48%;
+  transform: translateX(-50%) scale(0.96);
+  bottom: 74%;
+  transform-origin: 50% 100%;
+}
+.bubble.mid.on { transform: translateX(-50%) scale(1); }
+/* `--tail` is written by intro.js: where the speaker is along the box's own
+   width, once the box has been held inside the frame. It falls back to the
+   middle, which is where she is whenever the box did not have to be nudged. */
+.bubble.mid .tail { left: var(--tail, 50%); margin-left: calc(var(--u) * -1.5);
+                    border-right: calc(var(--u) * 1.5) solid transparent; }
+
+/* While a close-up is on screen the bubble is capped narrow, because that is
+   the only time there is a settlement beside it to stay off. #ui follows
+   #closeWrap in the document, so the picture layer's own hidden state does
+   the switching and no script has to. */
+#closeWrap:not([hidden]) ~ #ui .bubble { max-width: calc(var(--u) * 30); }
+/* ONE face, used by both speakers. Everything that makes the box a box —
+   padding, ground, armour edge, shadow, cut corners — is declared once here,
+   so the two can never drift apart.
+
+   The only thing that differs is HANDEDNESS. Nova stands on the right, so her
+   box is the MIRROR of his: cut corners on the opposite diagonal, gradient
+   running the other way, tail the same distance in from her own near edge.
+   Not mirroring it was what made hers read as a different object — the cut
+   corner and the tail ended up on the same side of the box. */
+.bub-face {
+  position: relative;
+  /* the live text and the invisible full-length sizer stack in one cell, so
+     the box is the size of the finished line from the very first character */
+  display: grid;
+  padding: calc(var(--u) * 1.3) calc(var(--u) * 1.6);
+  background:
+    linear-gradient(0deg, rgba(232,220,203,0.26) 0 calc(var(--u) * 0.11), transparent calc(var(--u) * 0.11)),
+    linear-gradient(140deg, rgba(20,30,42,0.95), rgba(7,11,17,0.96));
+  box-shadow: 0 calc(var(--u) * 0.8) calc(var(--u) * 2.4) rgba(0,0,0,0.55);
+  clip-path: polygon(calc(var(--u) * 0.9) 0, 100% 0, 100% calc(100% - var(--u) * 0.9),
+                     calc(100% - var(--u) * 0.9) 100%, 0 100%, 0 calc(var(--u) * 0.9));
+}
+.bubble.right .bub-face {
+  background:
+    linear-gradient(0deg, rgba(232,220,203,0.26) 0 calc(var(--u) * 0.11), transparent calc(var(--u) * 0.11)),
+    linear-gradient(220deg, rgba(20,30,42,0.95), rgba(7,11,17,0.96));
+  clip-path: polygon(0 0, calc(100% - var(--u) * 0.9) 0, 100% calc(var(--u) * 0.9),
+                     100% 100%, calc(var(--u) * 0.9) 100%, 0 calc(100% - var(--u) * 0.9));
+}
+.bubble p { grid-area: 1 / 1; }
+.bubble .sizer { visibility: hidden; pointer-events: none; }
+.bubble p {
+  margin: 0;
+  font-size: calc(var(--u) * 1.42);
+  line-height: 1.46;
+  color: #eef6ff;
+  min-height: calc(var(--u) * 2);
+}
+.bubble .tail {
+  position: absolute; bottom: calc(var(--u) * -1.15);
+  width: 0; height: 0;
+  border-top: calc(var(--u) * 1.25) solid rgba(10,16,24,0.96);
+}
+/* The tail points down at the head it belongs to, and sits the same distance
+   in from its own near edge on both — 9, not 9 and 7. */
+.bubble.left  .tail { left:  calc(var(--u) * 9); border-right: calc(var(--u) * 1.5) solid transparent; }
+.bubble.right .tail { right: calc(var(--u) * 9); border-left:  calc(var(--u) * 1.5) solid transparent; }
+
+/* ============================================================================
+   THE CAST — the slide-in is on the outer element, the breathing on the inner
+   one, so the two never fight over a single transform.
+   ========================================================================= */
+.actor {
+  position: absolute; bottom: 0;
+  opacity: 0;
+  transform: translate(-50%, 0);
+  transition: left 2000ms cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 400ms ease,
+              transform 520ms cubic-bezier(0.22, 1.2, 0.36, 1);
+  filter: drop-shadow(calc(var(--u) * 0.4) calc(var(--u) * 0.8) calc(var(--u) * 1.7) rgba(0,0,0,0.6));
+}
+.actor.in { opacity: 1; }
+/* out of frame while the camera moves, and back up from the bottom to speak.
+   The overshoot in the curve is what makes it read as stepping up rather than
+   sliding on. */
+.actor.ducked { transform: translate(-50%, 116%); opacity: 0; }
+/* the bubble leaves and returns with the cast it belongs to */
+#bubble.ducked { opacity: 0 !important; transform: translateY(calc(var(--u) * 2.4)) scale(0.96); }
+.actor .fig {
+  width: 100%; height: 100%;
+  background-repeat: no-repeat;
+  transform-origin: 50% 100%;
+}
+.actor.settled .fig { animation: breathe 4000ms ease-in-out infinite; }
+/* Rill faces Veth on the map. The mirror uses `scale` rather than `transform`
+   so the breathing animation, which owns the transform, can't undo it. */
+#ui .actor.rill .fig { scale: -1 1; transition: scale 480ms ease-in-out; }
+/* on screen 6 she walks to the left and turns back to face into the frame */
+#ui .actor.rill.turned .fig { scale: 1 1; }
+/* his talking sheet faces the right way already: he gestures to his left,
+   towards the machine he stands beside on screen 6 */
+#ui .actor.rill.sprite .fig { scale: 1 1; }
+@keyframes breathe {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-0.8%) scale(1.01); }
+}
+
+/* ============================================================================
+   CONTROLS — light, never a box.
+   ========================================================================= */
+.ctl {
+  position: absolute;
+  /* Above #level. The level layer is a full-stage element that comes after
+     these in the document, so without this it painted over all three and the
+     sound toggle and SKIP were unreachable for the whole level. */
+  z-index: 20;
+  appearance: none; border: 0; background: none; padding: 0;
+  color: rgba(244, 232, 214, 0.52);
+  font-family: var(--display);
+  font-size: calc(var(--u) * 1.15);
+  letter-spacing: 0.14em;
+  cursor: pointer; pointer-events: auto;
+  transition: color 200ms ease, text-shadow 200ms ease;
+  text-shadow: 0 calc(var(--u) * 0.1) calc(var(--u) * 0.5) rgba(0,0,0,0.85);
+}
+.ctl:hover, .ctl:focus-visible {
+  color: var(--blue-hot); outline: none;
+  text-shadow: 0 0 calc(var(--u) * 1.2) rgba(47,216,255,0.85);
+}
+/* Bottom right, clear of the name card in the top-right corner. There is no
+   fullscreen button: dblclick on a dial arrow was toggling fullscreen. */
+#skip  { right: calc(var(--u) * 2.4); bottom: calc(var(--u) * 2.2); }
+#sound { right: calc(var(--u) * 2.4); bottom: calc(var(--u) * 5.6); font-size: calc(var(--u) * 1.7); letter-spacing: 0; }
+#sound.off { color: rgba(244, 232, 214, 0.22); }
+/* anything that can actually be pressed shows the hand. :where() keeps this
+   at zero specificity, so a control that sets its own cursor (a dial's
+   ns-resize, LOAD's default while it is not live) still wins. */
+:where(#stage) :where(button:not(:disabled), select, [role="button"]) { cursor: pointer; }
+
+/* QA Bugs 1 and 2: the loader and the title screen have no use for the sound
+   toggle or SKIP, and the celebration has nothing left to skip. */
+body.pre-game .ctl,
+body.in-start .ctl,
+body.in-post #skip,
+body.in-post #jumpWrap { display: none !important; }
+
+/* ============================================================================
+   LOADER — nothing runs until every picture is decoded.
+   ========================================================================= */
+#loader {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: calc(var(--u) * 1.6);
+  background: #140d07;
+  transition: opacity 400ms ease;
+}
+#loader.gone { opacity: 0; }
+#loader .bar {
+  width: calc(var(--u) * 26); height: calc(var(--u) * 0.9);
+  border-radius: 999px;
+  background: rgba(244, 232, 214, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(79, 227, 255, 0.25);
+  overflow: hidden;
+}
+#loader .bar i {
+  display: block; height: 100%; width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2fd8ff, #FFC94F);
+  transition: width 160ms linear;
+}
+#loader .lt {
+  font-family: var(--display);
+  font-size: calc(var(--u) * 1.1);
+  letter-spacing: 0.3em;
+  color: rgba(244, 232, 214, 0.45);
+}
+
+/* ============================================================================
+   REDUCED MOTION — every slide and every word survives; the movement does not.
+   The dive becomes a plain cross-fade, handled in intro.js, which owns the
+   clock; this only stops the loops CSS is running on its own.
+   ========================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  .actor.settled .fig { animation: none !important; }
+  .actor { transition: opacity 200ms ease !important; }
+  #tag, .bubble { transition-duration: 160ms !important; }
+}
+
+/* down to 400px wide: the type has a floor so it never drops below legible */
+@media (max-width: 520px) {
+  .bubble p { font-size: max(11px, calc(var(--u) * 1.42)); }
+  .tag-name { font-size: max(13px, calc(var(--u) * 1.9)); }
+  .tag-row  { font-size: max(9px,  calc(var(--u) * 1.18)); }
+  .ctl      { font-size: max(9px,  calc(var(--u) * 1.15)); }
+  #tag      { width: calc(var(--u) * 30); }
+}
+
+/* ============================================================================
+   THE JUMP MENU — bottom left, in the same light-not-a-box language as SKIP.
+
+   The popup itself is drawn by the operating system, which is the one place
+   the house rule cannot reach; the control on the stage is a word, not a box.
+   Hidden until a level is running.
+   ========================================================================= */
+/* The bare <select> read as a line of dim text with nothing to say it could
+   be tapped. It now carries a label and a caret so it looks like a control. */
+#jumpWrap {
+  display: none;
+  position: absolute;
+  align-items: baseline;
+  gap: calc(var(--u) * 0.6);
+  left: calc(var(--u) * 2.4);
+  bottom: calc(var(--u) * 2.0);
+  pointer-events: auto;
+}
+#jumpWrap .jump-label {
+  font-family: var(--display);
+  font-size: calc(var(--u) * 1.0);
+  letter-spacing: 0.2em;
+  color: rgba(244, 232, 214, 0.62);
+  text-shadow: 0 calc(var(--u) * 0.06) calc(var(--u) * 0.2) rgba(0,0,0,0.9);
+}
+#jumpWrap .jump-caret {
+  font-style: normal;
+  font-size: calc(var(--u) * 1.15);
+  color: var(--blue);
+  text-shadow: 0 0 calc(var(--u) * 0.7) rgba(47,216,255,0.5),
+               0 calc(var(--u) * 0.06) calc(var(--u) * 0.2) rgba(0,0,0,0.9);
+  transform: translateY(calc(var(--u) * -0.05));
+}
+#jumpWrap:hover .jump-label,
+#jumpWrap:hover .jump-value,
+#jumpWrap:hover .jump-caret { color: var(--blue-hot); }
+#jumpWrap:focus-within .jump-value,
+#jumpWrap:focus-within .jump-caret { color: var(--blue-hot); }
+/* the run in play, drawn by us — this is what the row is as wide as */
+#jumpWrap .jump-value {
+  font-family: var(--mono);
+  font-size: calc(var(--u) * 1.15);
+  letter-spacing: 0.06em;
+  white-space: pre;
+  color: var(--blue);
+  text-shadow: 0 0 calc(var(--u) * 0.7) rgba(47,216,255,0.5),
+               0 calc(var(--u) * 0.06) calc(var(--u) * 0.2) rgba(0,0,0,0.9);
+}
+/* the real <select>, laid over the whole row and invisible. A select sizes
+   itself to its longest OPTION, and the longest string here is an optgroup
+   label — sizing the row from it is what left the caret adrift halfway across
+   the stage, looking like nothing at all. Transparent and on top, it still
+   opens the native menu on a click and still takes the keyboard. */
+#jump {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  appearance: none;
+  border: 0; outline: none;
+  background: transparent;
+  padding: 0; margin: 0;
+  opacity: 0;
+  font-size: calc(var(--u) * 1.15);
+  cursor: pointer;
+}
+body.in-level #jumpWrap { display: flex; }
+/* SKIP skips the INTRO. Once a level is running it does nothing — skip()
+   returns immediately because the intro has already finished — so it comes
+   off the stage rather than sitting there inviting a tap. */
+body.in-level #skip { display: none; }
+#jump option, #jump optgroup {
+  /* the OS paints these, so they need a ground of their own */
+  background: #0d141c;
+  color: #cfe8f5;
+  font-family: var(--mono);
+}
+
+
+/* ============================================================================
+   THE STILL — screens 1, 5 and 6.
+
+   Those beats are a picture rather than a camera move, so they are not the map
+   at all. This layer sits over both camera layers and fading it up IS putting
+   the map away for that beat.
+
+   The art is 1980x1080 — 1.833, where the stage is 16:9 — so it is laid in
+   with `cover` and centred, which crops about 1.5% off each side. Every one of
+   the three is framed well inside that.
+   ========================================================================= */
+#still {
+  position: absolute; inset: 0;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  background-size: cover;
+  opacity: 0;
+  transition: opacity 420ms ease;
+}
+#still.on { opacity: 1; }
+
+/* ============================================================================
+   THE NARRATOR'S CAPTION BAND — screens 1 to 4.
+
+   The tag card's language, turned into a wide band: dark glass, the thin
+   off-white armour light along its TOP rather than its bottom, one cut corner,
+   a soft cast shadow. Centred text and no tail, because there is nobody on
+   stage for a tail to point at.
+
+   NOTHING HERE DRAWS A BORDER OR AN OUTLINE. The light along the top is a
+   background layer — ink on the plate, the way the tag card does it — and the
+   only box-shadow is the shadow the band casts behind itself.
+
+   IT IS CENTRED ON THE STAGE, and centred by auto margins rather than by a
+   transform, because the transform is carrying the fade and a box cannot be
+   centred and lifted by the same property without the two fighting.
+
+   IT KEEPS OUT OF THE WAY BY CONSTRUCTION. At 68 wide and centred it runs
+   from 16% to 84% of the stage, which is clear of SKIP and the sound toggle
+   at the bottom right, and it sits low, well under the tag card in the top
+   right. It fades rather than scaling in, so it does not read as something
+   being spoken.
+   ========================================================================= */
+#caption {
+  position: absolute;
+  left: 0; right: 0;
+  margin: 0 auto;
+  width: calc(var(--u) * 68);
+  bottom: calc(var(--u) * 4);
+  opacity: 0;
+  transform: translateY(calc(var(--u) * 0.5));
+  transition: opacity 300ms ease, transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 12;
+}
+#caption.on { opacity: 1; transform: translateY(0); }
+.cap-face {
+  position: relative;
+  display: grid;
+  padding: calc(var(--u) * 1.15) calc(var(--u) * 2.0);
+  background:
+    linear-gradient(180deg, rgba(232,220,203,0.30) 0 calc(var(--u) * 0.12), transparent calc(var(--u) * 0.12)),
+    linear-gradient(120deg, rgba(20,32,44,0.94), rgba(7,12,18,0.96));
+  box-shadow: 0 calc(var(--u) * 0.8) calc(var(--u) * 2.4) rgba(0,0,0,0.58);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--u) * 1.1),
+                     calc(100% - var(--u) * 1.1) 100%, 0 100%);
+}
+#caption p { grid-area: 1 / 1; }
+#caption .sizer { visibility: hidden; pointer-events: none; }
+#caption p {
+  margin: 0;
+  font-family: var(--display);
+  font-size: calc(var(--u) * 1.42);
+  line-height: 1.46;
+  text-align: center;
+  color: #eef6ff;
+  min-height: calc(var(--u) * 2);
+}
+@media (max-width: 520px) {
+  #caption p { font-size: max(11px, calc(var(--u) * 1.42)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #still, #caption { transition-duration: 160ms !important; }
+}
+
+/* THE DIALOGUE IS SPOKEN, NOT SHOWN. Per the storyboard, the characters'
+   lines are voice-over only (assets/voice, see VOICE.JS in game.js), so the
+   speech bubble, the narrator's caption band, the console's instruction
+   panel, the lesson's line and the flight's line are all kept off screen.
+   They still exist and still type, which is what paces the scenes. */
+#caption, #level .panel, .tc-line { visibility: hidden !important; }
+
+/* ============================================================================
+   MOTION — the storybook layer (see MOTION in game.js)
+   ========================================================================= */
+/* the blue glow the camera pushes through out of the holo-table */
+#holoFlash {
+  position: absolute; inset: 0; pointer-events: none; opacity: 0;
+  background: radial-gradient(ellipse at 50% 60%, rgba(150,230,255,0.95) 0%,
+              rgba(40,150,230,0.85) 45%, rgba(6,30,70,0.9) 100%);
+}
+/* dust in the air, over the pictures and under the cast */
+#dust {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  pointer-events: none; opacity: 0; transition: opacity 800ms ease;
+  mix-blend-mode: screen;
+}
+#dust.on { opacity: 1; }
+/* whoever is speaking bobs gently with the voice */
+.actor.settled.talking .fig { animation: talk 560ms ease-in-out infinite; }
+/* …except one who talks in frames (Veth): the sheet carries the motion, so
+   he only breathes, as he does between lines */
+.actor.sprite.settled.talking .fig { animation: breathe 4000ms ease-in-out infinite; }
+@keyframes talk {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1, 1); }
+  30%      { transform: translateY(-1.1%) rotate(-0.6deg) scale(1.005, 1.012); }
+  65%      { transform: translateY(-0.4%) rotate(0.5deg) scale(1, 1.004); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .actor.settled.talking .fig { animation: none; }
+  #dust { display: none; }
+}
+
+/* ---- FX: floating numbers, confetti, the delivery tracker ---------------- */
+.fx-pop {
+  position: absolute; z-index: 60; pointer-events: none; white-space: nowrap;
+  font-family: var(--display); font-weight: 700;
+  font-size: calc(var(--u) * 2.2); color: #fff;
+  text-shadow: 0 0 calc(var(--u) * 0.6) rgba(47,216,255,0.9), 0 calc(var(--u) * 0.2) 0 rgba(0,40,70,0.8);
+}
+.fx-pop.big { font-size: calc(var(--u) * 3.2); color: #ffe38a;
+  text-shadow: 0 0 calc(var(--u) * 0.8) rgba(255,190,60,0.9), 0 calc(var(--u) * 0.25) 0 rgba(90,40,0,0.7); }
+.fx-conf {
+  position: absolute; z-index: 59; pointer-events: none;
+  width: calc(var(--u) * 0.9); height: calc(var(--u) * 0.5);
+  border-radius: calc(var(--u) * 0.1);
+}
+
+/* ============================================================================
+   THE DIALOGUE BOX — characters only (see DIALOG.JS). Portrait, a name plate
+   in the speaker's colour, the line, and a sound-wave while the voice plays.
+   ========================================================================= */
+#dialog {
+  --c: #2fd8ff;
+  position: absolute; left: 50%; z-index: 55; width: calc(var(--u) * 66);
+  transform: translateX(-50%); pointer-events: none;
+  opacity: 0; transition: opacity 260ms ease;
+}
+#dialog.on { opacity: 1; }
+#dialog.top    { top: calc(var(--u) * 1.4); width: calc(var(--u) * 58); }
+#dialog.bottom { bottom: calc(var(--u) * 1.6); }
+#dialog.veth { --c: #b28cff; }
+#dialog.rill { --c: #2fd8ff; }
+#dialog.nova { --c: #ffb347; }
+.dl-card {
+  position: relative; display: flex; align-items: center; gap: calc(var(--u) * 1.6);
+  padding: calc(var(--u) * 1.1) calc(var(--u) * 2.4) calc(var(--u) * 1.1) calc(var(--u) * 1.1);
+  background: linear-gradient(160deg, rgba(22,34,52,0.96), rgba(8,13,22,0.97));
+  border: calc(var(--u) * 0.16) solid color-mix(in srgb, var(--c) 70%, transparent);
+  border-radius: calc(var(--u) * 1.6);
+  box-shadow: 0 0 calc(var(--u) * 1.6) color-mix(in srgb, var(--c) 35%, transparent),
+              0 calc(var(--u) * 0.8) calc(var(--u) * 2.4) rgba(0,0,0,0.6),
+              inset 0 calc(var(--u) * 0.12) 0 rgba(255,255,255,0.08);
+}
+.dl-face {
+  flex: none; width: calc(var(--u) * 8.2); height: calc(var(--u) * 8.2); border-radius: 50%;
+  background-size: cover; background-position: 50% 30%; background-color: #1b2a3c;
+  border: calc(var(--u) * 0.3) solid var(--c);
+  box-shadow: 0 0 calc(var(--u) * 1.2) color-mix(in srgb, var(--c) 60%, transparent);
+}
+.dl-body { flex: 1; min-width: 0; display: grid; }
+.dl-name {
+  justify-self: start; margin-bottom: calc(var(--u) * 0.5);
+  padding: calc(var(--u) * 0.2) calc(var(--u) * 1) ;
+  border-radius: calc(var(--u) * 0.5);
+  background: var(--c); color: #0b1420;
+  font-family: var(--display); font-weight: 700; letter-spacing: 0.1em;
+  font-size: calc(var(--u) * 1.15);
+}
+.dl-text {
+  grid-area: 2 / 1; margin: 0; color: #f2f7fb;
+  font-family: var(--display); font-size: calc(var(--u) * 1.85); line-height: 1.35;
+}
+.dl-sizer { visibility: hidden; }
+.dl-wave {
+  position: absolute; right: calc(var(--u) * 1.2); bottom: calc(var(--u) * 0.9);
+  display: flex; gap: calc(var(--u) * 0.22); align-items: flex-end; height: calc(var(--u) * 1.4);
+  opacity: 0; transition: opacity 200ms ease;
+}
+.dl-wave i { width: calc(var(--u) * 0.28); height: 30%; border-radius: 9px; background: var(--c); }
+#dialog.speaking .dl-wave { opacity: 0.9; }
+#dialog.speaking .dl-wave i { animation: dl-wave 700ms ease-in-out infinite; }
+#dialog.speaking .dl-wave i:nth-child(2) { animation-delay: 120ms; }
+#dialog.speaking .dl-wave i:nth-child(3) { animation-delay: 240ms; }
+#dialog.speaking .dl-wave i:nth-child(4) { animation-delay: 360ms; }
+@keyframes dl-wave { 0%, 100% { height: 25%; } 50% { height: 100%; } }
+
+/* ---- the spotlight: the scene dims around what is being talked about ---- */
+#spot {
+  position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
+  opacity: 0; transition: opacity 700ms ease;
+}
+#spot.on { opacity: 1; }
+#spot .spot-ring {
+  fill: none; stroke: #ffd166; stroke-width: 0.35; vector-effect: non-scaling-stroke;
+  stroke-width: 3px; transform-box: fill-box; transform-origin: center;
+  animation: spot-ring 1.8s ease-out infinite;
+}
+@keyframes spot-ring { 0% { transform: scale(0.6); opacity: 0.95; } 100% { transform: scale(1.5); opacity: 0; } }
+/* ============================================================================
+   THE SPEECH BUBBLE ON THE CHARACTER — beside their head, tail pointing at
+   them, the storybook way. Set up by sideBubble() in game.js.
+   ========================================================================= */
+.bubble.side {
+  --c: #2fd8ff;
+  bottom: auto; transform: none; transform-origin: 0 20%;
+  max-width: calc(var(--u) * 40); min-width: calc(var(--u) * 20);
+  filter: drop-shadow(0 calc(var(--u) * 0.7) calc(var(--u) * 1.4) rgba(0,0,0,0.55));
+}
+.bubble.side.flip { transform-origin: 100% 20%; }
+.bubble.side.veth { --c: #9b7bff; }
+.bubble.side.rill { --c: #19b6e6; }
+.bubble.side.nova { --c: #ff9f2e; }
+.bubble.side .bub-face {
+  clip-path: none;
+  padding: calc(var(--u) * 1.5) calc(var(--u) * 2) calc(var(--u) * 1.7);
+  background: linear-gradient(180deg, #fffdf7, #f3ecdf);
+  border: calc(var(--u) * 0.28) solid var(--c);
+  border-radius: calc(var(--u) * 2.2);
+  box-shadow: inset 0 calc(var(--u) * -0.35) 0 rgba(0,0,0,0.06);
+}
+.bubble.side p {
+  grid-area: 2 / 1;
+  color: #16233a; font-family: var(--display);
+  font-size: calc(var(--u) * 1.7); line-height: 1.38; font-weight: 600;
+}
+.bubble.side .bub-name {
+  grid-area: 1 / 1; justify-self: start;
+  margin: calc(var(--u) * -2.9) 0 calc(var(--u) * 0.6) calc(var(--u) * -0.4);
+  padding: calc(var(--u) * 0.3) calc(var(--u) * 1.1);
+  background: var(--c); color: #fff; border-radius: calc(var(--u) * 0.8);
+  font-family: var(--display); font-weight: 700; letter-spacing: 0.1em;
+  font-size: calc(var(--u) * 1.1);
+  box-shadow: 0 calc(var(--u) * 0.25) 0 rgba(0,0,0,0.25);
+}
+.bubble:not(.side) .bub-name, .bubble:not(.side) .bub-wave { display: none; }
+/* the tail: a triangle on the side facing the speaker, near the top */
+.bubble.side .tail {
+  bottom: auto; top: calc(var(--u) * 2.4); left: calc(var(--u) * -1.9); right: auto;
+  width: calc(var(--u) * 2.3); height: calc(var(--u) * 2.2);
+  border: 0; background: var(--c);
+  clip-path: polygon(100% 0, 0 55%, 100% 100%);
+}
+.bubble.side .tail::after {
+  content: ''; position: absolute; inset: calc(var(--u) * 0.45) 0 calc(var(--u) * 0.45) calc(var(--u) * 0.55);
+  background: #fcf8ef; clip-path: polygon(100% 0, 0 55%, 100% 100%);
+}
+.bubble.side.flip .tail { left: auto; right: calc(var(--u) * -1.9); transform: scaleX(-1); }
+.bub-wave {
+  position: absolute; right: calc(var(--u) * 1.2); bottom: calc(var(--u) * 0.7);
+  display: flex; gap: calc(var(--u) * 0.2); align-items: flex-end; height: calc(var(--u) * 1.2);
+  opacity: 0; transition: opacity 200ms ease;
+}
+.bub-wave i { width: calc(var(--u) * 0.26); height: 30%; border-radius: 9px; background: var(--c); }
+.bubble.speaking .bub-wave { opacity: 0.85; }
+.bubble.speaking .bub-wave i { animation: dl-wave 700ms ease-in-out infinite; }
+.bubble.speaking .bub-wave i:nth-child(2) { animation-delay: 120ms; }
+.bubble.speaking .bub-wave i:nth-child(3) { animation-delay: 240ms; }
+.bubble.speaking .bub-wave i:nth-child(4) { animation-delay: 360ms; }
+.bubble.side.tail-low .tail { top: auto; bottom: calc(var(--u) * 1.6); }
+
+/* compact, so the box never reaches what the screen is about (CHECK, dials) */
+.dl-card { padding: calc(var(--u) * 0.7) calc(var(--u) * 2.2) calc(var(--u) * 0.7) calc(var(--u) * 0.8); gap: calc(var(--u) * 1.2); }
+.dl-face { width: calc(var(--u) * 6); height: calc(var(--u) * 6); }
+.dl-text { font-size: calc(var(--u) * 1.6); line-height: 1.3; }
+.dl-name { font-size: calc(var(--u) * 1.0); margin-bottom: calc(var(--u) * 0.3); }
+#dialog.bottom { bottom: calc(var(--u) * 0.8); }
+
+/* ---- the scroll tutorial: a hand swiping a dial up and down ------------- */
+#swipe { position: absolute; z-index: 58; pointer-events: none; }
+#swipe .sw-hand {
+  position: absolute; left: 55%; top: 40%; width: 95%; max-width: calc(var(--u) * 6);
+  filter: drop-shadow(0 calc(var(--u) * 0.4) calc(var(--u) * 0.6) rgba(0,0,0,0.55));
+}
+#swipe .sw-hand svg, #swipe .sw-hand img { width: 100%; height: auto; display: block; }
+#swipe .sw-track {
+  position: absolute; inset: -14% 0; display: flex; flex-direction: column;
+  justify-content: space-between; align-items: center; font-style: normal;
+  color: #ffd166; font-size: calc(var(--u) * 1.8);
+  text-shadow: 0 0 calc(var(--u) * 0.8) rgba(255,209,102,0.9);
+  animation: sw-pulse 1100ms ease-in-out infinite;
+}
+#swipe .sw-track b { line-height: 1; }
+@keyframes sw-pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+
+/* ============================================================================
+   THE THEME: every speech bubble and dialogue box now wears the logo's own
+   colours, like START — a deep space-blue glass face, the chrome-blue bevel
+   of "Nova's" just inside a gold orbit rim, white lettering, and the name on
+   a gold plate lettered like ROCKET RUN. The speaker's own colour stays as a
+   small glow on their portrait ring and the sound-wave.
+   ========================================================================= */
+.bubble.side .bub-face {
+  background:
+    radial-gradient(120% 140% at 50% 125%, rgba(79,227,255,0.28), rgba(79,227,255,0) 55%),
+    linear-gradient(180deg, #24569F 0%, #163E86 40%, #0E2B66 75%, #0A1F4D 100%);
+  border: calc(var(--u) * 0.26) solid #FFC24A;
+  box-shadow: inset 0 0 0 calc(var(--u) * 0.14) #CFE8FB,
+              inset 0 0 0 calc(var(--u) * 0.24) #3F78C2,
+              inset 0 calc(var(--u) * 0.5) calc(var(--u) * 0.8) rgba(170,220,255,0.22),
+              0 0 calc(var(--u) * 1.2) rgba(255,180,60,0.45);
+}
+.bubble.side p { color: #F4F9FF; text-shadow: 0 calc(var(--u) * 0.08) 0 rgba(0,10,40,0.6); }
+.bubble.side .bub-name, .dl-name {
+  background: linear-gradient(180deg, #FFF6CF 0%, #FFD45E 40%, #FFA62B 75%, #E0700E 100%);
+  color: #7B1100; text-shadow: 0 1px 0 rgba(255,240,200,0.6);
+  box-shadow: 0 0 0 calc(var(--u) * 0.1) #9C4207, 0 calc(var(--u) * 0.2) 0 rgba(90,30,0,0.5);
+}
+/* the tail, aimed at the speaker's face by aimTail() in game.js */
+.bubble.side .tail,
+.bubble.side.tail-low .tail,
+.bubble.side.flip .tail {
+  top: calc(var(--ty, 40px) - var(--u) * 1.2); bottom: auto;
+  width: calc(var(--u) * 2.6); height: calc(var(--u) * 2.4);
+  background: #FFC24A; border: 0;
+  left: calc(var(--u) * -2.3); right: auto;
+  transform-origin: 100% 50%; transform: rotate(var(--tr, 0deg));
+  clip-path: polygon(100% 0, 0 50%, 100% 100%);
+}
+.bubble.side .tail::after { background: #133877; clip-path: polygon(100% 0, 0 50%, 100% 100%);
+  inset: calc(var(--u) * 0.42) calc(var(--u) * -0.1) calc(var(--u) * 0.42) calc(var(--u) * 0.55); }
+.bubble.side.flip .tail {
+  left: auto; right: calc(var(--u) * -2.3);
+  transform-origin: 0 50%; transform: rotate(var(--tr, 0deg));
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+.bubble.side.flip .tail::after { clip-path: polygon(0 0, 100% 50%, 0 100%);
+  inset: calc(var(--u) * 0.42) calc(var(--u) * 0.55) calc(var(--u) * 0.42) calc(var(--u) * -0.1); }
+
+/* the dialogue box in the game, lessons and flights: the same theme */
+.dl-card {
+  background:
+    radial-gradient(120% 160% at 50% 130%, rgba(79,227,255,0.25), rgba(79,227,255,0) 55%),
+    linear-gradient(180deg, #24569F 0%, #163E86 40%, #0E2B66 75%, #0A1F4D 100%);
+  border: calc(var(--u) * 0.24) solid #FFC24A;
+  box-shadow: inset 0 0 0 calc(var(--u) * 0.13) #CFE8FB,
+              inset 0 0 0 calc(var(--u) * 0.22) #3F78C2,
+              0 0 calc(var(--u) * 1.2) rgba(255,180,60,0.4),
+              0 calc(var(--u) * 0.8) calc(var(--u) * 2) rgba(0,0,0,0.55);
+}
+.dl-text { color: #F4F9FF; }
+.dl-face { border-color: #FFC24A; box-shadow: 0 0 0 calc(var(--u) * 0.12) var(--c), 0 0 calc(var(--u) * 1.1) color-mix(in srgb, var(--c) 60%, transparent); }
+/* a bigger, solid tail: gold edge, blue fill, so it reads as part of the bubble */
+.bubble.side .tail, .bubble.side.tail-low .tail, .bubble.side.flip .tail {
+  width: calc(var(--u) * 3.4); height: calc(var(--u) * 3.2);
+  top: calc(var(--ty, 40px) - var(--u) * 1.6);
+}
+.bubble.side .tail, .bubble.side.tail-low .tail { left: calc(var(--u) * -3.1); }
+.bubble.side.flip .tail { right: calc(var(--u) * -3.1); }
+.bubble.side .tail::after { inset: calc(var(--u) * 0.55) calc(var(--u) * -0.3) calc(var(--u) * 0.55) calc(var(--u) * 0.85); background: #183F84; }
+.bubble.side.flip .tail::after { inset: calc(var(--u) * 0.55) calc(var(--u) * 0.85) calc(var(--u) * 0.55) calc(var(--u) * -0.3); }
+
+/* ============================================================================
+   NO MAP BETWEEN A LESSON AND ITS CONSOLE. The map belongs to the intro and
+   the delivery flights. From the moment a lesson hands over to its console
+   until the next flight starts, it is put away entirely (TEACH.JS sets the
+   class, FLIGHT.JS clears it), so it cannot show through while the console
+   is drawn or while the lesson fades off over it.
+   ========================================================================= */
+body.no-map #mapWrap,
+body.no-map #closeWrap,
+body.no-map #still,
+body.no-map #tag,
+body.no-map #caption { visibility: hidden !important; }
+
+/* QA Bug 11 (13 Oct 2026): THE NAME PLATE STAYS PUT. The card used to centre
+   the name and the line together against the portrait, so a one-line line
+   and a two-line line put the name at two different heights. The text block
+   now starts at the top of the card every time, at the portrait's own top. */
+.dl-card { align-items: flex-start; }
+.dl-face { align-self: flex-start; }
+.dl-body { align-self: stretch; align-content: start; padding-top: calc(var(--u) * 0.5); }
+
+/* QA Bug 27 — THE ROTATE CARD. Landscape only: held upright, the game is
+   covered and paused until the device is turned. */
+#rotate {
+  display: none;
+  position: fixed; inset: 0; z-index: 100000;
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 18px; padding: 24px;
+  background: radial-gradient(ellipse 130% 100% at 50% 40%, #233a63 0%, #0f1d38 60%, #070d1b 100%);
+  color: #f4f9ff; text-align: center;
+  font-family: var(--display, system-ui, sans-serif);
+}
+#rotate svg { width: min(38vw, 160px); height: auto; }
+#rotate .r-phone { fill: #183f84; stroke: #ffc24a; stroke-width: 3; }
+#rotate .r-screen { fill: #4fe3ff; opacity: 0.35; }
+#rotate .r-arrow, #rotate .r-head { fill: none; stroke: #ffc24a; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+#rotate svg { animation: rotHint 2.4s ease-in-out infinite; }
+@keyframes rotHint { 0%, 25% { transform: rotate(0); } 55%, 80% { transform: rotate(-90deg); } 100% { transform: rotate(0); } }
+#rotate p { margin: 0; font-size: clamp(18px, 5vw, 28px); font-weight: 700; letter-spacing: 0.02em; max-width: 18em; }
+@media (orientation: portrait) {
+  #rotate { display: flex; }
+}
+
+/* ============================================================================
+   THE PAUSE BUTTON AND CARD (13 Oct 2026). Top-left, in the game's own blue
+   and gold. Off on the loader, the title and the celebration.
+   ========================================================================= */
+#pausebtn {
+  position: absolute; left: calc(var(--u) * 1.4); top: calc(var(--u) * 1.4);
+  z-index: 90;
+  width: calc(var(--u) * 4.2); height: calc(var(--u) * 4.2);
+  display: flex; align-items: center; justify-content: center;
+  padding: 0; border-radius: 50%;
+  border: calc(var(--u) * 0.22) solid #FFC24A;
+  background: linear-gradient(180deg, #2a62b0 0%, #163E86 55%, #0E2B66 100%);
+  box-shadow: inset 0 0 0 calc(var(--u) * 0.12) #CFE8FB,
+              0 calc(var(--u) * 0.3) calc(var(--u) * 0.8) rgba(0,0,0,0.5);
+  cursor: pointer;
+  transition: transform 140ms ease, filter 140ms ease;
+}
+#pausebtn svg { width: 52%; height: 52%; fill: #ffffff; }
+#pausebtn:hover { filter: brightness(1.15); }
+#pausebtn:active { transform: scale(0.94); }
+body.pre-game #pausebtn, body.in-start #pausebtn, body.in-post #pausebtn,
+body.held #pausebtn { display: none; }
+
+#pausecard {
+  position: absolute; inset: 0; z-index: 95;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(4, 10, 24, 0.66);
+  backdrop-filter: blur(3px);
+  cursor: pointer;
+}
+#pausecard[hidden] { display: none; }
+#pausecard .pc-box {
+  display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 2);
+  padding: calc(var(--u) * 3) calc(var(--u) * 5);
+  border-radius: calc(var(--u) * 2.4);
+  border: calc(var(--u) * 0.28) solid #FFC24A;
+  background: linear-gradient(180deg, #24569F 0%, #163E86 45%, #0A1F4D 100%);
+  box-shadow: inset 0 0 0 calc(var(--u) * 0.14) #CFE8FB,
+              0 calc(var(--u) * 1) calc(var(--u) * 3) rgba(0,0,0,0.6);
+}
+#pausecard .pc-title {
+  margin: 0; color: #ffffff;
+  font-family: var(--display); font-weight: 700;
+  font-size: calc(var(--u) * 3.4); letter-spacing: 0.12em;
+}
+#pausecard .pc-play {
+  display: flex; align-items: center; gap: calc(var(--u) * 1);
+  padding: calc(var(--u) * 1.1) calc(var(--u) * 3.2);
+  border-radius: 999px; border: 0;
+  background: linear-gradient(180deg, #FFE27A 0%, #FFC24A 45%, #F08A1E 100%);
+  color: #5a1d00; cursor: pointer;
+  font-family: var(--display); font-weight: 700;
+  font-size: calc(var(--u) * 2.2); letter-spacing: 0.1em;
+  box-shadow: 0 calc(var(--u) * 0.35) 0 #9C4207, 0 calc(var(--u) * 0.6) calc(var(--u) * 1.2) rgba(0,0,0,0.4);
+}
+#pausecard .pc-play svg { width: calc(var(--u) * 2.2); height: calc(var(--u) * 2.2); fill: currentColor; }
+#pausecard .pc-play:active { transform: translateY(calc(var(--u) * 0.2)); }

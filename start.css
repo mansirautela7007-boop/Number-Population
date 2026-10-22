@@ -1,0 +1,509 @@
+/* ============================================================================
+   START.CSS — the screen before the game.
+
+   Its own landscape plate, the three of them cut out for this pose standing
+   on the ridge at the right, START in the space to their left, and the S-17
+   wandering behind them.
+
+   No borders, no outlines, no visible box-shadow edges: the figures are
+   cut-outs with cast shadows, and START is drawn as artwork — its gold rim
+   is a layer of the drawing, not a border.
+   ========================================================================= */
+#start {
+  position: absolute; inset: 0;
+  z-index: 40;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 520ms ease;
+}
+#start.on { opacity: 1; }
+#start.off { opacity: 0; }
+
+/* THE PLATE, pulled well toward black so the crew, the name and START come
+   forward of it, and darker again toward the edges. The two numbers are in
+   style.css and shared with the celebration, which stands on the same sky.
+
+   It is 16:9 like the stage, so at cover it fills exactly; the slow drift is
+   the only thing moving in the picture itself. */
+#start .st-bg {
+  position: absolute; inset: 0;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: 50% 50%;
+  transform-origin: 50% 50%;
+  filter: brightness(var(--plate-dim));
+  animation: stDrift 52s ease-in-out infinite alternate;
+}
+#start .st-bg::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: var(--plate-vignette);
+}
+@keyframes stDrift {
+  0%   { transform: scale(1.03) translate(-0.6%, 0.3%); }
+  100% { transform: scale(1.08) translate(0.6%, -0.4%); }
+}
+
+/* ---- THE SHIP ------------------------------------------------------------
+   Placed in PERCENT by start.js from the intro's own clock, because this
+   stage is sized in pixels and a CSS motion path would have been right at one
+   window size only. It sits under the crew: out over the plain, with them on
+   the ridge in front of it. */
+/* THE ORDER OF THINGS, back to front: the plate, the ship, the name, the
+   crew, START.
+
+   THE SHIP IS BEHIND THE NAME. Its band turns at the far left, which is over
+   the title, and a roll through edge-on is not something to put in front of
+   the logo — behind it, the letters swallow the turn and the ship comes back
+   out the other side already flying the other way. The logo is mostly open
+   between its letters and its swoosh, so it is not lost there either: it
+   passes through the gaps and is hidden only by the artwork itself. On the
+   right it goes behind the three of them, which is what puts it out over the
+   plain with the crew on the ridge in front. */
+#start .st-ship {
+  position: absolute;
+  left: 50%; top: 50%;
+  z-index: 2;
+  aspect-ratio: 16 / 9;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  background-size: contain;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 calc(var(--u) * 0.5) calc(var(--u) * 1.1) rgba(0,0,0,0.5));
+  will-change: left, top, transform;
+}
+/* the same cones the delivery burns, pinned to SHUTTLE.nozzle */
+#start .st-plume {
+  position: absolute;
+  height: 22%;
+  transform-origin: 0 0;
+  background: radial-gradient(ellipse 100% 100% at 0% 50%,
+              rgba(255,255,255,0.96) 0%,
+              rgba(198,240,255,0.88) 14%,
+              rgba(112,206,255,0.72) 34%,
+              rgba(56,150,255,0.38) 62%,
+              rgba(40,110,255,0.00) 100%);
+  filter: blur(0.8px);
+  will-change: width, opacity;
+}
+
+/* ---- THE CREW ------------------------------------------------------------
+   Each centred on its own cx from config, standing on the bottom edge.
+
+   THEY POP UP FROM UNDER IT, one at a time. Each starts fully below the frame
+   — translateY(115%) of its OWN height, so every figure clears the edge
+   whatever its size — and arrives on a curve that overshoots a little, which
+   is what makes it read as a pop rather than a slide. The delays come from
+   the config, one per figure, and there are two of them: coming in is a slow
+   procession and going out is a quicker one. */
+#start .st-cast { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+#start .st-actor {
+  position: absolute;
+  bottom: 0;
+  transform: translateX(-50%) translateY(115%);
+  transition: transform 720ms cubic-bezier(0.34, 1.42, 0.64, 1);
+  transition-delay: var(--in-delay, 0ms);
+}
+#start.on .st-actor { transform: translateX(-50%) translateY(0); }
+/* AND THEY DROP BACK OUT THE SAME WAY when START is pressed. Back-in rather
+   than back-out: leaving, the overshoot belongs at the start of the move. */
+#start.out .st-actor {
+  transform: translateX(-50%) translateY(115%);
+  transition: transform 560ms cubic-bezier(0.36, 0, 0.66, -0.4);
+  transition-delay: var(--out-delay, 0ms);
+}
+#start .st-actor .fig {
+  width: 100%; height: 100%;
+  background-repeat: no-repeat;
+  filter: drop-shadow(calc(var(--u) * -0.35) calc(var(--u) * 0.45)
+                      calc(var(--u) * 1.2) rgba(24,10,2,0.55));
+}
+
+/* ---- THE GAME'S NAME -----------------------------------------------------
+   Artwork, like START: a window onto the logo's own opaque bounds, with
+   nothing drawn around it. */
+#start .st-heading {
+  position: absolute;
+  z-index: 3;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0;
+  transform-origin: 50% 50%;
+  transition: opacity 620ms ease 120ms, transform 820ms cubic-bezier(0.16, 1, 0.3, 1) 120ms;
+  filter: drop-shadow(0 calc(var(--u) * 0.5) calc(var(--u) * 1.6) rgba(0,0,0,0.6));
+}
+#start .st-heading .fig {
+  width: 100%; height: 100%;
+  background-repeat: no-repeat;
+}
+#start.on .st-heading { opacity: 1; }
+/* it pops AWAY: a quick swell and gone, rather than a fade that would leave
+   it hanging over an empty stage */
+#start.out .st-heading {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(1.18);
+  transition: opacity 300ms ease 60ms, transform 380ms cubic-bezier(0.34, 1.5, 0.64, 1) 60ms;
+}
+
+/* ---- START ---------------------------------------------------------------
+   Drawn here, in the logo's own palette. Back to front:
+     halo      a soft cyan glow that breathes, to say "press me"
+     rim       the gold of the logo's orbit, round the whole capsule
+     body      a soft sky blue (#8EBCE3): a highlight across the top and a
+               shine that sweeps over it now and then
+     label     START lettered like ROCKET RUN: its face, its red edge and its
+               maroon side, leaning as the logo does
+     badge     a navy porthole with the rocket in it, which lifts on hover and
+               blasts off, flame and all, when START is pressed
+     spark     the logo's four-point star on its shoulder, twinkling
+   Every size is in em off --st-size (PRELBD.start.size, in % of the stage). */
+#start .st-start {
+  position: absolute;
+  z-index: 5;
+  transform: translate(-50%, -50%);
+  font-size: calc(var(--u) * var(--st-size, 3.2));
+  appearance: none; border: 0; background: none; padding: 0; margin: 0;
+  cursor: pointer;
+  isolation: isolate;
+  opacity: 0;
+  transition: opacity 520ms ease 260ms, transform 160ms ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  /* THE KEY TRAVEL. The face (rim, body and porthole) sits --lift off its
+     rest, on a side wall --wall deep. Hover raises it a little; pressing
+     drives it down into the wall, which is what a real key does. */
+  --lift: 0em;
+  --wall: 0.09em;
+}
+#start.on .st-start { opacity: 1; }
+#start .st-start::before {
+  content: '';
+  position: absolute;
+  inset: -0.45em -0.5em;
+  z-index: -1;
+  border-radius: 999px;
+  background: radial-gradient(closest-side, rgba(79, 227, 255, 0.5), rgba(79, 227, 255, 0));
+  animation: stHalo 2800ms ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes stHalo {
+  0%, 100% { opacity: 0.45; transform: scale(0.96); }
+  50%      { opacity: 1;    transform: scale(1.04); }
+}
+
+/* THE DEPTH. The gold is bevelled — lit along its top edge, shaded along its
+   bottom — and stands on its own side wall: a band of burnt gold with a
+   darker foot, so the capsule reads as a solid key standing up off the plate.
+   Under the wall, the soft shadow it throws. */
+#start .st-rim {
+  display: block;
+  padding: 0.12em;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #FFF3C4 0%, #FFC94F 38%, #F28C1E 72%, #B4520A 100%);
+  transform: translateY(var(--lift));
+  box-shadow: inset 0 0.05em 0 rgba(255, 255, 255, 0.8),
+              inset 0 -0.06em 0 rgba(122, 48, 0, 0.6),
+              0 var(--wall) 0 #A34B0A,
+              0 calc(var(--wall) + 0.03em) 0 #5C2803,
+              0 calc(var(--wall) + 0.1em) calc(var(--wall) + 0.2em) rgba(0, 0, 0, 0.5);
+  transition: transform 110ms ease, box-shadow 110ms ease;
+}
+#start .st-body {
+  position: relative;
+  display: flex; align-items: center;
+  height: 1.95em;
+  padding: 0 1.05em 0 2.25em;          /* room on the left for the porthole */
+  border-radius: 999px;
+  overflow: hidden;
+  /* the soft sky blue from the art direction, #8EBCE3, shaded from the top of
+     its own range to the bottom so the capsule still reads as rounded */
+  background: linear-gradient(180deg, #C2DEF4 0%, #9DCBEC 30%, #8EBCE3 58%, #7EB0DC 100%);
+  /* the navy seam where it meets the gold; the gold's lip shading its top;
+     the blue rounding away underneath; and light bouncing back up into its
+     lower edge, which is what makes a surface read as curved, not flat */
+  box-shadow: inset 0 0 0 0.05em rgba(8, 26, 72, 0.85),
+              inset 0 0.1em 0.12em rgba(16, 44, 96, 0.4),
+              inset 0 -0.22em 0.3em rgba(20, 52, 104, 0.45),
+              inset 0 -0.09em 0.05em -0.03em rgba(255, 255, 255, 0.45);
+}
+/* the gloss across the top of the capsule */
+#start .st-body::before {
+  content: '';
+  position: absolute;
+  left: 7%; right: 7%; top: 7%;
+  height: 42%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.06));
+  pointer-events: none;
+}
+/* and a shine that sweeps across it every few seconds */
+#start .st-body::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(105deg, rgba(255, 255, 255, 0) 38%,
+              rgba(255, 255, 255, 0.55) 50%, rgba(255, 255, 255, 0) 62%);
+  transform: translateX(-120%);
+  animation: stShine 3600ms ease-in-out 1400ms infinite;
+  pointer-events: none;
+}
+@keyframes stShine {
+  0%        { transform: translateX(-120%); }
+  45%, 100% { transform: translateX(120%); }
+}
+
+#start .st-label {
+  position: relative;
+  display: block;
+  font-family: 'Fredoka', var(--display);
+  font-weight: 700;
+  font-size: 1em;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  transform: skewX(-8deg);
+  /* THE LETTERING OF "ROCKET RUN", sampled off the logo: a face that runs
+     from pale cream at the very top through lemon and gold to amber and
+     orange at its foot… */
+  background: linear-gradient(180deg, #F7F8D0 0%, #FBF47C 18%, #FBE45E 34%,
+              #FBC545 52%, #FAAC35 70%, #F9951F 88%, #F68A18 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  /* …edged first in hot orange and then in deep red, with a maroon side
+     falling away beneath each letter so it stands out as a block, and the
+     warm glow the logo's letters give off round the whole word */
+  filter: drop-shadow(0.02em 0 0 #E2600A) drop-shadow(-0.02em 0 0 #E2600A)
+          drop-shadow(0 -0.02em 0 #E2600A) drop-shadow(0 0.02em 0 #E2600A)
+          drop-shadow(0.025em 0 0 #C30301) drop-shadow(-0.025em 0 0 #C30301)
+          drop-shadow(0 -0.025em 0 #C30301)
+          drop-shadow(0 0.05em 0 #7B1100) drop-shadow(0 0.035em 0 #3E0600)
+          drop-shadow(0 0 0.14em rgba(255, 150, 40, 0.55));
+}
+
+#start .st-badge {
+  position: absolute;
+  left: 0.3em; top: 50%;
+  width: 1.6em; height: 1.6em;
+  transform: translateY(calc(-50% + var(--lift)));
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, #2B62B8 0%, #0E2F6E 55%, #081C47 100%);
+  /* SUNK INTO THE CAPSULE: dark where the top of the well shades it, a lip
+     of light at its bottom; then a gold ring round it like the rim's, with
+     its own darker underside, and the cyan glow outside that */
+  box-shadow: inset 0 0.12em 0.2em rgba(0, 0, 0, 0.75),
+              inset 0 -0.05em 0.04em rgba(150, 205, 255, 0.4),
+              0 0 0 0.07em #F4B042,
+              0 0.05em 0 0.07em #A34B0A,
+              0 0 0.35em 0.07em rgba(79, 227, 255, 0.4);
+  transition: transform 110ms ease;
+}
+#start .st-rocket {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 1.3em; height: 1.3em;
+  transform: translate(-50%, -50%);
+  overflow: visible;
+  /* floating in the well, off its floor */
+  filter: drop-shadow(0 0.06em 0.05em rgba(0, 0, 0, 0.55));
+  transition: transform 260ms cubic-bezier(0.34, 1.5, 0.64, 1);
+}
+#start .st-flame {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: stFlicker 180ms ease-in-out infinite alternate;
+}
+@keyframes stFlicker {
+  from { transform: scaleY(0.75); opacity: 0.8; }
+  to   { transform: scaleY(1.1);  opacity: 1; }
+}
+
+#start .st-spark {
+  position: absolute;
+  right: 0.2em; top: -0.42em;
+  width: 0.9em; height: 0.9em;
+  animation: stTwinkle 2200ms ease-in-out infinite;
+  pointer-events: none;
+}
+#start .st-spark svg { display: block; width: 100%; height: 100%; }
+@keyframes stTwinkle {
+  0%, 100% { transform: scale(0.7) rotate(0deg);  opacity: 0.75; }
+  50%      { transform: scale(1.1) rotate(20deg); opacity: 1; }
+}
+
+/* hovered or focused: the capsule brightens and the rocket lifts, ready */
+#start .st-start:hover .st-body,
+#start .st-start:focus-visible .st-body { filter: brightness(1.1); }
+#start .st-start:hover .st-rocket,
+#start .st-start:focus-visible .st-rocket { transform: translate(-42%, -58%) scale(1.08); }
+#start .st-start:focus { outline: none; }
+#start .st-start:focus-visible::before {
+  background: radial-gradient(closest-side, rgba(255, 244, 220, 0.75), rgba(255, 244, 220, 0));
+}
+/* hovered, the face rises a touch on a taller wall; pressed, it drives down
+   into the wall, which all but disappears under it */
+#start .st-start:hover,
+#start .st-start:focus-visible { --lift: -0.02em; --wall: 0.11em; }
+#start .st-start:active { --lift: 0.07em; --wall: 0.02em; }
+
+/* PRESSED: the rocket goes first — up and to the right, out of its porthole,
+   with its flame opened right up — and the capsule follows it away */
+/* .st-start in the selector so it outranks the hover lift — the pointer is
+   still over the button when it has just been pressed */
+#start.out .st-start .st-rocket {
+  transform: translate(160%, -260%) scale(1.25);
+  transition: transform 560ms cubic-bezier(0.5, 0, 0.75, 0.2);
+}
+#start.out .st-flame { animation: none; transform: scaleY(1.9); }
+#start.out .st-start {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.9);
+  transition: opacity 280ms ease 300ms, transform 340ms cubic-bezier(0.36, 0, 0.66, -0.2) 260ms;
+}
+#start.out .st-start::before,
+#start.out .st-body::after,
+#start.out .st-spark { animation: none; opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  #start .st-bg,
+  #start .st-start::before,
+  #start .st-body::after,
+  #start .st-flame,
+  #start .st-spark { animation: none !important; }
+  #start .st-actor,
+  #start.on .st-actor,
+  #start.out .st-actor {
+    transition: opacity 200ms linear !important;
+    transform: translateX(-50%) !important;
+  }
+  #start.out .st-actor { opacity: 0; }
+}
+
+/* ============================================================================
+   START, REDRAWN TO MATCH THE HEADING. The capsule now wears the logo's own
+   colours the way the logo does: a deep space-blue face with the chrome-blue
+   bevel of "Nova's" just inside the gold orbit rim, START lettered like
+   ROCKET RUN and leaning with it, the logo's three speed streaks trailing
+   off the left, its orange orbit swinging round the key, and the four-point
+   star on the shoulder. The old sky-blue face and porthole are gone.
+   ========================================================================= */
+#start .st-start { transform: translate(-50%, -50%) skewX(-8deg); }
+#start.out .st-start { transform: translate(-50%, -50%) skewX(-8deg) scale(0.9); }
+#start .st-badge { display: none; }
+
+#start .st-rim {
+  padding: 0.14em;
+  background: linear-gradient(180deg, #FFF6CF 0%, #FFD45E 30%, #FFA62B 62%, #E0700E 84%, #9C4207 100%);
+}
+#start .st-body {
+  height: 2.05em;
+  padding: 0 1.5em;
+  background:
+    radial-gradient(120% 140% at 50% 120%, rgba(79, 227, 255, 0.55), rgba(79, 227, 255, 0) 55%),
+    linear-gradient(180deg, #2F6FD8 0%, #1A4FB5 38%, #0F3586 70%, #0A2462 100%);
+  box-shadow: inset 0 0 0 0.07em #CFE8FB,
+              inset 0 0 0 0.11em #4F8BD0,
+              inset 0 0 0 0.14em #0B1E4C,
+              inset 0 0.25em 0.35em rgba(160, 215, 255, 0.35),
+              inset 0 -0.2em 0.3em rgba(0, 8, 30, 0.6);
+}
+#start .st-body::before {
+  left: 9%; right: 9%; top: 9%; height: 38%;
+  background: linear-gradient(180deg, rgba(220, 240, 255, 0.55), rgba(220, 240, 255, 0.02));
+}
+#start .st-label {
+  font-size: 1.22em;
+  letter-spacing: 0.06em;
+  transform: none;
+  text-transform: uppercase;
+}
+
+/* the logo's speed streaks, trailing off the left of the key */
+#start .st-streaks {
+  position: absolute; z-index: -1;
+  right: calc(100% - 0.35em); top: 50%;
+  width: 1.9em; height: 1.2em;
+  transform: translateY(-50%);
+  display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end;
+  pointer-events: none;
+}
+#start .st-streaks i {
+  display: block; height: 0.2em; border-radius: 0.2em 0 0 0.2em;
+  background: linear-gradient(90deg, rgba(255, 166, 43, 0), #FFC24A 60%, #FFE58A);
+  box-shadow: 0 0 0.25em rgba(255, 170, 50, 0.6);
+  animation: stStreak 1400ms ease-in-out infinite;
+}
+#start .st-streaks i:nth-child(1) { width: 60%; animation-delay: 0ms; }
+#start .st-streaks i:nth-child(2) { width: 100%; animation-delay: 160ms; }
+#start .st-streaks i:nth-child(3) { width: 75%; animation-delay: 320ms; }
+@keyframes stStreak {
+  0%, 100% { transform: translateX(0); opacity: 0.85; }
+  50%      { transform: translateX(-0.18em); opacity: 1; }
+}
+
+/* the logo's orange orbit, swinging round the capsule */
+#start .st-orbit {
+  position: absolute; z-index: 2; pointer-events: none;
+  left: -10%; right: -10%; top: 50%; height: 2.6em;
+  transform: translateY(-50%) rotate(-7deg);
+  border-radius: 50%;
+  border: 0.09em solid transparent;
+  border-top-color: rgba(255, 196, 80, 0.95);
+  border-right-color: rgba(255, 150, 40, 0.55);
+  filter: drop-shadow(0 0 0.15em rgba(255, 170, 50, 0.9));
+  animation: stOrbit 3200ms ease-in-out infinite;
+}
+@keyframes stOrbit {
+  0%, 100% { transform: translateY(-50%) rotate(-7deg); opacity: 0.9; }
+  50%      { transform: translateY(-52%) rotate(-4deg); opacity: 1; }
+}
+#start .st-spark { right: -0.35em; top: -0.62em; width: 1.05em; height: 1.05em; z-index: 3; }
+
+#start .st-start:hover .st-body,
+#start .st-start:focus-visible .st-body { filter: brightness(1.15) saturate(1.1); }
+#start .st-start:hover .st-streaks i { animation-duration: 600ms; }
+#start.out .st-streaks, #start.out .st-orbit { opacity: 0; transition: opacity 200ms; }
+@media (prefers-reduced-motion: reduce) {
+  #start .st-streaks i, #start .st-orbit { animation: none !important; }
+}
+
+/* ============================================================================
+   THE LOADING BAR — in START's place until every file is on this device
+   (preload.js). START is hidden and disabled meanwhile, then pops in.
+   ========================================================================= */
+#start .st-start.st-wait { visibility: hidden; pointer-events: none; }
+#start .st-start.st-pop { animation: stPop 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+@keyframes stPop {
+  0%   { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(1);   opacity: 1; }
+}
+#start .st-load {
+  position: absolute; z-index: 5;
+  transform: translate(-50%, -50%);
+  width: calc(var(--u) * 30);
+  display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 0.8);
+  opacity: 0; transition: opacity 400ms ease;
+}
+#start.on .st-load { opacity: 1; }
+#start .st-load.done { opacity: 0; }
+#start .st-load-track {
+  display: block; width: 100%; height: calc(var(--u) * 1.4);
+  padding: calc(var(--u) * 0.22);
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #FFF3C4 0%, #FFC94F 38%, #F28C1E 72%, #B4520A 100%);
+  box-shadow: 0 0.3em 0.8em rgba(0, 0, 0, 0.45);
+}
+#start .st-load-fill {
+  display: block; height: 100%; width: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #7fe9ff 0%, #2fb7f5 45%, #1565c0 100%);
+  box-shadow: 0 0 0.6em rgba(79, 227, 255, 0.8);
+  transition: width 200ms linear;
+}
+#start .st-load-pct {
+  font-family: 'Fredoka', var(--display);
+  font-size: calc(var(--u) * 1.6);
+  letter-spacing: 0.08em;
+  color: #FFE7A0;
+  text-shadow: 0 0.08em 0 #8a3f06, 0 0 0.5em rgba(0, 0, 0, 0.6);
+}
+@media (prefers-reduced-motion: reduce) { #start .st-start.st-pop { animation: none; } }

@@ -1,0 +1,1037 @@
+/* ============================================================================
+   CONSOLE.CSS — Level 1.
+
+   HOUSE RULE, unchanged: no overlay draws a border, an outline or a visible
+   box-shadow edge. Bevel, gasket, bolt, shadow and light only. The only
+   rectangles the player sees are the ones in the render.
+
+   Every overlay is a plain axis-aligned percentage rectangle. The old console
+   needed a corner-quad homography to sit anything on an angled faceplate; the
+   new render is straight-on and that whole layer is gone.
+   ========================================================================= */
+
+#level {
+  position: absolute; inset: 0;
+  overflow: hidden;
+  background: #0a0d12;
+}
+
+/* both picture layers fill the stage; the art is 16:9 like everything else */
+#level .view {
+  position: absolute; inset: 0;
+  z-index: 1;
+  transform-origin: 50% 60%;
+  backface-visibility: hidden;
+}
+#level .art {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* the machine, over the bay floor; console.js places it from FACEPLATES.fit */
+#level .machine {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+}
+/* the overlay box IS the art box, so a % here is a % of the render */
+#level .ov { position: absolute; inset: 0; }
+#level .ov > * { position: absolute; }
+
+/* the scrim over the idle console during the brief */
+/* A VIGNETTE, not a sheet. A flat 20% black changed almost nothing — the
+   console still read at full brightness through it. Darkest at the edges and
+   lighter over the middle of the machine, so it reads as dimmed rather than
+   greyed out. Rill and her bubble sit above it. */
+#level .scrim {
+  position: absolute; inset: 0;
+  z-index: 2;
+  background:
+    radial-gradient(ellipse 78% 82% at 50% 54%,
+      rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.58) 46%,
+      rgba(0,0,0,0.86) 78%, rgba(0,0,0,0.96) 100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* THE BRIEF'S SPOTLIGHT. A clear window over one part of the console; its
+   own shadow, spread far past the stage edge, is what darkens everything
+   else. Rill (z 3) and her bubble (z 4) are above it and stay bright. */
+#level .spot {
+  position: absolute;
+  z-index: 2;
+  border-radius: calc(var(--u) * 1.2);
+  box-shadow: 0 0 0 200vmax rgba(0, 0, 0, 0.74),
+              inset 0 0 calc(var(--u) * 1.4) rgba(127, 227, 255, 0.35);
+  outline: max(1px, calc(var(--u) * 0.14)) solid rgba(127, 227, 255, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 360ms ease,
+              left 480ms cubic-bezier(0.22, 1, 0.36, 1),
+              top 480ms cubic-bezier(0.22, 1, 0.36, 1),
+              width 480ms cubic-bezier(0.22, 1, 0.36, 1),
+              height 480ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+#level .spot.on { opacity: 1; }
+
+/* the console powers up left to right when the brief ends */
+#level.briefing .ov { pointer-events: none; }
+/* on a demo screen Rill is driving the dials; the arrows and the lever are
+   inert until START hands the console over */
+#level.demo .arrow,
+#level.demo .window,
+#level.demo .load { pointer-events: none; }
+/* THE LEVER IS NOT IN THIS LIST. Everything here is a READOUT, and a dark
+   console has nothing to read out; the lever is a piece of the machine, and
+   on the screen where Rill is explaining the machine it has to be one of the
+   things she is explaining. It is dead metal until a run starts, and the
+   scrim dims it with the render, so it reads as unpowered rather than lit. */
+#level.briefing .comms,
+#level.briefing .lamp { opacity: 0; }
+/* powered but idle: the drums are there, mechanically, but nothing glows */
+#level.briefing .strip { color: #5d6a78; text-shadow: none; }
+#level.powering .strip { transition: color 500ms ease, text-shadow 500ms ease; }
+#level.powering .comms,
+#level.powering .lamp { opacity: 1; transition: opacity 500ms ease; }
+
+#level.powering .comms   { transition-delay: 240ms; }
+#level.powering .lamp    { transition-delay: 360ms; }
+
+/* ============================================================================
+   THE DRUM — a digit strip behind the render's own chamfered aperture.
+   ========================================================================= */
+/* THE CHAMFER. The aperture in the render is a chamfered octagon; a plain
+   rectangle with a solid background put black square corners outside the
+   bevel. The cut is 12px of a 230px aperture on the close-up, which is 5.2%
+   across and 4.1% down, and both renders share the aperture's proportions. */
+#level .window,
+#level .comms {
+  clip-path: polygon(5.2% 0, 94.8% 0, 100% 4.1%, 100% 95.9%,
+                     94.8% 100%, 5.2% 100%, 0 95.9%, 0 4.1%);
+}
+#level .window {
+  overflow: hidden;
+  background: #05070a;
+  box-shadow: inset 0 0.6vmin 1.2vmin rgba(0,0,0,0.9);
+  touch-action: none;
+}
+#level .strip {
+  position: absolute; inset: 0 0 auto 0;
+  display: flex; flex-direction: column;
+  will-change: transform;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: #eef7ff;
+  text-shadow: 0 0 calc(var(--u) * 0.5) rgba(120,200,255,0.55);
+}
+#level .cell {
+  display: flex; align-items: center; justify-content: center;
+  line-height: 1;
+}
+/* the aperture's own curvature, painted rather than outlined */
+#level .curve {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 26%,
+                            rgba(0,0,0,0) 74%, rgba(0,0,0,0.85) 100%);
+}
+#level .strip.rolling { filter: blur(0.12vmin); }
+
+#level .arrow {
+  appearance: none; border: 0; background: none; padding: 0; margin: 0;
+  cursor: pointer;
+  transition: box-shadow 140ms ease;
+}
+/* A soft glow, not a filled rectangle. A rectangle lighting up is what makes
+   a hit box's misfit obvious, and glow is what the rest of the console uses. */
+#level .arrow:active {
+  box-shadow: 0 0 calc(var(--u) * 1.6) calc(var(--u) * 0.4) rgba(120,220,255,0.38);
+}
+
+/* ============================================================================
+   LABEL PLATES — engraved into the render's blank plates. Dark and recessed
+   when idle, cyan when that dial is being changed.
+   ========================================================================= */
+/* The plates are hidden until Rill names them, then stay lit — she should not
+   be pointing at four blank slots while saying what they are. */
+#level .plate { opacity: 0; transition: opacity 420ms ease; }
+#level.plates-on .plate { opacity: 1; }
+#level .plate {
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--display);
+  /* THOUSANDS is nine characters in a 118px plate: this has to fit it, and it
+     still has to be readable at arm's length on a laptop. 0.88u with the
+     tracking pulled in is the largest that fits. */
+  font-size: calc(var(--u) * 0.88);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #232a33;
+  text-shadow: 0 0.09vmin 0 rgba(255,255,255,0.6);
+  pointer-events: none;
+  transition: color 180ms ease, text-shadow 180ms ease;
+}
+/* LIVE is a DEEP cyan, not a bright one. The plate is near-white, so the pale
+   cyan that was here had almost no contrast against it — the lit dial was the
+   hardest of the four to read, which is exactly backwards. The glow carries
+   the "lit" reading; the letterform itself stays dark enough to see. */
+#level .plate.live {
+  color: #05506f;
+  text-shadow: 0 0 calc(var(--u) * 0.55) rgba(47,216,255,0.95),
+               0 0.09vmin 0 rgba(255,255,255,0.55);
+}
+#level .plate.wrong {
+  color: #8e1d10;
+  text-shadow: 0 0 calc(var(--u) * 0.55) rgba(255,90,70,0.85),
+               0 0.09vmin 0 rgba(255,255,255,0.5);
+}
+/* ============================================================================
+   THE CLOSE-UP is the wide render enlarged, until a six-dial close-up render
+   exists. The magnification lives on an inner frame so it does not fight the
+   push-in animation on the view itself.
+
+   The backplate is deliberately soft: a small blur that follows the
+   magnification, and a light grain, so it reads as shallow depth of field
+   rather than as a picture that has run out of pixels. Everything the player
+   reads — the windows, the digits, the label plates, the arrow pads — is drawn
+   in code and sits above it, so it stays fully sharp, and the windows keep
+   their chamfer because the clip-path is on the overlay and not the picture.
+   ========================================================================= */
+#level .close-frame {
+  position: absolute; inset: 0;
+  transform-origin: 0 0;
+  --dof: 0.8;
+}
+/* the blur is on the PICTURE only — never on the overlay above it */
+#level .close-frame > .art,
+#level .close-frame > .machine {
+  filter: blur(calc(var(--dof) * 1px));
+}
+/* a light stipple, so the softness reads as depth of field. No edge, no box:
+   it is noise laid over the plate and nothing else. */
+#level .close-grain {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  opacity: 0.22;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  background-size: calc(var(--u) * 6) calc(var(--u) * 6);
+}
+
+/* one size for the row, solved from the longest word — see plateType() */
+#level .plate      { font-size: calc(var(--u) * 0.88 * var(--pl, 1)); }
+#level .close .plate { font-size: calc(var(--u) * 1.24 * var(--pl, 1)); letter-spacing: 0.06em; }
+/* TEN-THOUSANDS stacks at its own hyphen; the pair has to sit inside the plate */
+#level .plate {
+  text-align: center;
+  line-height: 1.0;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+/* ...except it no longer stacks: TEN-THOUSANDS broke onto two lines while every
+   other label sat on one, and looked wedged in its plate. A label longer than
+   ten letters stays on ONE line at 72% of the row's size instead. */
+/* Every plate in the row is one size now: plateType() solves --pl from the
+   whole longest label, so TEN-THOUSANDS just stays on one line. */
+#level .plate.long { white-space: nowrap; }
+
+/* ============================================================================
+   THE GAUGE — gallons loaded, in the render's recessed channel. Ticks only,
+   no numerals: minor every 1,000, major at 5,000.
+   ========================================================================= */
+
+/* ============================================================================
+   THE THREE GLASS SURFACES.
+
+   Rill's words used to float over the artwork in a panel. They are on the
+   console now: the wide glass along the top is her comms, the square glass at
+   and it is the only one: the re-rendered console has a single screen.
+
+   All three share one treatment. The glass carries a painted diagonal
+   specular, so every text area sits on a soft dark wash — a gradient that
+   fades out before it reaches anything, with no edge of its own. No border,
+   no outline, no visible box-shadow edge: the house rule holds here too. The
+   type is given a faint cyan glow and a darker 1px offset beneath it so it
+   reads as light being emitted rather than ink printed on the panel.
+   ========================================================================= */
+#level .comms {
+  pointer-events: none;
+  overflow: hidden;
+}
+#level .cm-wash {
+  position: absolute; inset: 0;
+  background: radial-gradient(120% 130% at 32% 44%,
+              rgba(2,8,14,0.82) 0%, rgba(2,8,14,0.66) 42%,
+              rgba(2,8,14,0.28) 74%, rgba(2,8,14,0) 100%);
+}
+
+/* ---- the comms screen: ONE thing on it ----------------------------------
+
+   The glass has carried, at one time or another, an ORDER label, a
+   destination, a RILL · FLIGHT OPS header and Rill's running line — and that
+   last one was repeating the figure word for word: "load four thousand two
+   hundred seventy-five" printed underneath "four thousand two hundred
+   seventy-five". The screen is for the number. Everything Rill says is on the
+   instruction panel, and nothing else is on here at all. */
+#level .comms {
+  --or: 4.2;                       /* the figure — set by fitOrder() */
+  padding: calc(var(--u) * 0.6) calc(var(--u) * 1.6);
+}
+
+/* THE WHOLE GLASS IS THE CONTROL: a tap anywhere on it says the figure
+   again, so the target is the screen rather than a zone inside it. */
+#level .cm-order {
+  position: absolute; inset: 0;
+  pointer-events: auto;          /* the screens are inert; this one is not */
+  display: flex; flex-direction: column; justify-content: center;
+  padding: inherit;
+  appearance: none; border: 0; background: none;
+  text-align: center;
+  cursor: pointer;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+#level .cm-order:active { opacity: 0.82; transform: translateY(calc(var(--u) * 0.06)); }
+/* a demo screen names no number, so the glass is simply dark */
+#level .comms.no-order .cm-order { visibility: hidden; }
+
+#level .cm-owords,
+#level .cm-osizer {
+  margin: 0;
+  font-family: var(--display);
+  font-size: calc(var(--u) * var(--or));
+  line-height: 1.14;
+  color: #dff3ff;
+  text-shadow: 0 0 calc(var(--u) * 0.6) rgba(90, 200, 255, 0.5),
+               0 calc(var(--u) * 0.07) 0 rgba(0, 10, 18, 0.85);
+}
+/* measured, never seen: it holds the finished line so the fit is solved
+   before a character is typed. Three lines is the budget, against the whole
+   glass rather than a zone of it. */
+#level .cm-osizer {
+  position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+  margin: 0; visibility: hidden; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: center;
+}
+
+/* THE RIGHT-HAND SCREEN AND THE SLOT UNDER IT ARE GONE. The re-rendered
+   console has one blank face there and the load lever is on it — see THE
+   LOAD LEVER below. The launch monitor went with the glass it played on.
+   Nothing that was printed in the slot is lost: the dials are the numeral,
+   the gauge is how full it is, and Rill names the destination as she reads
+   the order out. */
+
+/* the second rung: the figure re-read, split at the place boundaries */
+/* THE DEMONSTRATION — rung 3. The plate of the dial being shown lights, and
+   where the word split can be trusted the matching word group lights with it.
+   No border, no box: light and weight only. */
+#level .plate.demo {
+  color: #eaf9ff;
+  text-shadow: 0 0 calc(var(--u) * 0.7) rgba(47,216,255,0.95),
+               0 0.09vmin 0 rgba(255,255,255,0.5);
+}
+/* the six lamp housings on the badge: one per scored run */
+#level .lamp {
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 36%, rgba(120,140,160,0.25), rgba(0,0,0,0) 70%);
+  transition: background 320ms ease, box-shadow 320ms ease;
+}
+#level .lamp.lit {
+  background: radial-gradient(circle at 40% 36%, #d9f7ff, #2fd8ff 55%, #0a7ea8 100%);
+  box-shadow: 0 0 calc(var(--u) * 0.8) rgba(47,216,255,0.9);
+}
+
+/* THE LOAD BUTTON — one big button on the right-hand face.
+
+   It was a throw, which made sense when the control was a small thing tucked
+   onto the pedestal under the dials. On a whole blank face a throw reads as a
+   detail; a button reads as the thing you push to commit, which is what it
+   is. .lit is the control being usable, .ready is a dial having been moved
+   (blue), and .right / .wrong are the green and red flash after a send.
+
+   Still no border and no outline anywhere. The socket is an inset shadow, the
+   cap is a dome of gradients with a cast shadow under it, and the armed wash
+   is a gradient that reaches zero before it reaches any side. */
+#level .load {
+  appearance: none; border: 0; background: none; padding: 0;
+  cursor: default;
+  --press: 1.5%;
+}
+
+/* THE ARMED WASH — a soft cyan light lying on the face, so the whole block
+   lifts when the figure is accepted rather than only the cap. It reaches zero
+   before it reaches any side, which is why it has no edge. */
+#level .btn-wash {
+  position: absolute; inset: 0;
+  opacity: 0;
+  transition: opacity 320ms ease;
+  background: radial-gradient(62% 56% at 50% 46%,
+              rgba(47,216,255,0.36) 0%, rgba(47,216,255,0.20) 40%,
+              rgba(47,216,255,0.06) 72%, rgba(47,216,255,0) 100%);
+}
+
+/* THE SOCKET the cap sits in — machined into the face, so it is an inset
+   shadow with a lit lower lip, never a ring drawn round the outside. */
+#level .btn-well {
+  position: absolute; left: 50%; top: 50%;
+  width: 86%; aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 46%,
+              rgba(8,16,24,0.55) 0%, rgba(8,16,24,0.34) 62%, rgba(8,16,24,0.12) 100%);
+  box-shadow: inset 0 calc(var(--u) * 0.22) calc(var(--u) * 0.5) rgba(0,0,0,0.65),
+              inset 0 calc(var(--u) * -0.16) calc(var(--u) * 0.3) rgba(255,255,255,0.32);
+}
+
+/* THE CAP. A dome: one tight specular at the top left, the body under it, and
+   a darker skirt so it sits proud of the socket. The drop shadow is what says
+   it is above the face, and it collapses when the cap goes down. */
+#level .btn-cap {
+  position: absolute; left: 50%; top: 50%;
+  width: 74%; aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 34%),
+    radial-gradient(circle at 42% 34%, #4a5b6b 0%, #35434f 42%, #1e2a34 78%, #131c24 100%);
+  box-shadow: 0 calc(var(--u) * 0.5) calc(var(--u) * 1.1) rgba(0,0,0,0.6),
+              inset 0 calc(var(--u) * -0.3) calc(var(--u) * 0.5) rgba(0,0,0,0.5),
+              inset 0 calc(var(--u) * 0.24) calc(var(--u) * 0.36) rgba(255,255,255,0.22);
+  transition: transform 180ms cubic-bezier(0.3, 1.1, 0.5, 1),
+              box-shadow 180ms ease, background 300ms ease, filter 200ms ease;
+}
+
+/* NOTHING IS PRINTED ON THE CAP. The button is the affordance; a word on it
+   was one more thing to read on a console that has been losing them. */
+
+/* THE FIRST-RUN CUE — one ring off the cap, the first time it arms in a
+   level. A circle that grows and fades: light, with nothing left behind. */
+#level .btn-sweep {
+  position: absolute; left: 50%; top: 50%;
+  width: 74%; aspect-ratio: 1;
+  transform: translate(-50%, -50%) scale(1);
+  border-radius: 50%;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 50%,
+              rgba(47,216,255,0) 54%, rgba(198,247,255,0.85) 72%, rgba(47,216,255,0) 100%);
+}
+#level .load.sweep .btn-sweep { animation: btnSweep 560ms ease-out; }
+@keyframes btnSweep {
+  0%   { opacity: 0;    transform: translate(-50%, -50%) scale(0.92); }
+  22%  { opacity: 0.95; }
+  100% { opacity: 0;    transform: translate(-50%, -50%) scale(1.5); }
+}
+
+/* USABLE — a run is live. The look does not change here, only the cursor:
+   a wrong figure can still be sent and must still look sendable. */
+#level .load.lit { cursor: pointer; }
+
+/* READY — she has moved a dial, so it can be sent. Blue, whatever the
+   figure: it never says whether the figure is right. */
+#level .load.ready .btn-wash { opacity: 1; }
+#level .load.ready .btn-well {
+  box-shadow: inset 0 calc(var(--u) * 0.22) calc(var(--u) * 0.5) rgba(0,0,0,0.65),
+              inset 0 calc(var(--u) * -0.16) calc(var(--u) * 0.3) rgba(47,216,255,0.5);
+}
+#level .load.ready .btn-cap {
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0) 34%),
+    radial-gradient(circle at 42% 34%, #63c6e6 0%, #2f9fc6 42%, #14607e 78%, #0d4459 100%);
+  box-shadow: 0 calc(var(--u) * 0.5) calc(var(--u) * 1.1) rgba(0,0,0,0.6),
+              inset 0 calc(var(--u) * -0.3) calc(var(--u) * 0.5) rgba(0,20,30,0.5),
+              inset 0 calc(var(--u) * 0.24) calc(var(--u) * 0.36) rgba(255,255,255,0.3),
+              0 0 calc(var(--u) * 2.2) rgba(47,216,255,0.85);
+  animation: btnPulse 2200ms ease-in-out infinite;
+}
+#level .load.lit:active .btn-cap { filter: brightness(1.15); }
+
+/* PRESSED — the cap goes down into the socket and its shadow collapses with
+   it, which is the whole of what makes a press read as a press. */
+#level .load.pressed .btn-cap {
+  transform: translate(-50%, -50%) translateY(var(--press)) scale(0.985);
+  box-shadow: 0 calc(var(--u) * 0.12) calc(var(--u) * 0.3) rgba(0,0,0,0.55),
+              inset 0 calc(var(--u) * -0.18) calc(var(--u) * 0.36) rgba(0,0,0,0.55),
+              inset 0 calc(var(--u) * 0.14) calc(var(--u) * 0.28) rgba(255,255,255,0.14);
+  animation: none;
+}
+#level .load.pressed .btn-wash { opacity: 0; }
+
+/* THE VERDICT: green if the figure was right, red if not, then back to blue */
+#level .load.right .btn-cap,
+#level .load.wrong .btn-cap { animation: none; }
+#level .load.right .btn-cap {
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0) 34%),
+    radial-gradient(circle at 42% 34%, #7de8a0 0%, #34c26a 42%, #177a3c 78%, #0e5229 100%);
+  box-shadow: 0 calc(var(--u) * 0.5) calc(var(--u) * 1.1) rgba(0,0,0,0.6),
+              inset 0 calc(var(--u) * 0.24) calc(var(--u) * 0.36) rgba(255,255,255,0.3),
+              0 0 calc(var(--u) * 2.6) rgba(70, 230, 120, 0.95);
+}
+#level .load.right .btn-wash {
+  opacity: 1;
+  background: radial-gradient(62% 56% at 50% 46%,
+              rgba(70,230,120,0.42) 0%, rgba(70,230,120,0.2) 40%, rgba(70,230,120,0) 100%);
+}
+#level .load.wrong .btn-cap {
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 34%),
+    radial-gradient(circle at 42% 34%, #ff8a78 0%, #e0453a 42%, #8e1f18 78%, #5e130e 100%);
+  box-shadow: 0 calc(var(--u) * 0.5) calc(var(--u) * 1.1) rgba(0,0,0,0.6),
+              inset 0 calc(var(--u) * 0.24) calc(var(--u) * 0.36) rgba(255,255,255,0.3),
+              0 0 calc(var(--u) * 2.6) rgba(255, 80, 60, 0.95);
+}
+#level .load.wrong .btn-wash {
+  opacity: 1;
+  background: radial-gradient(62% 56% at 50% 46%,
+              rgba(255,80,60,0.42) 0%, rgba(255,80,60,0.2) 40%, rgba(255,80,60,0) 100%);
+}
+
+@keyframes btnPulse {
+  0%, 100% { filter: brightness(0.97); }
+  50%      { filter: brightness(1.12); }
+}
+
+/* ============================================================================
+   RILL AND HER BUBBLE — the intro's own components, same classes, so the
+   figure-box fitting, the breathing loop and the bubble face are shared.
+   ========================================================================= */
+/* .cast must NOT take a z-index of its own: a stacking context here would
+   trap Rill inside it, and she has to be able to drop BEHIND the console once
+   she stops briefing. She stands in front of the gauge column otherwise, and
+   the gauge is where the whole stops-short lesson happens. */
+#level .cast { position: absolute; inset: 0; pointer-events: none; }
+#level .actor.rill { z-index: 3; }
+#level .bubble { z-index: 4; }
+
+/* GOLD EDGES on the level's two dialogue boxes — Rill's bubble and the
+   instruction panel. Both faces are clip-path shapes, so a border would miss
+   the cut corners; four hard drop-shadows on the unclipped parent trace the
+   real outline instead, tail and all. */
+#level .bubble,
+#level .panel,
+#flight .panel {
+  --gold: #e8b53c;
+  --gw: max(1.5px, calc(var(--u) * 0.16));
+  filter: drop-shadow(var(--gw) 0 0 var(--gold)) drop-shadow(calc(var(--gw) * -1) 0 0 var(--gold))
+          drop-shadow(0 var(--gw) 0 var(--gold)) drop-shadow(0 calc(var(--gw) * -1) 0 var(--gold))
+          drop-shadow(0 0 calc(var(--u) * 0.6) rgba(255, 196, 70, 0.45));
+}
+/* BESIDE her, at head height — she stands at x 15% and her head is around
+   y 26-36%, so the box sits to her right with its tail pointing back down at
+   her. Anchored left, because a long line has to grow right into the open
+   frame rather than back across her. */
+#level .bubble.left {
+  left: calc(var(--u) * 21);
+  bottom: 60%;
+  max-width: calc(var(--u) * 46);
+  transform-origin: 0 100%;
+}
+#level .bubble.left .tail { left: calc(var(--u) * 2.6); }
+#level .bubble .sizer { visibility: hidden; pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  #level .load.ready .btn-cap { animation: none !important; }
+  #level .load.sweep .btn-sweep,
+  #level.wiggle .window,
+  #level.wiggle .plate,
+  #level.walking .plate,
+  #level .nudge.on,
+  #level .strip.rolling { filter: none; }
+}
+
+/* ============================================================================
+   THE INSTRUCTION PANEL
+
+   Rill walks out when the brief ends, and everything she says afterwards —
+   each run's order, the ladder's rungs, the win lines — arrives here. The
+   comms glass carries the figure in words and nothing else, so this is the
+   only place she speaks: it is up in BOTH views, wide or pushed in.
+
+   Built in the console's own language: dark glass face, off-white armour
+   edge down the left, chamfered bottom-right. No border; the armour IS the
+   edge, and everything else is light and shadow.
+   ========================================================================= */
+#level .panel,
+#flight .panel {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  top: 0;                                 /* flush to the stage's top edge */
+  width: calc(var(--u) * 62);
+  transform: translate(-50%, calc(var(--u) * -0.5));
+  opacity: 0;
+  transition: opacity 260ms ease, transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+#level .panel.on,
+#flight .panel.on { opacity: 1; transform: translate(-50%, 0); }
+.panel-face {
+  position: relative;
+  display: flex; align-items: center;
+  gap: calc(var(--u) * 1.0);
+  padding: calc(var(--u) * 0.5) calc(var(--u) * 1.4)
+           calc(var(--u) * 0.55) calc(var(--u) * 1.1);
+  background:
+    linear-gradient(90deg, var(--armour) 0 calc(var(--u) * 0.34), transparent calc(var(--u) * 0.34)),
+    linear-gradient(0deg, rgba(232,220,203,0.26) 0 calc(var(--u) * 0.1), transparent calc(var(--u) * 0.1)),
+    linear-gradient(135deg, rgba(20,32,44,0.95), rgba(7,12,18,0.97));
+  box-shadow: calc(var(--u) * 0.4) calc(var(--u) * 0.7) calc(var(--u) * 2) rgba(0,0,0,0.65);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--u) * 1.1),
+                     calc(100% - var(--u) * 1.1) 100%, 0 100%);
+}
+
+/* her face, centred in the circle — see BRIEF.portrait in config.js */
+.panel-face .portrait {
+  flex: 0 0 auto;
+  width: calc(var(--u) * 3.2);
+  height: calc(var(--u) * 3.2);
+  border-radius: 50%;
+  background-repeat: no-repeat;
+  background-color: #0d1822;
+  /* chrome bezel and a faint cyan rim — rings of light, not a border */
+  box-shadow:
+    0 0 0 calc(var(--u) * 0.16) #b9c3cc,
+    0 0 0 calc(var(--u) * 0.30) #46525d,
+    0 0 calc(var(--u) * 0.9) rgba(47,216,255,0.45);
+}
+.panel-body { min-width: 0; display: grid; }
+/* the panel's order zone — the label and the destination live here, beside
+   her, rather than crowding the number on the glass */
+.panel-order {
+  position: relative;
+  grid-area: 1 / 1;
+  pointer-events: auto;          /* the panel is inert; this one is not */
+  display: block; width: 100%;
+  appearance: none; border: 0; background: none; padding: 0;
+  text-align: left; cursor: pointer;
+  margin-bottom: calc(var(--u) * 0.3);
+  transition: opacity 160ms ease;
+}
+.panel-order:active { opacity: 0.82; }
+/* WIDE, THE GLASS IS SHOWING THE FIGURE two inches below this, so printing it
+   here as well is the same duplication that took Rill's line off the glass in
+   the first place. Pushed in, the glass is off frame and this is the only
+   thing carrying the order, so it comes back. */
+#level:not(.close-view) .panel-order { display: none; }
+.panel-olab {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: calc(var(--u) * 1.0);
+  font-family: var(--mono);
+  font-size: calc(var(--u) * 0.62);
+  letter-spacing: 0.24em;
+  color: rgba(150, 200, 232, 0.6);
+}
+.panel-owords {
+  margin: calc(var(--u) * 0.12) 0 0;
+  font-size: calc(var(--u) * 1.18);
+  line-height: 1.16;
+  color: #eef6ff;
+}
+.panel-osizer { position: absolute; visibility: hidden; pointer-events: none; }
+
+/* THE NARRATOR — the brief, the demo and the hand-over line — has no face */
+#level .panel.narrator .portrait { display: none; }
+.panel-line {
+  grid-area: 3 / 1;
+  margin: calc(var(--u) * 0.06) 0 0;
+  font-size: calc(var(--u) * 1.95);
+  line-height: 1.24;
+  color: #eef6ff;
+  min-height: calc(var(--u) * 2.4);
+  transition: color 200ms ease;
+}
+/* THE CORRECTION IS HERS and reaches nothing else: the order above it keeps
+   the console's cyan whatever she is saying about the attempt. */
+#level .panel.bad .panel-line {
+  color: #ffb4a6;
+  text-shadow: 0 0 calc(var(--u) * 0.5) rgba(255,110,80,0.45),
+               0 calc(var(--u) * 0.07) 0 rgba(0,0,0,0.85);
+}
+#level .panel.good .panel-line {
+  color: #a8ffe0;
+  text-shadow: 0 0 calc(var(--u) * 0.5) rgba(80,255,190,0.45),
+               0 calc(var(--u) * 0.07) 0 rgba(0,0,0,0.85);
+}
+/* the live line and its sizer stack, so the box is the size of the finished
+   sentence from the first character rather than growing as it types */
+#level .panel .sizer,
+#flight .panel .sizer { visibility: hidden; pointer-events: none; }
+.panel-body .panel-line.sizer { grid-area: 3 / 1; }
+
+/* ============================================================================
+   THE LADDER — the wiggle, the red glow, the hint window and the pointer.
+
+   No borders and no outlines here either. The glow is light, the wiggle is a
+   transform and nothing else, and the hint window is a wash over the glass
+   rather than a panel laid on it.
+   ========================================================================= */
+
+/* RUNGS 1 AND 2 — the dials shake and glow red. Two cycles of 90ms, a fifth
+   of a unit each way: enough to be felt, small enough not to read as damage. */
+#level.wiggle .window,
+#level.wiggle .plate { animation: dialWiggle 90ms ease-in-out 2; }
+@keyframes dialWiggle {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(calc(var(--u) * -0.2)); }
+  75%      { transform: translateX(calc(var(--u) *  0.2)); }
+}
+/* the red is LIGHT on the glass and the plate, not a rim around either */
+#level.wiggle .window {
+  box-shadow: inset 0 0.6vmin 1.2vmin rgba(0,0,0,0.9),
+              0 0 calc(var(--u) * 1.6) rgba(255, 90, 60, 0.6);
+}
+#level.wiggle .plate {
+  color: #ffb4a6;
+  text-shadow: 0 0 calc(var(--u) * 0.8) rgba(255, 90, 60, 0.9),
+               0 0.09vmin 0 rgba(255,255,255,0.4);
+}
+
+/* RUNG 3's POINTER — a chevron of light over the bay that is wrong, bobbing
+   so the eye finds it. Drawn with clip-path, so it has a shape and no border. */
+#level .nudge {
+  position: absolute;
+  z-index: 3;
+  background: linear-gradient(180deg, rgba(198,247,255,0.95), rgba(47,216,255,0.75));
+  clip-path: polygon(50% 100%, 0 0, 22% 0, 50% 52%, 78% 0, 100% 0);
+  filter: drop-shadow(0 0 calc(var(--u) * 0.7) rgba(47,216,255,0.9));
+  opacity: 0;
+  transition: opacity 220ms ease;
+  pointer-events: none;
+}
+#level .nudge.on { opacity: 1; animation: nudgeBob 900ms ease-in-out infinite; }
+@keyframes nudgeBob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(calc(var(--u) * 0.55)); }
+}
+
+/* ============================================================================
+   THE IDLE GLOW that walks the dials.
+   ========================================================================= */
+/* THE IDLE WALK — a soft glow crossing the plates left to right, which is the
+   order the line is telling her to work in. The delay per plate is set in JS
+   from the drum's index, so this says nothing about how many there are. */
+#level.walking .plate { animation: plateWalk 2400ms ease-in-out infinite; }
+@keyframes plateWalk {
+  /* the plate's own ink at rest — `inherit` here took the overlay's colour
+     and blanked the names while the glow walked */
+  0%, 62%, 100% { color: #232a33; text-shadow: 0 0.09vmin 0 rgba(255,255,255,0.6); }
+  18%           { color: #eaf9ff;
+                  text-shadow: 0 0 calc(var(--u) * 0.8) rgba(47,216,255,0.9); }
+}
+
+/* THE COMMA RE-GROUPING, on level 3's demo. The figure is on screen plain and
+   then again grouped, and the change is given a beat of its own. */
+#level .comms.regroup .cm-owords { animation: regroupBeat 620ms ease-out; }
+@keyframes regroupBeat {
+  0%   { opacity: 0.35; letter-spacing: 0.16em; }
+  100% { opacity: 1;    letter-spacing: normal; }
+}
+
+/* ============================================================================
+   ?align=1 — every overlay outlined so it can be checked against the art.
+   Off by default, and it changes nothing else.
+   ========================================================================= */
+#level.align .window,
+#level.align .plate,
+#level.align .arrow,
+#level.align .comms,
+#level.align .lamp,
+#level.align .load,
+#level.align .probe {
+  outline: 1px solid #ff2fd8;
+  outline-offset: -1px;
+}
+#level.align .probe { pointer-events: none; }
+#level.align .plate { opacity: 1 !important; }
+#level.align .window { clip-path: none; }
+
+/* ============================================================================
+   THE BAY OPENING (TRANSITION.JS in game.js). There is no cover plate any
+   more: the new bay sits dark, its label, drum and keys held invisible, and
+   powers up. All that is styled here is the label cutting in.
+   ========================================================================= */
+/* the label cutting in */
+#level .plate.engrave { animation: plateCut 260ms ease-out; }
+@keyframes plateCut {
+  0%   { opacity: 0; letter-spacing: 0.5em; }
+  100% { opacity: 1; letter-spacing: 0.04em; }
+}
+
+/* "MISSION: ROCK POST" — the storyboard's title card as a level's game begins */
+.cm-mission {
+  position: absolute; left: 50%; top: 38%; z-index: 40;
+  transform: translate(-50%, -50%) scale(0.92);
+  padding: calc(var(--u) * 1.2) calc(var(--u) * 3);
+  font-family: var(--display); font-size: calc(var(--u) * 3.6);
+  letter-spacing: 0.08em; color: #eafaff; white-space: nowrap;
+  text-shadow: 0 0 calc(var(--u) * 1.2) rgba(47,216,255,0.7);
+  background: linear-gradient(135deg, rgba(20,32,44,0.94), rgba(7,12,18,0.96));
+  box-shadow: 0 0 0 calc(var(--u) * 0.18) rgba(47,216,255,0.55),
+              calc(var(--u) * 0.5) calc(var(--u) * 0.7) calc(var(--u) * 2) rgba(0,0,0,0.6);
+  opacity: 0; pointer-events: none;
+  transition: opacity 360ms ease, transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.cm-mission.on { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+/* the console dims under the mission card while it is up */
+#level.missioning::after {
+  content: ''; position: absolute; inset: 0; z-index: 39; pointer-events: none;
+  background: rgba(3,6,12,0.55); animation: mission-dim 2700ms ease both;
+}
+@keyframes mission-dim { 0% { opacity: 0; } 12%, 85% { opacity: 1; } 100% { opacity: 0; } }
+
+/* WRONG: the whole number goes red until a dial is touched */
+#level.allwrong .window { background: radial-gradient(120% 100% at 50% 50%, rgba(255,70,50,0.35), #1a0503 75%); }
+#level.allwrong .strip { color: #ff5a45; text-shadow: 0 0 calc(var(--u) * 0.9) rgba(255,60,40,0.95); }
+/* RIGHT: the digits flash green and glow */
+#level.allright .window { animation: win-glow 1600ms ease-out; }
+#level.allright .strip { color: #8dffb0; text-shadow: 0 0 calc(var(--u) * 1.1) rgba(80,255,140,0.95); transition: color 200ms; }
+@keyframes win-glow {
+  0% { background: #05070a; } 20% { background: radial-gradient(120% 100% at 50% 50%, rgba(80,255,140,0.45), #031a0b 75%); }
+  100% { background: #05070a; }
+}
+
+/* NO ARROWS: the digits are scrolled — drag up or down, or the mouse wheel */
+#level .arrow { display: none !important; }
+#level .window { cursor: ns-resize; }
+
+/* A FAINT HOLO PATTERN behind the text on the big screen and behind every
+   digit: a fine cyan grid, scanlines and a slow sweep of light, kept low so
+   the words and numbers still read first */
+#level .comms::before, #level .window::before {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(120,210,255,0.07) 0 1px, transparent 1px 4px),
+    linear-gradient(90deg, rgba(79,200,255,0.10) 1px, transparent 1px) 0 0 / calc(var(--u) * 1.6) calc(var(--u) * 1.6),
+    linear-gradient(0deg, rgba(79,200,255,0.10) 1px, transparent 1px) 0 0 / calc(var(--u) * 1.6) calc(var(--u) * 1.6),
+    radial-gradient(120% 90% at 50% 50%, rgba(47,150,220,0.14), rgba(0,0,0,0) 70%);
+}
+#level .comms::after, #level .window::after {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(120,220,255,0) 0%, rgba(120,220,255,0.10) 50%, rgba(120,220,255,0) 100%) 0 0 / 100% 40% no-repeat;
+  animation: holoSweep 4.5s linear infinite;
+}
+#level .window::before { background-size: auto, calc(var(--u) * 1.1) calc(var(--u) * 1.1), calc(var(--u) * 1.1) calc(var(--u) * 1.1), auto; }
+#level .strip, #level .cm-order { z-index: 1; }
+@keyframes holoSweep { 0% { background-position: 0 -60%; } 100% { background-position: 0 160%; } }
+@media (prefers-reduced-motion: reduce) { #level .comms::after, #level .window::after { animation: none; } }
+
+/* ============================================================================
+   "SET THE DIALS, THEN PRESS LOAD" — what the first order of a level points
+   at as Rill says it (cueOrder in game.js): a glow across the dials, then the
+   LOAD button lit and ringing with a pointer bobbing over it.
+   ========================================================================= */
+#level.beckon-dials .plate { animation: plateBeckon 1500ms ease-in-out 1; }
+#level.beckon-dials .window { animation: dialBeckon 1500ms ease-in-out 1; }
+@keyframes plateBeckon {
+  0%, 100% { color: #232a33; text-shadow: 0 0.09vmin 0 rgba(255,255,255,0.6); }
+  35%, 65% { color: #05506f;
+             text-shadow: 0 0 calc(var(--u) * 0.55) rgba(47,216,255,0.95),
+                          0 0.09vmin 0 rgba(255,255,255,0.55); }
+}
+@keyframes dialBeckon {
+  0%, 100% { box-shadow: inset 0 0.6vmin 1.2vmin rgba(0,0,0,0.9); background-color: #05070a; }
+  35%, 65% { box-shadow: inset 0 0 calc(var(--u) * 2.2) rgba(47,216,255,0.85); background-color: #0a2a3a; }
+}
+#level .load.beckon .btn-cap {
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0) 34%),
+    radial-gradient(circle at 42% 34%, #63c6e6 0%, #2f9fc6 42%, #14607e 78%, #0d4459 100%);
+  box-shadow: 0 calc(var(--u) * 0.5) calc(var(--u) * 1.1) rgba(0,0,0,0.6),
+              0 0 calc(var(--u) * 2.6) rgba(47,216,255,0.95);
+  animation: btnPulse 900ms ease-in-out infinite;
+}
+#level .load.beckon .btn-wash { opacity: 1; }
+#level .load.beckon .btn-sweep { animation: btnSweep 900ms ease-out infinite; }
+#level .nudge.load-ptr { z-index: 6; }
+@media (prefers-reduced-motion: reduce) {
+  #level .load.beckon .btn-cap,
+  #level .load.beckon .btn-sweep,
+  #level.beckon-dials .plate { animation: none; }
+}
+
+/* ============================================================================
+   NOVA CHEERS when a level is done (novaCheer in game.js): she rises into the
+   bottom-left corner, jumps for joy from her sprite sheet, and drops back out
+   just before the delivery flight.
+   ========================================================================= */
+#level .nova-cheer {
+  position: absolute; bottom: 0;
+  z-index: 40;
+  pointer-events: none;
+  transform: translateY(105%);
+  transition: transform 520ms cubic-bezier(0.2, 1.25, 0.4, 1);
+  filter: drop-shadow(0 calc(var(--u) * 0.6) calc(var(--u) * 1.2) rgba(0,0,0,0.45));
+}
+#level .nova-cheer.on  { transform: translateY(0); }
+#level .nova-cheer.out { transform: translateY(105%); transition: transform 420ms cubic-bezier(0.5, 0, 0.8, 0.3); }
+#level .nova-cheer .fig {
+  position: absolute; inset: 0;
+  background-repeat: no-repeat;
+}
+
+/* ============================================================================
+   QA FIXES, 13 Oct 2026
+   ========================================================================= */
+
+/* Bug 16 — LOAD is written on the cap, in the console's own lettering. Dark
+   metal while the button is grey, white once a dial has been turned. */
+#level .btn-label {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: calc(var(--u) * 1.9);
+  letter-spacing: 0.12em; text-indent: 0.12em;
+  color: rgba(214, 226, 238, 0.55);
+  text-shadow: 0 calc(var(--u) * -0.06) 0 rgba(0,0,0,0.55);
+  pointer-events: none;
+  transition: color 240ms ease, text-shadow 240ms ease;
+}
+#level .load.ready .btn-label,
+#level .load.right .btn-label,
+#level .load.wrong .btn-label {
+  color: #ffffff;
+  text-shadow: 0 0 calc(var(--u) * 0.6) rgba(255,255,255,0.7),
+               0 calc(var(--u) * 0.08) 0 rgba(0,30,50,0.6);
+}
+
+/* Bug 18 — the hand only on a button that will do something */
+#level .load.lit { cursor: default; }
+#level .load.lit.ready { cursor: pointer; }
+/* a press on the grey button: a small "no" shake, nothing sent */
+#level .load.nope .btn-cap { animation: btnNope 380ms ease-in-out; }
+@keyframes btnNope {
+  0%, 100% { transform: translate(-50%, -50%); }
+  20% { transform: translate(-54%, -50%); }
+  40% { transform: translate(-46%, -50%); }
+  60% { transform: translate(-53%, -50%); }
+  80% { transform: translate(-48%, -50%); }
+}
+
+/* Bug 13 — while the figure is checked, a ring turns round the cap */
+#level .btn-spin {
+  position: absolute; left: 50%; top: 50%;
+  width: 84%; aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  opacity: 0; pointer-events: none;
+  background: conic-gradient(from 0deg, rgba(198,247,255,0) 0deg, rgba(198,247,255,0.95) 70deg, rgba(198,247,255,0) 140deg);
+  -webkit-mask: radial-gradient(circle, transparent 60%, #000 61%, #000 70%, transparent 71%);
+          mask: radial-gradient(circle, transparent 60%, #000 61%, #000 70%, transparent 71%);
+  transition: opacity 160ms ease;
+}
+#level .load.checking .btn-spin { opacity: 1; animation: btnSpin 700ms linear infinite; }
+@keyframes btnSpin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+/* Bug 15 — the order is put away while the hint is on the glass */
+#level .comms .cm-order { transition: opacity 180ms ease; }
+
+/* Bugs 21 and 25 — each place shows its own verdict: green with a tick,
+   red with a cross. They clear together once the feedback is over. */
+#level .strip { transition: color 220ms ease, text-shadow 220ms ease; }
+#level .window.dg-wrong .strip { color: #ff6a55; text-shadow: 0 0 calc(var(--u) * 0.9) rgba(255,60,40,0.9); }
+#level .window.dg-right .strip { color: #8dffb0; text-shadow: 0 0 calc(var(--u) * 0.9) rgba(80,255,140,0.8); }
+#level .window.dg-wrong { box-shadow: inset 0 0.6vmin 1.2vmin rgba(0,0,0,0.9), inset 0 0 calc(var(--u) * 1.6) rgba(255,70,50,0.55); }
+#level .window.dg-right { box-shadow: inset 0 0.6vmin 1.2vmin rgba(0,0,0,0.9), inset 0 0 calc(var(--u) * 1.6) rgba(80,255,140,0.45); }
+#level .dg-mark {
+  position: absolute; right: 6%; top: 3%; z-index: 2;
+  font-family: var(--display); font-weight: 700;
+  font-size: calc(var(--u) * 1.5); line-height: 1;
+  pointer-events: none;
+  animation: dgMark 260ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+#level .dg-mark.ok { color: #8dffb0; text-shadow: 0 0 calc(var(--u) * 0.5) rgba(80,255,140,0.9); }
+#level .dg-mark.no { color: #ff6a55; text-shadow: 0 0 calc(var(--u) * 0.5) rgba(255,60,40,0.9); }
+@keyframes dgMark { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: none; } }
+
+/* Bugs 12 and 17 — smoother on a low-end laptop. The roll no longer blurs
+   the strip (a filter on a moving element repaints every frame), and the
+   green flash on a right answer animates a light's opacity instead of
+   repainting the window's background gradient. */
+#level .strip.rolling { filter: none; }
+#level.allright .window { animation: none; }
+#level.allright .window::before { animation: winFlash 1600ms ease-out; }
+@keyframes winFlash {
+  0% { box-shadow: inset 0 0 0 0 rgba(80,255,140,0); }
+  20% { box-shadow: inset 0 0 calc(var(--u) * 3) calc(var(--u) * 0.6) rgba(80,255,140,0.55); }
+  100% { box-shadow: inset 0 0 0 0 rgba(80,255,140,0); }
+}
+
+/* the close-up's label plates are the wide plates magnified with the frame,
+   so the text takes the wide size too — at 1.24u it ran past both ends of
+   its plate (THOUSANDS, HUNDREDS) once the view was pushed in */
+#level .close .plate { font-size: calc(var(--u) * 0.88 * var(--pl, 1)); letter-spacing: 0.04em; }
+
+/* THE PLACE NAMES, BIGGER (13 Oct 2026). fitPlates() in game.js measures the
+   largest --pl at which every name fits its plate; TEN-THOUSANDS may break
+   after its hyphen onto two lines so it no longer shrinks the whole row. */
+@font-face {
+  font-family: 'PlateFace';
+  src: url('assets/fonts/roboto-condensed-latin-700.woff2') format('woff2');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+#level .plate,
+#level .close .plate {
+  font-size: calc(var(--u) * 1.0 * var(--pl, 1));
+  /* a CONDENSED face (Roboto Condensed Bold, OFL, bundled): THOUSANDS is
+     what sets the row's size, and a narrow face lets the letters be much
+     taller in the same plate */
+  font-family: 'PlateFace', var(--display);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.02;
+  color: #1b2129;
+}
+#level .plate.long { white-space: normal; }
+/* centred in the painted plate (13 Oct 2026): capitals sit high in their
+   line box (the space under them is kept for descenders), so the text is
+   nudged down by padding — half of it moves the centred line */
+#level .plate { padding-top: calc(var(--u) * 0.46); box-sizing: border-box; }
+/* the two-line TEN-THOUSANDS: its two lines fill the plate, so it is
+   nudged less and its lines sit a touch closer */
+#level .plate.long { padding-top: calc(var(--u) * 0.16); line-height: 0.94; }
+/* (superseded: the label boxes are moved instead — see labelRect) */
+#level .plate, #level .plate.long { padding-top: 0; }
+
+#level .wide .machine,
+#level .wide .ov,
+#level > .spot { translate: calc(var(--u) * -3.2) 0; }
+
+/* the dial Nova is standing on */
+#level .window.tut-lit {
+  box-shadow: inset 0 0.6vmin 1.2vmin rgba(0,0,0,0.9), inset 0 0 calc(var(--u) * 2) rgba(255,194,74,0.7),
+              0 0 calc(var(--u) * 1.4) rgba(255,194,74,0.8);
+}
+#level .window.tut-lit .strip { color: #fff3c4; text-shadow: 0 0 calc(var(--u) * 1) rgba(255,194,74,0.95); }
+/* "tap to continue" on the glass */
+#level .tut-next {
+  position: absolute; z-index: 6; transform: translateX(-50%);
+  padding: calc(var(--u) * 0.35) calc(var(--u) * 1.2);
+  border-radius: 999px;
+  font-family: var(--display); font-weight: 700; letter-spacing: 0.08em;
+  font-size: calc(var(--u) * 1.15); color: #0b2a52;
+  background: linear-gradient(180deg, #FFE27A, #FFC24A);
+  box-shadow: 0 calc(var(--u) * 0.2) 0 #9C4207;
+  opacity: 0; pointer-events: none; transition: opacity 240ms ease;
+}
+#level .tut-next.on { opacity: 1; animation: tutNext 1200ms ease-in-out infinite; }
+@keyframes tutNext { 0%, 100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.07); } }
+#level.tutoring { cursor: pointer; }
+
+/* rung 1 (feedback sheet): only the WRONG digits wiggle */
+#level.wiggle .window:not(.dg-wrong),
+#level.wiggle .plate:not(.wrong) { animation: none; }
+
+/* THE HAND NUDGE on the machine (16 Oct 2026) — the little Nova is gone */
+#level .tut-hand {
+  position: absolute; z-index: 8; pointer-events: none;
+  width: calc(var(--u) * 4.4);
+  transform: translate(-73%, 0);
+  opacity: 0;
+  transition: left 420ms cubic-bezier(0.45, 0, 0.3, 1), top 420ms cubic-bezier(0.45, 0, 0.3, 1), opacity 200ms ease;
+  filter: drop-shadow(0 calc(var(--u) * 0.4) calc(var(--u) * 0.6) rgba(0,0,0,0.55));
+}
+#level .tut-hand.on { opacity: 1; }
+#level .tut-hand img { width: 100%; height: auto; display: block; }
+#level .tut-hand.tap img { animation: tutHandTap 520ms ease-out 420ms; }
+/* the tap is a small press, so the fingertip stays under the window */
+@keyframes tutHandTap { 0%, 100% { transform: translateY(0) scale(1); } 45% { transform: translateY(-6%) scale(0.94); } }

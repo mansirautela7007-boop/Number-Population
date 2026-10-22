@@ -1,0 +1,786 @@
+/* ============================================================================
+   TEACH.CSS — the place-value lesson.
+
+   IT IS A CONTROL PANEL. Each place is its own painted-metal module, bolted
+   through four screws, chamfered rather than rounded, carrying a stamped
+   label plate, a black screen recessed behind a heavy bezel, and two keys.
+   The modules stand side by side, centred, in a blue chassis that hugs them.
+
+   THE CELL IS STILL THE MACHINE. Inside every screen is a drum borrowed from
+   console.js through LEVELUI.drum — the same module, the same DRUM config,
+   the same roll, detent, drag and wheel. What the child turns on this chart
+   is literally the thing she operates in the level a moment later.
+
+   NO COLUMN COUNT ANYWHERE. Every module's width and position is set in
+   percent by teach.js from the level's own places array, so a place is the
+   same size whichever chart it is in.
+
+   EVERYTHING IS CSS. No image assets: the metal, the wear, the screws, the
+   chamfers and the bezel are gradients, clip-paths and shadows.
+   ========================================================================= */
+#teach {
+  position: absolute; inset: 0;
+  z-index: 35;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 520ms ease;
+
+  /* ---- the panel's materials, all in one place ---- */
+  --chassis-a: #1f5fa8;            /* blue frame, top */
+  --chassis-b: #174a85;            /* blue frame, bottom */
+  --chassis-edge: #0d2d52;         /* its darker rim */
+
+  --metal-a: #ecd6c8;              /* painted plate, lit face */
+  --metal-b: #e2c6b6;              /* painted plate, shaded face */
+  --metal-edge: rgba(58, 40, 32, 0.55);
+  --stamp: rgba(58, 40, 32, 0.3);  /* the pressed inner outline */
+
+  --screen: #050607;
+  --bezel-a: #3a3a3a;
+  --bezel-b: #1a1a1a;
+
+  --key-a: #1b2733;                /* key body, top */
+  --key-b: #0f171f;                /* key body, bottom */
+  --key-edge: #05090d;
+  --tri: #7fe3ff;                  /* the arrow itself */
+
+  --ink: #2b2b2b;                  /* label lettering */
+  --digit: #eef6ff;
+
+  --chamfer: calc(var(--u) * 0.75);   /* the corner cut */
+  --bezel-w: calc(var(--u) * 0.46);   /* how thick the bezel reads */
+  --inset: calc(var(--u) * 0.5);      /* how far in the stamped outline sits */
+  --bevel: calc(var(--u) * 0.12);     /* the lit lip along a plate's top */
+}
+#teach.on { opacity: 1; }
+#teach.off { opacity: 0; }
+
+/* the room behind. A vignette, not a panel: it reaches zero before it
+   reaches any edge of anything. */
+#teach .tc-veil {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 84% 76% at 50% 46%,
+      rgba(10,18,28,0.88) 0%, rgba(6,11,18,0.94) 54%, rgba(3,6,10,0.98) 100%);
+}
+/* the intro's map and its cast are not in this scene: they were showing
+   through the veil and standing under the modules */
+body.in-teach #ui,
+body.in-teach #mapWrap,
+body.in-teach #closeWrap,
+body.in-teach #tag,
+body.in-teach #level,
+body.in-teach #jumpWrap,
+body.in-teach #still,
+body.in-teach #caption {
+  opacity: 0;
+  transition: opacity 420ms ease;
+  pointer-events: none;
+}
+
+/* ---- THE CHASSIS ---------------------------------------------------------
+   The blue frame the modules are mounted in. Chamfered like everything else
+   on this panel, with a darker rim around it and a shadow under it. */
+#teach .tc-card {
+  position: absolute;
+  clip-path: polygon(0 var(--chamfer), var(--chamfer) 0,
+                     calc(100% - var(--chamfer)) 0, 100% var(--chamfer),
+                     100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%,
+                     var(--chamfer) 100%, 0 calc(100% - var(--chamfer)));
+  background:
+    linear-gradient(180deg, var(--chassis-a) 0%, var(--chassis-b) 100%);
+  box-shadow:
+    inset 0 0 0 max(1px, calc(var(--u) * 0.16)) var(--chassis-edge),
+    inset 0 var(--bevel) 0 rgba(180, 225, 255, 0.28),
+    inset 0 calc(var(--bevel) * -1) 0 rgba(0, 0, 0, 0.35);
+  filter: drop-shadow(calc(var(--u) * 0.4) calc(var(--u) * 0.9)
+                      calc(var(--u) * 1.6) rgba(0,0,0,0.62));
+  opacity: 0;
+  /* it widens round the row when level 2 extends the chart */
+  transition: opacity 420ms ease,
+              left 520ms cubic-bezier(0.16, 1, 0.3, 1),
+              width 520ms cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1;
+}
+#teach.charted .tc-card { opacity: 1; }
+
+/* ---- A MODULE ------------------------------------------------------------
+   Painted metal, chamfered, worn, bolted through four screws. The wear is a
+   pair of very low-contrast gradients rather than a texture file — enough to
+   stop the face reading as flat plastic. */
+#teach .tc-col {
+  position: absolute;
+  z-index: 2;
+  clip-path: polygon(0 var(--chamfer), var(--chamfer) 0,
+                     calc(100% - var(--chamfer)) 0, 100% var(--chamfer),
+                     100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%,
+                     var(--chamfer) 100%, 0 calc(100% - var(--chamfer)));
+  background:
+    /* the four screws, one per corner */
+    radial-gradient(circle at 36% 32%, #8a8a8a 0 12%, #4a4a4a 34%, #242424 56%, #0d0d0d 72%, rgba(0,0,0,0.35) 78%, rgba(0,0,0,0) 80%)
+      calc(var(--u) * 0.85) calc(var(--u) * 0.85) / calc(var(--u) * 0.72) calc(var(--u) * 0.72) no-repeat,
+    radial-gradient(circle at 36% 32%, #8a8a8a 0 12%, #4a4a4a 34%, #242424 56%, #0d0d0d 72%, rgba(0,0,0,0.35) 78%, rgba(0,0,0,0) 80%)
+      calc(100% - var(--u) * 0.85) calc(var(--u) * 0.85) / calc(var(--u) * 0.72) calc(var(--u) * 0.72) no-repeat,
+    radial-gradient(circle at 36% 32%, #8a8a8a 0 12%, #4a4a4a 34%, #242424 56%, #0d0d0d 72%, rgba(0,0,0,0.35) 78%, rgba(0,0,0,0) 80%)
+      calc(var(--u) * 0.85) calc(100% - var(--u) * 0.85) / calc(var(--u) * 0.72) calc(var(--u) * 0.72) no-repeat,
+    radial-gradient(circle at 36% 32%, #8a8a8a 0 12%, #4a4a4a 34%, #242424 56%, #0d0d0d 72%, rgba(0,0,0,0.35) 78%, rgba(0,0,0,0) 80%)
+      calc(100% - var(--u) * 0.85) calc(100% - var(--u) * 0.85) / calc(var(--u) * 0.72) calc(var(--u) * 0.72) no-repeat,
+    /* wear: a couple of faint diagonal passes across the paint */
+    repeating-linear-gradient(74deg,
+      rgba(255,255,255,0.016) 0 calc(var(--u) * 0.06),
+      rgba(90,60,44,0.014) calc(var(--u) * 0.06) calc(var(--u) * 0.5),
+      rgba(255,255,255,0) calc(var(--u) * 0.5) calc(var(--u) * 2.2)),
+    radial-gradient(120% 80% at 28% 12%, rgba(255,255,255,0.4), rgba(255,255,255,0) 58%),
+    linear-gradient(162deg, var(--metal-a) 0%, var(--metal-b) 100%);
+  box-shadow:
+    inset 0 0 0 max(1px, calc(var(--u) * 0.1)) var(--metal-edge),
+    inset 0 var(--bevel) 0 rgba(255, 252, 248, 0.85),
+    inset var(--bevel) 0 0 rgba(255, 252, 248, 0.45),
+    inset 0 calc(var(--bevel) * -1) 0 rgba(80, 56, 44, 0.45),
+    inset calc(var(--bevel) * -1) 0 0 rgba(80, 56, 44, 0.32);
+  transition: left 520ms cubic-bezier(0.16, 1, 0.3, 1),
+              width 520ms cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 400ms ease, transform 520ms cubic-bezier(0.16, 1, 0.3, 1),
+              filter 420ms ease;
+}
+/* the stamped inner outline, set in from the face and chamfered with it */
+#teach .tc-col::before {
+  content: '';
+  position: absolute; inset: var(--inset);
+  clip-path: polygon(0 var(--chamfer), var(--chamfer) 0,
+                     calc(100% - var(--chamfer)) 0, 100% var(--chamfer),
+                     100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%,
+                     var(--chamfer) 100%, 0 calc(100% - var(--chamfer)));
+  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 0.08)) var(--stamp),
+              inset 0 max(1px, calc(var(--u) * 0.08)) 0 rgba(255,252,248,0.5);
+  pointer-events: none;
+}
+/* the module's three rows: label, screen, keys */
+#teach .tc-col {
+  display: flex; flex-direction: column; align-items: center;
+  gap: calc(var(--u) * 0.45);
+  padding: calc(var(--u) * 1.5) calc(var(--u) * 0.85) calc(var(--u) * 1.4);
+}
+/* a module that has not arrived yet: off to the left and flat */
+#teach .tc-col.sliding {
+  opacity: 0;
+  transform: translateX(calc(var(--u) * -6)) scale(0.9);
+}
+
+/* ---- A COVERED BAY -------------------------------------------------------
+   The slot for a place a later level adds — ten-thousands, lakh — already on
+   the chassis from the first lesson, so the chart is always its full width.
+   It is the same module powered down: the metal dulled, the name plate
+   unlit, a hatched blank where the drum will be, and its keys not there.
+   Level 2's lesson lifts the plate off and the real module slides in. */
+#teach .tc-bay {
+  filter: saturate(0.2) brightness(0.55);
+  pointer-events: none;
+}
+#teach .tc-bay .tc-arrows { visibility: hidden; }
+
+/* A PLACE SWITCHED OFF FOR A TRY: one the number being set does not reach
+   (the lakh, for sixty-eight thousand seven hundred three). It powers down
+   the way a covered bay looks, its 0 dimmed, and it cannot be scrolled; it
+   powers back up when a Try's number needs it. */
+#teach .tc-col.off {
+  filter: saturate(0.2) brightness(0.55);
+}
+#teach .tc-col.off .tc-screen { cursor: default; pointer-events: none; }
+#teach .tc-col.off .tc-screen .strip { opacity: 0.35; }
+#teach .tc-blank {
+  background:
+    repeating-linear-gradient(135deg,
+      rgba(255, 255, 255, 0.06) 0 calc(var(--u) * 0.18),
+      rgba(255, 255, 255, 0) calc(var(--u) * 0.18) calc(var(--u) * 0.9)),
+    #0b0f14;
+}
+#teach .tc-bay.opening {
+  opacity: 0;
+  transform: translateY(calc(var(--u) * -1.5)) scale(0.96);
+}
+
+/* ---- THE LABEL PLATE -----------------------------------------------------
+   A small raised plate stamped into the face, the same paint, chamfered, with
+   the place's name on it. Dim until the line names it. */
+#teach .tc-plate {
+  position: relative;
+  flex: 0 0 auto;
+  align-self: stretch;
+  display: flex; align-items: center; justify-content: center;
+  padding: calc(var(--u) * 0.55) calc(var(--u) * 0.2);
+  clip-path: polygon(0 calc(var(--chamfer) * 0.6), calc(var(--chamfer) * 0.6) 0,
+                     calc(100% - var(--chamfer) * 0.6) 0, 100% calc(var(--chamfer) * 0.6),
+                     100% calc(100% - var(--chamfer) * 0.6), calc(100% - var(--chamfer) * 0.6) 100%,
+                     calc(var(--chamfer) * 0.6) 100%, 0 calc(100% - var(--chamfer) * 0.6));
+  background:
+    radial-gradient(120% 90% at 30% 10%, rgba(255,255,255,0.45), rgba(255,255,255,0) 60%),
+    linear-gradient(180deg, #f2ded1 0%, #ddc0af 100%);
+  box-shadow:
+    inset 0 0 0 max(1px, calc(var(--u) * 0.08)) var(--metal-edge),
+    inset 0 var(--bevel) 0 rgba(255,252,248,0.9),
+    inset 0 calc(var(--bevel) * -1) 0 rgba(80,56,44,0.4),
+    0 calc(var(--u) * 0.1) calc(var(--u) * 0.2) rgba(60,40,30,0.28);
+  filter: brightness(0.86) saturate(0.7);
+  transition: filter 460ms ease;
+}
+#teach .tc-name {
+  font-family: var(--display);          /* Bahnschrift / DIN Alternate: condensed */
+  font-weight: 700;
+  font-size: clamp(10px, calc(var(--u) * 1.12), 20px);
+  letter-spacing: 0.055em;
+  line-height: 1.05;
+  text-align: center;
+  color: var(--ink);
+  white-space: nowrap;
+}
+#teach .tc-plate.lit {
+  filter: none;
+  box-shadow:
+    inset 0 0 0 max(1px, calc(var(--u) * 0.08)) var(--metal-edge),
+    inset 0 var(--bevel) 0 rgba(255,252,248,0.95),
+    inset 0 calc(var(--bevel) * -1) 0 rgba(80,56,44,0.4),
+    0 calc(var(--u) * 0.1) calc(var(--u) * 0.2) rgba(60,40,30,0.28),
+    0 0 calc(var(--u) * 0.9) rgba(47,216,255,0.42);
+}
+
+/* ---- THE SCREEN ----------------------------------------------------------
+   A heavy dark bezel with a black screen sunk into it, near enough square. */
+#teach .tc-well {
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: var(--bezel-w);
+  clip-path: polygon(0 calc(var(--chamfer) * 0.8), calc(var(--chamfer) * 0.8) 0,
+                     calc(100% - var(--chamfer) * 0.8) 0, 100% calc(var(--chamfer) * 0.8),
+                     100% calc(100% - var(--chamfer) * 0.8), calc(100% - var(--chamfer) * 0.8) 100%,
+                     calc(var(--chamfer) * 0.8) 100%, 0 calc(100% - var(--chamfer) * 0.8));
+  background: linear-gradient(160deg, var(--bezel-a) 0%, var(--bezel-b) 100%);
+  box-shadow:
+    inset 0 var(--bevel) 0 rgba(255,255,255,0.22),
+    inset 0 calc(var(--bevel) * -1) 0 rgba(0,0,0,0.6),
+    0 calc(var(--u) * 0.12) calc(var(--u) * 0.3) rgba(40,26,18,0.4);
+  transition: box-shadow 220ms ease;
+}
+#teach .tc-screen {
+  position: relative;
+  width: 100%; height: 100%;
+  overflow: hidden;
+  clip-path: polygon(0 calc(var(--chamfer) * 0.7), calc(var(--chamfer) * 0.7) 0,
+                     calc(100% - var(--chamfer) * 0.7) 0, 100% calc(var(--chamfer) * 0.7),
+                     100% calc(100% - var(--chamfer) * 0.7), calc(100% - var(--chamfer) * 0.7) 100%,
+                     calc(var(--chamfer) * 0.7) 100%, 0 calc(100% - var(--chamfer) * 0.7));
+  background:
+    radial-gradient(120% 90% at 50% 6%, rgba(60,150,200,0.13), rgba(0,0,0,0) 62%),
+    var(--screen);
+  box-shadow: inset 0 calc(var(--u) * 0.36) calc(var(--u) * 0.8) rgba(0,0,0,0.95),
+              inset 0 calc(var(--u) * -0.3) calc(var(--u) * 0.7) rgba(0,0,0,0.85);
+  transition: background 220ms ease, box-shadow 220ms ease;
+}
+/* console.js's own drum markup: the screen is the aperture, so the window
+   itself only has to clip */
+#teach .tc-screen .window {
+  position: absolute;
+  overflow: hidden;
+  background: transparent;
+  box-shadow: none;
+  clip-path: none;
+  touch-action: none;
+  cursor: ns-resize;
+}
+#teach .tc-screen .strip {
+  position: absolute; inset: 0 0 auto 0;
+  display: flex; flex-direction: column;
+  will-change: transform;
+  font-family: var(--mono);             /* Cascadia Mono: a slashed zero */
+  font-variant-numeric: tabular-nums slashed-zero;
+  color: var(--digit);
+  text-shadow: 0 0 calc(var(--u) * 0.5) rgba(200,230,255,0.8),
+               0 0 calc(var(--u) * 1.1) rgba(120,190,255,0.45);
+}
+#teach .tc-screen .cell {
+  display: flex; align-items: center; justify-content: center;
+  line-height: 1;
+}
+#teach .tc-screen .curve { display: none; }
+#teach .tc-screen .strip.rolling { filter: blur(0.12vmin); }
+
+/* ---- THE KEYS ------------------------------------------------------------
+   Two square keys under the screen, raised out of the face, with a glowing
+   cyan arrow on each. */
+#teach .tc-arrows {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex; gap: calc(var(--u) * 0.6);
+  justify-content: center;
+}
+#teach .tc-arrow {
+  appearance: none; padding: 0;
+  width: calc(var(--u) * 2.7); height: calc(var(--u) * 2.7);
+  border: max(1px, calc(var(--u) * 0.08)) solid var(--key-edge);
+  border-radius: calc(var(--u) * 0.3);
+  background: linear-gradient(180deg, var(--key-a) 0%, var(--key-b) 100%);
+  box-shadow: inset 0 var(--bevel) 0 rgba(150, 200, 235, 0.3),
+              inset 0 calc(var(--bevel) * -1) 0 rgba(0,0,0,0.5),
+              0 calc(var(--u) * 0.16) calc(var(--u) * 0.3) rgba(0,0,0,0.55);
+  cursor: pointer;
+  opacity: 0.42;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 240ms ease, transform 110ms ease,
+              box-shadow 110ms ease, filter 160ms ease;
+}
+#teach.trying .tc-arrow { opacity: 1; }
+#teach .tc-tri {
+  width: 0; height: 0;
+  border-left: calc(var(--u) * 0.66) solid transparent;
+  border-right: calc(var(--u) * 0.66) solid transparent;
+  filter: drop-shadow(0 0 calc(var(--u) * 0.32) rgba(63, 208, 255, 0.95));
+  transition: filter 160ms ease;
+}
+#teach .tc-arrow.up   .tc-tri { border-bottom: calc(var(--u) * 0.75) solid var(--tri); }
+#teach .tc-arrow.down .tc-tri { border-top:    calc(var(--u) * 0.75) solid var(--tri); }
+
+#teach.trying .tc-arrow:hover .tc-tri {
+  filter: drop-shadow(0 0 calc(var(--u) * 0.6) rgba(63, 208, 255, 1));
+}
+#teach.trying .tc-arrow:active {
+  transform: translateY(max(1px, calc(var(--u) * 0.08)));
+  box-shadow: inset 0 calc(var(--u) * 0.14) calc(var(--u) * 0.26) rgba(0,0,0,0.7);
+}
+#teach.trying .tc-arrow:active .tc-tri {
+  filter: drop-shadow(0 0 calc(var(--u) * 0.18) rgba(63, 208, 255, 0.6));
+}
+/* a key with nowhere to go. The drums here are rotary — 9 rolls to 0 — so
+   nothing sets this; it is the look a bounded counter would wear. */
+#teach .tc-arrow[disabled] {
+  opacity: 0.3;
+  cursor: default;
+}
+#teach .tc-arrow[disabled] .tc-tri { filter: none; }
+
+/* ---- WHAT THE LESSON POINTS AT -------------------------------------------
+   The screen lights, the way the console lights a dial it is talking about:
+   cyan for "look here", amber for the rung-3 nudge, warm red for a place that
+   is wrong. Light inside the screen, never a ring around the module. */
+#teach .tc-col.pick .tc-plate,
+#teach .tc-col.read .tc-plate,
+#teach .tc-col.point .tc-plate { filter: none; }
+
+#teach .tc-col.pick .tc-screen,
+#teach .tc-col.read .tc-screen {
+  background:
+    radial-gradient(130% 100% at 50% 50%, rgba(47,216,255,0.32), rgba(0,0,0,0) 70%),
+    #061019;
+  box-shadow: inset 0 calc(var(--u) * 0.3) calc(var(--u) * 0.7) rgba(0,0,0,0.8),
+              inset 0 0 calc(var(--u) * 1.8) rgba(47,216,255,0.55);
+}
+#teach .tc-col.point .tc-screen {
+  background:
+    radial-gradient(130% 100% at 50% 50%, rgba(255,182,60,0.32), rgba(0,0,0,0) 70%),
+    #120d05;
+  box-shadow: inset 0 calc(var(--u) * 0.3) calc(var(--u) * 0.7) rgba(0,0,0,0.8),
+              inset 0 0 calc(var(--u) * 1.8) rgba(255,182,60,0.55);
+}
+#teach .tc-col.pick .tc-screen .strip,
+#teach .tc-col.read .tc-screen .strip {
+  color: #ffffff;
+  text-shadow: 0 0 calc(var(--u) * 1.4) rgba(47,216,255,1);
+}
+#teach .tc-col.point .tc-screen .strip {
+  color: #fff4dd;
+  text-shadow: 0 0 calc(var(--u) * 1.4) rgba(255,182,60,0.95);
+}
+
+/* a place that is wrong in the attempt: its screen goes warm red, and the
+   label keeps its own face so the place is still named */
+#teach .tc-plate.wrong { filter: none; }
+#teach .tc-plate.wrong ~ .tc-well .tc-screen {
+  background:
+    radial-gradient(130% 100% at 50% 50%, rgba(255,110,80,0.3), rgba(0,0,0,0) 70%),
+    #150705;
+  box-shadow: inset 0 calc(var(--u) * 0.3) calc(var(--u) * 0.7) rgba(0,0,0,0.8),
+              inset 0 0 calc(var(--u) * 1.6) rgba(255,110,80,0.5);
+}
+#teach .tc-plate.wrong ~ .tc-well .tc-screen .strip {
+  color: #ffdfd6;
+  text-shadow: 0 0 calc(var(--u) * 1.1) rgba(255,110,80,0.9);
+}
+
+/* ---- THE VOICE ------------------------------------------------------------
+   Above the chassis: teach.js sets `bottom` from TEACH so it tracks the card. */
+#teach .tc-line {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) translateY(calc(var(--u) * 0.6));
+  width: calc(var(--u) * 72);
+  text-align: center;
+  opacity: 0;
+  transition: opacity 260ms ease, transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 5;
+}
+#teach.talking .tc-line { opacity: 1; transform: translateX(-50%) translateY(0); }
+#teach .tc-text {
+  margin: 0;
+  font-family: var(--display);
+  font-size: calc(var(--u) * 2.1);
+  line-height: 1.28;
+  color: #f2f9ff;
+  text-shadow: 0 calc(var(--u) * 0.1) calc(var(--u) * 0.6) rgba(0,0,0,0.85);
+  transition: color 200ms ease;
+}
+#teach.bad .tc-text {
+  color: #ffb4a6;
+  text-shadow: 0 0 calc(var(--u) * 0.5) rgba(255,110,80,0.45),
+               0 calc(var(--u) * 0.07) 0 rgba(0,0,0,0.85);
+}
+
+/* CHECK — a real key, just under the chassis (teach.js sets `top`). The same
+   dark key body and cyan glow as the arrow keys on the modules, chamfered
+   like the plates. Dim and dead until a Try is live. */
+#teach .tc-go {
+  left: 50%;
+  transform: translateX(-50%);
+  padding: calc(var(--u) * 0.75) calc(var(--u) * 3.2);
+  font-size: calc(var(--u) * 1.8);
+  font-weight: 700;
+  letter-spacing: 0.3em; text-indent: 0.3em;
+  color: rgba(127, 227, 255, 0.45);
+  clip-path: polygon(0 var(--chamfer), var(--chamfer) 0,
+                     calc(100% - var(--chamfer)) 0, 100% var(--chamfer),
+                     100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%,
+                     var(--chamfer) 100%, 0 calc(100% - var(--chamfer)));
+  background: linear-gradient(180deg, var(--key-a) 0%, var(--key-b) 100%);
+  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 0.12)) rgba(63, 208, 255, 0.35),
+              inset 0 var(--bevel) 0 rgba(150, 200, 235, 0.3),
+              inset 0 calc(var(--bevel) * -1) 0 rgba(0, 0, 0, 0.5);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 5;
+  transition: color 240ms ease, text-shadow 240ms ease, opacity 240ms ease,
+              box-shadow 160ms ease, transform 110ms ease;
+}
+#teach.trying .tc-go {
+  pointer-events: auto;
+  opacity: 1;
+  color: #eafcff;
+  text-shadow: 0 0 calc(var(--u) * 0.8) rgba(47,216,255,0.9);
+  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 0.12)) rgba(63, 208, 255, 0.85),
+              inset 0 var(--bevel) 0 rgba(150, 200, 235, 0.3),
+              inset 0 calc(var(--bevel) * -1) 0 rgba(0, 0, 0, 0.5),
+              inset 0 0 calc(var(--u) * 1.4) rgba(47, 216, 255, 0.3);
+}
+#teach.trying .tc-go:hover {
+  color: #ffffff;
+  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 0.12)) rgba(127, 227, 255, 1),
+              inset 0 var(--bevel) 0 rgba(150, 200, 235, 0.3),
+              inset 0 calc(var(--bevel) * -1) 0 rgba(0, 0, 0, 0.5),
+              inset 0 0 calc(var(--u) * 2) rgba(47, 216, 255, 0.5);
+}
+#teach.trying .tc-go:active { transform: translateX(-50%) translateY(max(1px, calc(var(--u) * 0.1))); }
+
+/* rungs 1 and 2 shake the modules, exactly as they shake the console's dials */
+#teach.wiggle .tc-col { animation: tcWiggle 90ms ease-in-out 2; }
+@keyframes tcWiggle {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(calc(var(--u) * -0.2)); }
+  75%      { transform: translateX(calc(var(--u) *  0.2)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #teach.wiggle .tc-col { animation: none !important; }
+  #teach .tc-col { transition: opacity 200ms linear !important; }
+}
+
+/* the clap on a correct Try: the chart gives a little celebratory bounce */
+.cheer .tc-card { animation: tc-cheer 700ms cubic-bezier(0.16, 1, 0.3, 1) 2; }
+@keyframes tc-cheer { 0%,100% { transform: scale(1); } 40% { transform: scale(1.04); } }
+
+/* the number to set during a Try — the lesson's only on-screen words */
+#teach .tc-ask {
+  position: absolute; left: 50%; z-index: 6;
+  transform: translateX(-50%) translateY(calc(var(--u) * 0.6));
+  max-width: calc(var(--u) * 80);
+  padding: calc(var(--u) * 0.9) calc(var(--u) * 2.4);
+  font-family: var(--display); font-size: calc(var(--u) * 2.4);
+  letter-spacing: 0.02em; color: #eafaff; text-align: center;
+  background: linear-gradient(135deg, rgba(20,32,44,0.94), rgba(7,12,18,0.96));
+  border: calc(var(--u) * 0.14) solid rgba(47,216,255,0.55);
+  border-radius: calc(var(--u) * 0.6);
+  text-shadow: 0 0 calc(var(--u) * 0.8) rgba(47,216,255,0.5);
+  cursor: pointer; opacity: 0; pointer-events: none;
+  transition: opacity 260ms ease, transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+#teach .tc-ask.on { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
+#teach .tc-ask::first-letter { text-transform: uppercase; }
+
+/* ---- THE TITLE -----------------------------------------------------------
+   PLACE VALUE CHART across the band above the chassis, between two lit rules
+   that run out to the chassis's width, so the top of the screen is never
+   empty while the lesson is taught. It shares that band with the Try box
+   and steps aside whenever the box is up (the box comes just before it in
+   the markup). Only on a lesson that has a chart. */
+#teach .tc-title {
+  position: absolute; left: 50%; z-index: 4;
+  width: calc(var(--u) * 95.8);        /* the chassis's own width (TEACH.chart + side) */
+  display: flex; align-items: center; gap: calc(var(--u) * 1.8);
+  transform: translate(-50%, -50%) translateY(calc(var(--u) * 0.6));
+  opacity: 0;
+  transition: opacity 320ms ease, transform 360ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+#teach.charted .tc-title { opacity: 1; transform: translate(-50%, -50%); }
+#teach .tc-ask.on + .tc-title {
+  opacity: 0;
+  transform: translate(-50%, -50%) translateY(calc(var(--u) * -0.8));
+}
+#teach .tc-title::before,
+#teach .tc-title::after {
+  content: '';
+  flex: 1 1 0;
+  height: max(2px, calc(var(--u) * 0.16));
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(47, 216, 255, 0), rgba(47, 216, 255, 0.8));
+  box-shadow: 0 0 calc(var(--u) * 0.6) rgba(47, 216, 255, 0.45);
+}
+#teach .tc-title::after {
+  background: linear-gradient(270deg, rgba(47, 216, 255, 0), rgba(47, 216, 255, 0.8));
+}
+#teach .tc-title-text {
+  flex: 0 0 auto;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: calc(var(--u) * 3.4);
+  line-height: 1;
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;                 /* the tracking evens out round the centre */
+  white-space: nowrap;
+  color: #f4e8d6;
+  text-shadow: 0 0 calc(var(--u) * 1.2) rgba(47, 216, 255, 0.55),
+               0 calc(var(--u) * 0.12) calc(var(--u) * 0.3) rgba(0, 0, 0, 0.8);
+}
+
+/* WRONG: the whole number goes red until a drum is touched */
+#teach.allwrong .tc-screen { background: radial-gradient(130% 100% at 50% 50%, rgba(255,80,60,0.35), #150705 72%) !important; }
+#teach.allwrong .tc-screen .strip { color: #ff5a45 !important; text-shadow: 0 0 calc(var(--u) * 1.1) rgba(255,60,40,0.95) !important; }
+
+/* NO ARROWS in the lesson either: the digits are scrolled, as on the console */
+#teach .tc-arrows { display: none !important; }
+#teach .tc-screen { cursor: ns-resize; }
+
+/* WITH THE ARROWS GONE the screen takes their room: it runs from under the
+   label plate right down the module, so the digit is bigger and easier to
+   grab and scroll */
+#teach .tc-well { flex: 1 1 auto; aspect-ratio: auto; min-height: 0; margin-bottom: calc(var(--u) * 0.6); }
+
+/* the same faint holo pattern behind the lesson's digits */
+#teach .tc-screen::before {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(120,210,255,0.07) 0 1px, transparent 1px 4px),
+    linear-gradient(90deg, rgba(79,200,255,0.10) 1px, transparent 1px) 0 0 / calc(var(--u) * 1.1) calc(var(--u) * 1.1),
+    linear-gradient(0deg, rgba(79,200,255,0.10) 1px, transparent 1px) 0 0 / calc(var(--u) * 1.1) calc(var(--u) * 1.1);
+}
+#teach .tc-screen .window { z-index: 1; background: transparent; }
+
+/* ---- A PLACE BEING NAMED --------------------------------------------------
+   "ones, tens, hundreds and thousands": as Rill says each name, its plate
+   lights up cyan, the name glows white, the screen under it lights and the
+   module lifts a touch — then it settles back to plain lit (actSay). */
+#teach .tc-col.naming { transform: translateY(calc(var(--u) * -0.6)) scale(1.04); z-index: 4; }
+#teach .tc-col.naming .tc-plate {
+  filter: none;
+  background:
+    radial-gradient(120% 90% at 30% 10%, rgba(255,255,255,0.6), rgba(255,255,255,0) 60%),
+    linear-gradient(180deg, #9fefff 0%, #3fc9ee 100%);
+}
+#teach .tc-col.naming .tc-name {
+  color: #04324a;
+  text-shadow: 0 0 calc(var(--u) * 0.6) rgba(255,255,255,0.95);
+}
+#teach .tc-col.naming .tc-screen {
+  background:
+    radial-gradient(130% 100% at 50% 50%, rgba(47,216,255,0.38), rgba(0,0,0,0) 70%),
+    #061019;
+  box-shadow: inset 0 calc(var(--u) * 0.3) calc(var(--u) * 0.7) rgba(0,0,0,0.8),
+              inset 0 0 calc(var(--u) * 2) rgba(47,216,255,0.7);
+}
+#teach .tc-col.naming .tc-screen .strip {
+  color: #ffffff;
+  text-shadow: 0 0 calc(var(--u) * 1.4) rgba(47,216,255,1);
+}
+@media (prefers-reduced-motion: reduce) {
+  #teach .tc-col.naming { transform: none; }
+}
+
+/* ============================================================================
+   QA FIXES, 13 Oct 2026
+   ========================================================================= */
+/* Bug 20 — CHECK stays dim and unpressable-looking until a dial has turned */
+#teach.trying:not(.touched) .tc-go {
+  opacity: 0.55;
+  color: rgba(127, 227, 255, 0.55);
+  text-shadow: none;
+  cursor: default;
+  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 0.12)) rgba(63, 208, 255, 0.35),
+              inset 0 var(--bevel) 0 rgba(150, 200, 235, 0.3),
+              inset 0 calc(var(--bevel) * -1) 0 rgba(0, 0, 0, 0.5);
+}
+#teach.trying:not(.touched) .tc-go:active { transform: translateX(-50%); }
+
+/* Bugs 21 and 25 — one verdict per place: green tick, red cross */
+#teach .tc-col.dg-right .tc-screen {
+  box-shadow: inset 0 calc(var(--u) * 0.3) calc(var(--u) * 0.7) rgba(0,0,0,0.8),
+              inset 0 0 calc(var(--u) * 1.6) rgba(80,255,140,0.5);
+}
+#teach .tc-col.dg-right .tc-screen .strip { color: #b9ffd0; text-shadow: 0 0 calc(var(--u) * 1.1) rgba(80,255,140,0.9); }
+#teach .tc-screen .strip { transition: color 220ms ease, text-shadow 220ms ease; }
+#teach .dg-mark {
+  position: absolute; right: 7%; top: 4%; z-index: 3;
+  font-family: var(--display); font-weight: 700;
+  font-size: calc(var(--u) * 1.5); line-height: 1;
+  pointer-events: none;
+  animation: tcMark 260ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+#teach .dg-mark.ok { color: #8dffb0; text-shadow: 0 0 calc(var(--u) * 0.5) rgba(80,255,140,0.9); }
+#teach .dg-mark.no { color: #ff6a55; text-shadow: 0 0 calc(var(--u) * 0.5) rgba(255,60,40,0.9); }
+@keyframes tcMark { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: none; } }
+/* the disabled CHECK: no hover glow, no press, the plain arrow cursor */
+#teach .tc-go:disabled,
+#teach.trying .tc-go:disabled:hover {
+  opacity: 0.55; color: rgba(127, 227, 255, 0.55); text-shadow: none; cursor: default;
+  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 0.12)) rgba(63, 208, 255, 0.35),
+              inset 0 var(--bevel) 0 rgba(150, 200, 235, 0.3),
+              inset 0 calc(var(--bevel) * -1) 0 rgba(0, 0, 0, 0.5);
+}
+#teach .tc-go:disabled:active { transform: translateX(-50%); }
+
+/* THE POINTING HAND for the place names (16 Oct 2026): it slides to each
+   place as Rill names it, with a small tap on arrival */
+#teach .tc-pointer {
+  position: absolute; z-index: 9; pointer-events: none;
+  width: calc(var(--u) * 5.2);
+  /* pointing down: the picture turned over, its fingertip (27% across, at the
+     bottom once turned) just above the top of the block */
+  transform: translate(-27%, -100%);
+  opacity: 0;
+  transition: left 420ms cubic-bezier(0.45, 0, 0.3, 1), top 420ms cubic-bezier(0.45, 0, 0.3, 1), opacity 200ms ease;
+  filter: drop-shadow(0 calc(var(--u) * 0.4) calc(var(--u) * 0.6) rgba(0,0,0,0.55));
+}
+#teach .tc-pointer.on { opacity: 1; }
+#teach .tc-pointer svg, #teach .tc-pointer img { width: 100%; height: auto; display: block; }
+#teach .tc-pointer.tap img, #teach .tc-pointer.tap svg { animation: tcPtrTap 520ms ease-out 420ms; }
+@keyframes tcPtrTap { 0%, 100% { transform: translateY(0) scale(1); } 45% { transform: translateY(-12%) scale(0.94); } }
+
+/* the x10 on the gap the bot has just crossed */
+#teach .tc-x10 {
+  position: absolute; z-index: 7; pointer-events: none;
+  transform: translate(-50%, -50%);
+  padding: calc(var(--u) * 0.2) calc(var(--u) * 0.55);
+  border-radius: 999px;
+  font-family: var(--display); font-weight: 700; line-height: 1;
+  font-size: calc(var(--u) * 1.5); color: #0b2a52;
+  background: linear-gradient(180deg, #FFE27A, #FFC24A);
+  box-shadow: 0 calc(var(--u) * 0.18) 0 #9C4207, 0 0 calc(var(--u) * 0.9) rgba(255, 194, 74, 0.7);
+  animation: tcX10In 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transition: opacity 240ms ease;
+}
+@keyframes tcX10In { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+#teach .tc-x10.gone { opacity: 0; }
+
+/* the tap cue, once a beat is ready: bottom right, clear of the dialogue */
+#teach .tc-next {
+  position: absolute; z-index: 9; right: 3.5%; bottom: 19%;
+  display: flex; align-items: center; gap: calc(var(--u) * 0.5);
+  padding: calc(var(--u) * 0.35) calc(var(--u) * 1.2);
+  border-radius: 999px;
+  font-family: var(--display); font-weight: 700; letter-spacing: 0.08em;
+  font-size: calc(var(--u) * 1.15); color: #0b2a52;
+  background: linear-gradient(180deg, #FFE27A, #FFC24A);
+  box-shadow: 0 calc(var(--u) * 0.2) 0 #9C4207;
+  opacity: 0; pointer-events: none; transition: opacity 240ms ease;
+}
+#teach .tc-next.on { opacity: 1; animation: tcNext 1200ms ease-in-out infinite; }
+#teach .tc-next-hand { width: calc(var(--u) * 1.6); display: block; }
+#teach .tc-next-hand img, #teach .tc-next-hand svg { width: 100%; height: auto; display: block; }
+@keyframes tcNext { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.07); } }
+
+/* THE DIGIT THE HAND IS ON (16 Oct 2026): it turns gold and glows, with a
+   little pop as the hand lands, and goes back when the hand moves on. */
+#teach .tc-col.nudged .tc-screen {
+  background:
+    radial-gradient(130% 100% at 50% 50%, rgba(255,209,102,0.30), rgba(0,0,0,0) 70%),
+    #120d05;
+  box-shadow: inset 0 calc(var(--u) * 0.3) calc(var(--u) * 0.7) rgba(0,0,0,0.8),
+              inset 0 0 calc(var(--u) * 1.8) rgba(255,209,102,0.6);
+}
+#teach .tc-col.nudged .tc-screen .strip {
+  color: #ffe38a !important;
+  text-shadow: 0 0 calc(var(--u) * 1.4) rgba(255,190,60,1) !important;
+}
+#teach .tc-col.nudged .tc-screen .cell { animation: tcNudgePop 380ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes tcNudgePop { 0% { transform: scale(1); } 45% { transform: scale(1.14); } 100% { transform: scale(1); } }
+
+/* THE NUMBER IN WORDS, lit while Rill says it (16 Oct 2026) — the same gold
+   as the digit under the hand */
+#teach .tc-ask.lit {
+  color: #ffe38a;
+  border-color: rgba(255,209,102,0.9);
+  text-shadow: 0 0 calc(var(--u) * 1.1) rgba(255,190,60,0.95);
+  box-shadow: 0 0 calc(var(--u) * 2) rgba(255,190,60,0.45);
+}
+
+#teach .tc-pointer img { rotate: 180deg; }
+
+/* BACK / NEXT through the lesson's steps (19 Oct 2026), either side of CHECK */
+#teach .tc-nav {
+  position: absolute; z-index: 9;
+  width: calc(var(--u) * 5.4); height: calc(var(--u) * 5.4);
+  margin-top: calc(var(--u) * -0.4);
+  border-radius: 50%;
+  border: calc(var(--u) * 0.28) solid #FFC24A;
+  background: radial-gradient(circle at 50% 35%, #2a62b0 0%, #163E86 60%, #0E2B66 100%);
+  box-shadow: 0 0 calc(var(--u) * 1.2) rgba(255,194,74,0.45), 0 calc(var(--u) * 0.4) calc(var(--u) * 0.8) rgba(0,0,0,0.5);
+  cursor: pointer; opacity: 0; pointer-events: none;
+  transition: opacity 220ms ease, transform 120ms ease;
+}
+#teach .tc-nav.back { left: calc(50% - var(--u) * 19); }
+#teach .tc-nav.fwd  { left: calc(50% + var(--u) * 13.6); }
+#teach .tc-nav.on { opacity: 1; pointer-events: auto; }
+#teach .tc-nav:active { transform: scale(0.94); }
+#teach .tc-nav[disabled] { opacity: 0.35; pointer-events: none; }
+#teach .tc-nav::after {
+  content: ''; position: absolute; left: 50%; top: 50%;
+  border-style: solid; border-color: transparent;
+  border-width: calc(var(--u) * 1.1) 0 calc(var(--u) * 1.1) calc(var(--u) * 1.7);
+  border-left-color: #FFD45E;
+  transform: translate(-35%, -50%);
+}
+#teach .tc-nav.back::after { transform: translate(-65%, -50%) scaleX(-1); }
+#teach.trying .tc-nav { opacity: 0; pointer-events: none; }
+
+/* NUMBER POPULATION: eight places across the chart, so the label plates are
+   narrower than in Nova's six — the names drop a size to fit (TEN-THOUSANDS
+   is the longest) */
+#teach .tc-name {
+  font-size: clamp(9px, calc(var(--u) * 0.92), 17px);
+  letter-spacing: 0.03em;
+}
+#teach.ended .tc-again {
+  pointer-events: auto;
+  opacity: 1;
+  color: #eafcff;
+  text-shadow: 0 0 calc(var(--u) * 0.8) rgba(47,216,255,0.9);
+  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 0.12)) rgba(63, 208, 255, 0.85),
+              inset 0 var(--bevel) 0 rgba(150, 200, 235, 0.3),
+              inset 0 calc(var(--bevel) * -1) 0 rgba(0, 0, 0, 0.5),
+              inset 0 0 calc(var(--u) * 1.4) rgba(47, 216, 255, 0.3);
+}
+#teach.ended .tc-again:hover {
+  color: #ffffff;
+  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 0.12)) rgba(127, 227, 255, 1),
+              inset 0 var(--bevel) 0 rgba(150, 200, 235, 0.3),
+              inset 0 calc(var(--bevel) * -1) 0 rgba(0, 0, 0, 0.5),
+              inset 0 0 calc(var(--u) * 2) rgba(47, 216, 255, 0.5);
+}
+#teach.ended .tc-again:active { transform: translateX(-50%) translateY(max(1px, calc(var(--u) * 0.1))); }

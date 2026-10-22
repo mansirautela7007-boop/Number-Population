@@ -1,0 +1,524 @@
+{
+  "ui": {
+    "loading": "LOADING",
+    "start": "START",
+    "load": "LOAD",
+    "paused": "PAUSED",
+    "pause": "Pause",
+    "resume": "PLAY",
+    "rotate": "Turn your device sideways to play",
+    "skip": "SKIP ▶",
+    "run": "RUN",
+    "order": "ORDER",
+    "jumpLevel": "Level {n} — {name}",
+    "tapNext": "Tap to continue ▶"
+  },
+  "places": {
+    "THOUSANDS": "THOUSANDS",
+    "HUNDREDS": "HUNDREDS",
+    "TENS": "TENS",
+    "ONES": "ONES",
+    "TEN-THOUSANDS": "TEN-THOUSANDS",
+    "LAKH": "LAKH",
+    "TEN-LAKHS": "TEN-LAKHS",
+    "CRORE": "CRORE"
+  },
+  "locations": {
+    "rockpost": {
+      "name": "ROCK POST",
+      "population": "772",
+      "distance": "850"
+    },
+    "lakestation": {
+      "name": "LAKE STATION",
+      "population": "8,300",
+      "distance": "2,400"
+    },
+    "titancity": {
+      "name": "TITAN CITY",
+      "population": "67,450",
+      "distance": "4,700"
+    },
+    "distance": "DISTANCE: {km} KM",
+    "station": "STATION: {name}",
+    "population": "POPULATION: {n}"
+  },
+  "intro": {
+    "screen1": "Veth, Rill and Nova are at the base station. They are responsible for sending medicines and other supplies to three different stations.",
+    "screen2": "First station: Rock Post — a small outpost, nearby. A little crew lives here.",
+    "screen3": "Second station: Lake Station — a mining camp, quite far from the base station. More families live here.",
+    "screen4": "Third station: Titan City — a big research dome. It is a big city, and a large population lives here.",
+    "screen5": "Nova, you have to help Rill load the shuttles with the required medicine supplies to send to all three stations.",
+    "screen6": [
+      "Before launching the shuttles, we have to load the correct shipments.",
+      "I am going to tell you the amount, and you will put the correct number on this panel.",
+      "The shuttle will launch only when the correct amount is filled on the panel."
+    ]
+  },
+  "levels": {
+    "level1": {
+      "name": "Rock Post",
+      "dest": "ROCK POST",
+      "brief": [],
+      "mission": "MISSION: ROCK POST"
+    },
+    "level2": {
+      "name": "Lake Station",
+      "dest": "LAKE STATION",
+      "brief": [],
+      "reveal": "Let's load the shuttle for Lake Station.",
+      "mission": "MISSION: LAKE STATION"
+    },
+    "level3": {
+      "name": "Titan City",
+      "dest": "TITAN CITY",
+      "brief": [],
+      "reveal": "Let's load the shuttle for Titan City. More people live here, so we have to send the medicines in lakhs.",
+      "mission": "MISSION: TITAN CITY"
+    },
+    "level4": {
+      "name": "Crores"
+    }
+  },
+  "runs": {
+    "L1_1": {
+      "words": "four thousand two hundred seventy-five"
+    },
+    "L1_2": {
+      "words": "three thousand two hundred forty-four"
+    },
+    "L1_3": {
+      "words": "seven thousand six hundred twenty-four"
+    },
+    "L1_4": {
+      "words": "nine thousand fifty"
+    },
+    "L1_5": {
+      "words": "five thousand six"
+    },
+    "L1_6": {
+      "words": "six thousand"
+    },
+    "L2_0": {
+      "say": "Let's load the shuttle for Lake Station."
+    },
+    "L2_1": {
+      "words": "thirty-eight thousand four hundred twenty-seven"
+    },
+    "L2_2": {
+      "words": "forty-five thousand six hundred seventy-eight"
+    },
+    "L2_3": {
+      "words": "forty-two thousand nine hundred thirty"
+    },
+    "L2_4": {
+      "words": "ten thousand eight hundred fifty-four"
+    },
+    "L2_5": {
+      "words": "sixty-two thousand"
+    },
+    "L2_6": {
+      "words": "twenty thousand seven hundred six"
+    },
+    "L3_0": {
+      "say": "Let's load the shuttle for Titan City. More people live here, so we have to send the medicines in lakhs."
+    },
+    "L3_1": {
+      "words": "two lakh sixty-four thousand three hundred fifteen"
+    },
+    "L3_2": {
+      "words": "thirteen thousand six hundred fifty-three"
+    },
+    "L3_3": {
+      "words": "five lakh eight thousand seven hundred sixty"
+    },
+    "L3_4": {
+      "words": "one lakh four hundred"
+    },
+    "L3_5": {
+      "words": "four lakh nine"
+    },
+    "L3_6": {
+      "words": "seven lakh twenty thousand sixty-five"
+    }
+  },
+  "lines": {
+    "narrator": "Help Nova, launch the shuttles to {place}.",
+    "order": "Load {words}. Set the dials, then press LOAD.",
+    "win": "Locked in — {figure}! Every digit in its place.",
+    "winZero": " The empty places are held by 0.",
+    "wrong1": "Oops! Try again.",
+    "idle": "Take your time — start with the dial on the far left.",
+    "done": "{name} is loaded. {n} runs, {n} lamps.",
+    "swipe": "To change a number, swipe it up or down.",
+    "winPool": [
+      "Great job! All set.",
+      "Yes! Shuttle loaded.",
+      "Perfect! That's right.",
+      "Awesome! Well done.",
+      "Brilliant! Ready to launch.",
+      "Excellent work!"
+    ],
+    "orderShort": "Load {words}.",
+    "wrong2": "Listen carefully.",
+    "wrong3": "Here it is — this is how it's set."
+  },
+  "teach": {
+    "level1": {
+      "lead": "",
+      "beats": [
+        "On the right is the ones place. Here a digit means just that many — one.",
+        "Left of it, the tens — ten times bigger. Ten.",
+        "Then hundreds — ten times again. A hundred.",
+        "Then thousands. A thousand.",
+        "Same digit, new place, new value — in 4347, this 4 is four thousand and this 4 is forty."
+      ],
+      "tries": [
+        {
+          "say": "Try writing a number in the place value chart: seven thousand five hundred fifty-four.",
+          "words": "seven thousand five hundred fifty-four"
+        }
+      ]
+    },
+    "level2": {
+      "context": "",
+      "lead": "",
+      "beats": [
+        "This station is farther — we need a new place. Left of thousands comes the ten-thousands, ten times bigger. Ten thousand.",
+        "Now we can load five-digit numbers."
+      ],
+      "tries": [
+        {
+          "say": "Try writing this number in the place value chart: sixty-eight thousand seven hundred three.",
+          "words": "sixty-eight thousand seven hundred three"
+        }
+      ]
+    },
+    "level3": {
+      "context": "",
+      "lead": "",
+      "beats": [
+        "The last station is very far — one more place. Left of ten-thousands comes the lakh. Ten ten-thousands make one lakh — a lakh, one-oh-oh-oh-oh-oh.",
+        "Now we can load six-digit numbers."
+      ],
+      "tries": [
+        {
+          "say": "Now try: seven lakh eighty-nine thousand five hundred forty-three.",
+          "words": "seven lakh eighty-nine thousand five hundred forty-three"
+        }
+      ]
+    },
+    "check": "VERIFY",
+    "right": "That's right — {figure}!",
+    "wrongFirst": "Oops try again. The number is {words}. Set it carefully.",
+    "wrongShow": "Oops try again. This is how it is supposed to be.",
+    "again": "The number is {words}. Set it carefully.",
+    "ask": "COUNTRY {country} DATA: {words}",
+    "title": "POPULATION DATA VERIFICATION",
+    "again_btn": "PLAY AGAIN",
+    "level4": {
+      "context": "Let's look at this country's population.",
+      "contextTitle": "COUNTRY A — 4,32,56,781",
+      "beats": [
+        "Watch! When a digit moves one place to the left, its value becomes ten times its previous value.",
+        "Now move it one more place left! 40,00,000 becomes 4,00,00,000. That's ten times bigger than 40,00,000!",
+        "The digit 4 is in the crores place. It shows 4,00,00,000!",
+        "Now it's your turn! Let's check the population reports from different countries!",
+        "The population numbers don't match the data.",
+        "Read each country's data, set the correct number with the arrows, and tap VERIFY."
+      ],
+      "beatTitles": [
+        "4,00,000 → 40,00,000",
+        "40,00,000 → 4,00,00,000",
+        "4 = 4,00,00,000",
+        "CHECK POPULATION REPORTS",
+        "",
+        ""
+      ],
+      "tries": [
+        {
+          "target": 43256781,
+          "country": "A",
+          "who": "rill",
+          "say": "Check Country A's population data.",
+          "words": "four crore thirty-two lakh fifty-six thousand seven hundred eighty-one",
+          "wrong": "23,56,781",
+          "right": "Country A data verified!",
+          "fb1": "The number doesn't match the country's data. Try again!",
+          "fb2": "Start with four crore, then thirty-two lakh.",
+          "fb3": "Check each group: 4 crore, 32 lakh, 56 thousand and 781.",
+          "idle": "Read Country A's data and enter the correct population."
+        },
+        {
+          "target": 56234781,
+          "country": "B",
+          "who": "computer",
+          "say": "Check Country B's population data.",
+          "words": "five crore sixty-two lakh thirty-four thousand seven hundred eighty-one",
+          "wrong": "2,56,34,781",
+          "right": "Country B data verified!",
+          "fb1": "The number doesn't match the country's data. Try again!",
+          "fb2": "Look at the crore and lakh groups in the data.",
+          "fb3": "The data says five crore sixty-two lakh.",
+          "idle": "Enter the population number shown in Country B's data."
+        },
+        {
+          "target": 27634781,
+          "country": "C",
+          "who": "computer",
+          "say": "Check Country C's population data.",
+          "words": "two crore seventy-six lakh thirty-four thousand seven hundred eighty-one",
+          "wrong": "2,67,34,781",
+          "right": "Country C data verified!",
+          "fb1": "The number doesn't match the country's data. Try again!",
+          "fb2": "Check the lakhs in the population data.",
+          "fb3": "The number begins with two crore seventy-six lakh.",
+          "idle": "Check the data and enter the correct number."
+        },
+        {
+          "target": 4325817,
+          "country": "D",
+          "who": "computer",
+          "say": "Check Country D's population data.",
+          "words": "forty-three lakh twenty-five thousand eight hundred seventeen",
+          "wrong": "3,25,817",
+          "right": "Country D data verified!",
+          "fb1": "The number doesn't match the country's data. Try again!",
+          "fb2": "Look at the lakhs group.",
+          "fb3": "The population begins with 43 lakh.",
+          "idle": "Enter the number written in Country D's data."
+        },
+        {
+          "target": 8567219,
+          "country": "E",
+          "who": "computer",
+          "say": "Check Country E's population data.",
+          "words": "eighty-five lakh sixty-seven thousand two hundred nineteen",
+          "wrong": "58,67,219",
+          "right": "Country E data verified!",
+          "fb1": "The number doesn't match the country's data. Try again!",
+          "fb2": "Check how many lakhs are written in the data.",
+          "fb3": "The number starts with 85 lakh.",
+          "idle": "Read the data and enter the correct population."
+        },
+        {
+          "target": 724563,
+          "country": "F",
+          "who": "computer",
+          "say": "Check Country F's population data.",
+          "words": "seven lakh twenty-four thousand five hundred sixty-three",
+          "wrong": "7,42,563",
+          "right": "Country F data verified!",
+          "fb1": "The number doesn't match the country's data. Try again!",
+          "fb2": "Look at the thousands written in the data.",
+          "fb3": "The data says seven lakh twenty-four thousand.",
+          "idle": "Complete Country F's population record."
+        },
+        {
+          "target": 64325817,
+          "country": "G",
+          "who": "computer",
+          "say": "Check Country G's population data.",
+          "words": "six crore forty-three lakh twenty-five thousand eight hundred seventeen",
+          "wrong": "6,34,25,817",
+          "right": "Country G data verified!",
+          "fb1": "The number doesn't match the data. Try again!",
+          "fb2": "Check the crore and lakh groups.",
+          "fb3": "The data says six crore forty-three lakh.",
+          "idle": "Read Country G's data and enter the correct population."
+        },
+        {
+          "target": 5736428,
+          "country": "H",
+          "who": "computer",
+          "say": "Check Country H's population data.",
+          "words": "fifty-seven lakh thirty-six thousand four hundred twenty-eight",
+          "wrong": "75,36,428",
+          "right": "Country H data verified!",
+          "fb1": "Check the population number again.",
+          "fb2": "Look at the lakhs group in the data.",
+          "fb3": "The population begins with 57 lakh.",
+          "idle": "Enter the number written in Country H's data."
+        },
+        {
+          "target": 82643519,
+          "country": "I",
+          "who": "computer",
+          "say": "Check Country I's population data.",
+          "words": "eight crore twenty-six lakh forty-three thousand five hundred nineteen",
+          "wrong": "8,62,43,519",
+          "right": "Country I data verified!",
+          "fb1": "That number doesn't match. Try again!",
+          "fb2": "Check the lakhs written in the data.",
+          "fb3": "The number begins with eight crore twenty-six lakh.",
+          "idle": "Read the data and enter the correct population."
+        }
+      ],
+      "done": "All countries' population data verified!",
+      "outro": "Great! All the population records are ready!"
+    },
+    "reported": "REPORTED NUMBER: {n}"
+  },
+  "post": {
+    "skill": "place value",
+    "perfect": {
+      "headline": "PERFECT SCORE!",
+      "subtitle": "Every load right first time. You mastered {skill}!"
+    },
+    "pass": {
+      "headline": "YAY! WE DID IT",
+      "subtitle": "You mastered {skill}!"
+    },
+    "retry": {
+      "headline": "SO CLOSE!",
+      "subtitle": "You're getting better at {skill} every time. Keep going!"
+    }
+  },
+  "flight": {
+    "rockpost": "We have successfully launched the shuttles to Rock Post. Lake Station is next. More people live here.",
+    "lakestation": "We have successfully launched the shuttles to Lake Station. Titan City is next. More people live here.",
+    "titancity": "We have successfully launched the shuttles to Titan City. All three stations have their medicines now!"
+  },
+  "tutorial": {
+    "level2": [
+      "This station is farther — we need a bigger number, and a new place.",
+      "Left of thousands comes TEN-THOUSANDS — ten times bigger.",
+      "Now the machine can take five-digit numbers.",
+      "Let's load the shuttle!"
+    ],
+    "level3": [
+      "The last station is very far — we need one more place.",
+      "Left of ten-thousands comes the LAKH — ten ten-thousands make one lakh, 1,00,000.",
+      "Now the machine can take six-digit numbers.",
+      "Let's load the shuttle!"
+    ]
+  },
+  "names": {
+    "rill": "OFFICER",
+    "team": "TEAM MEMBER",
+    "computer": "COMPUTER"
+  },
+  "story": {
+    "centre": "WORLD POPULATION CONTROL CENTRE",
+    "records": "POPULATION RECORDS",
+    "alert": "ERROR! DATA MISMATCH",
+    "started": "VERIFICATION STARTED!",
+    "country": "COUNTRY {c}",
+    "lines": {
+      "hello": "Hello, team! Countries around the world need population reports!",
+      "ready": "The report is ready!",
+      "error": "ERROR! ERROR!",
+      "verify": "We need to verify the reports!",
+      "huge": "The data is huge! How do we check them?",
+      "check": "Let's check the value of each digit before sending the reports!",
+      "closer": "Let's take a closer look before sending the reports!",
+      "started": "Verification started!"
+    },
+    "end": {
+      "team": "ALL POPULATION REPORTS DELIVERED SUCCESSFULLY!",
+      "officer": "Great work, team!",
+      "headline": "MISSION COMPLETE!",
+      "sub": "Every population report was verified and delivered."
+    }
+  },
+  "commas": {
+    "title": "POPULATION REPORTS",
+    "indianHQ": "INDIAN HEADQUARTERS",
+    "intlHQ": "INTERNATIONAL HEADQUARTERS",
+    "indianSys": "INDIAN NUMBER SYSTEM",
+    "intlSys": "INTERNATIONAL NUMBER SYSTEM",
+    "groups": {
+      "ones": "ONES",
+      "thousands": "THOUSANDS",
+      "lakhs": "LAKHS",
+      "crores": "CRORES",
+      "millions": "MILLIONS",
+      "billions": "BILLIONS"
+    },
+    "send": "SEND",
+    "continue": "CONTINUE",
+    "country": "COUNTRY {c}",
+    "teach": [
+      "Requests from Indian and International Headquarters!",
+      "Both headquarters need population reports!",
+      "Oh! There is an error in the data.",
+      "Let's add commas the way each headquarters needs, to make the reports easier to read!",
+      "Both headquarters follow a different way of grouping digits.",
+      "Indian Headquarters uses thousands, lakhs and crores to read large numbers.",
+      "Start from the right. Count three digits and put a comma. This is the Ones group.",
+      "Now count two digits and put another comma. This is the Thousands group.",
+      "Count two more digits for the Lakhs group. The remaining digit is in Crores!",
+      "We read this as four crore thirty-two lakh fifty-six thousand seven hundred eighty-one.",
+      "International Headquarters uses thousands, millions and billions. Here, commas follow a different pattern!",
+      "Start from the right again. Count three digits and put a comma. This is the Ones group.",
+      "Now count three more digits and add a comma. This is the Thousands group.",
+      "The remaining 43 belongs to the Millions group. For even bigger numbers, we use Billions!",
+      "We read this as forty-three million two hundred fifty-six thousand seven hundred eighty-one.",
+      "Indian grouping uses three digits, then pairs of two. International grouping uses groups of three throughout!",
+      "Now prepare the population reports for both headquarters!"
+    ],
+    "transitionIdle": "Tap CONTINUE to prepare the reports.",
+    "howTo": "Tap the gap between two digits to add a comma. Tap it again to remove it. Then tap SEND.",
+    "practice": [
+      {
+        "country": "A",
+        "n": 43256781,
+        "sys": "in"
+      },
+      {
+        "country": "B",
+        "n": 56234781,
+        "sys": "in"
+      },
+      {
+        "country": "C",
+        "n": 27634781,
+        "sys": "in"
+      },
+      {
+        "country": "D",
+        "n": 64325817,
+        "sys": "intl"
+      },
+      {
+        "country": "E",
+        "n": 38567219,
+        "sys": "intl"
+      },
+      {
+        "country": "F",
+        "n": 72456318,
+        "sys": "intl"
+      },
+      {
+        "country": "G",
+        "n": 5736428,
+        "sys": "in"
+      },
+      {
+        "country": "H",
+        "n": 82643519,
+        "sys": "intl"
+      },
+      {
+        "country": "I",
+        "n": 45267891,
+        "sys": "in"
+      },
+      {
+        "country": "J",
+        "n": 63452178,
+        "sys": "intl"
+      }
+    ],
+    "prepIn": "Prepare the population report for Indian Headquarters!",
+    "prepIntl": "Prepare the population report for International Headquarters!",
+    "ready": "Country {c} population report ready!",
+    "wrong1": "Check the comma positions.",
+    "wrong2": "Start with three digits from the right.",
+    "wrong3in": "Group the remaining digits in pairs.",
+    "wrong3intl": "Continue grouping three digits at a time.",
+    "idle": "Complete Country {c}'s report.",
+    "done": "All population reports for both the headquarters are ready!"
+  }
+}

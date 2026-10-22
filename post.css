@@ -1,0 +1,234 @@
+/* ============================================================================
+   POST.CSS — the level-complete celebration.
+
+   Back to front: the sky plate, Nova (keyed live onto a canvas), the
+   confetti, and the words. Laid over the WHOLE window, not the
+   16:9 stage, so it can reframe itself for a phone held upright.
+
+   ONE COLUMN, TOP TO BOTTOM: the headline and subtitle, then Nova's zone.
+   Everything is in the layout from the first frame and only
+   invisible, so nothing moves as the beats arrive. Nova's zone takes whatever
+   height is left: her head is fitted to its top and her feet stand on its
+   bottom (--head, --feet and --cx are measured off the clip — see
+   POST.frame in game.js).
+
+   Only transform, opacity and filter animate. No borders or outlines: depth
+   is glow, gradient and cast shadow, as everywhere else in the game.
+   ========================================================================= */
+@font-face {
+  font-family: 'Fredoka';
+  src: url('assets/fonts/fredoka-latin.woff2') format('woff2');
+  font-weight: 500 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+#post {
+  --cream: #FFF4DC;
+  --round: 'Fredoka', 'Baloo 2', 'Nunito', var(--display);
+  /* a gutter that respects a phone's notch and home bar */
+  --pad-x: max(16px, env(safe-area-inset-left), env(safe-area-inset-right));
+  --pad-t: max(2.5vh, env(safe-area-inset-top));
+  --pad-b: max(3vh, env(safe-area-inset-bottom));
+  position: absolute; inset: 0;
+  z-index: 60;
+  overflow: hidden;
+  background: #0d0703;
+  opacity: 0;
+  transition: opacity 600ms ease;
+  font-family: var(--round);
+  color: var(--cream);
+  cursor: default;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+#post.on { opacity: 1; }
+
+/* ---- THE PLATE: a slow push-in, 1.00 -> 1.05 over the length of the clip,
+   pulled toward black like the title screen's so Nova and the words stand
+   forward of it (--plate-dim and --plate-vignette are in style.css) */
+#post .po-bg {
+  position: absolute; inset: 0;
+  filter: brightness(var(--plate-dim));
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: 50% 50%;
+  transform-origin: 50% 45%;
+}
+#post .po-bg::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: var(--plate-vignette);
+}
+#post.on .po-bg { animation: poPush var(--push, 8000ms) cubic-bezier(0.3, 0.1, 0.3, 1) forwards; }
+@keyframes poPush {
+  from { transform: scale(1); }
+  to   { transform: scale(1.05); }
+}
+
+/* ---- THE COLUMN ---------------------------------------------------------- */
+#post .po-col {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center;
+  padding: var(--pad-t) var(--pad-x) var(--pad-b);
+}
+#post .po-top {
+  position: relative;
+  z-index: 4;
+  flex: 0 0 auto;
+  width: 100%;
+  padding-top: 3vh;
+  text-align: center;
+}
+/* the soft dark glow the words sit in, so they read on the bright clouds */
+#post .po-top::before {
+  content: '';
+  position: absolute;
+  left: 50%; top: 50%;
+  width: min(110%, 72em); height: 170%;
+  transform: translate(-50%, -52%);
+  background: radial-gradient(closest-side, rgba(28, 10, 2, 0.5), rgba(28, 10, 2, 0.22) 55%, rgba(28, 10, 2, 0));
+  opacity: 0;
+  transition: opacity 700ms ease;
+  pointer-events: none;
+  z-index: -1;
+}
+#post.head-on .po-top::before { opacity: 1; }
+
+#post .po-head {
+  display: inline-block;           /* its box is the words, so confetti comes off them */
+  margin: 0;
+  font-weight: 700;
+  font-size: calc(var(--u) * 6.4);
+  line-height: 1.04;
+  letter-spacing: 0.02em;
+  word-spacing: 0.14em;            /* room for each word's overshoot as it pops */
+  text-transform: uppercase;
+  color: var(--cream);
+  text-shadow: 0 0.04em 0 rgba(122, 52, 8, 0.85),
+               0 0 0.2em rgba(35, 12, 0, 0.55),
+               0 0.06em 0.5em rgba(20, 6, 0, 0.6);
+}
+#post .po-head .w {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(30%) scale(0.2);
+}
+#post.head-on .po-head .w {
+  animation: poPop 720ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation-delay: calc(var(--i) * 70ms);
+}
+@keyframes poPop {
+  0%   { opacity: 0; transform: translateY(30%) scale(0.2); }
+  55%  { opacity: 1; transform: translateY(-4%) scale(1.14); }
+  78%  { transform: translateY(0) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+/* and then the whole line breathes while the screen holds */
+#post.head-on .po-head { animation: poBreathe 3200ms ease-in-out 1400ms infinite; }
+@keyframes poBreathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.035); }
+}
+/* A RETRY IS NOT A CELEBRATION: the words rise in gently, no bounce */
+#post[data-result="retry"].head-on .po-head .w {
+  animation: poRise 620ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(var(--i) * 60ms);
+}
+#post[data-result="retry"].head-on .po-head { animation: none; }
+@keyframes poRise {
+  from { opacity: 0; transform: translateY(35%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+#post .po-sub {
+  margin: 0.45em auto 0;
+  max-width: 30em;
+  font-weight: 600;
+  font-size: max(16px, calc(var(--u) * 2.3));
+  line-height: 1.25;
+  color: var(--cream);
+  text-shadow: 0 0 0.35em rgba(30, 10, 0, 0.75),
+               0 0.08em 0.3em rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transform: translateY(40%);
+  transition: opacity 450ms ease, transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+#post.sub-on .po-sub { opacity: 1; transform: none; }
+
+/* ---- NOVA ---------------------------------------------------------------
+   The figure box is the clip's own 16:9 frame, sized so her head meets the
+   top of the zone and her feet its bottom, then capped so her arms, flung
+   wide in the jump, still fit a narrow screen. The canvas, the ghost it
+   cross-fades from and her shadow all share that box. */
+#post .po-char {
+  position: relative;
+  z-index: 2;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+#post .po-fig {
+  position: absolute;
+  left: 50%; bottom: 0;
+  height: min(calc(100% / (var(--feet) - var(--head))),
+              calc(96vw / (var(--span) * 1.7778)));
+  aspect-ratio: 16 / 9;
+  transform: translate(calc(var(--cx) * -100%), calc((1 - var(--feet)) * 100%));
+  pointer-events: none;
+}
+#post .po-nova,
+#post .po-ghost,
+#post .po-src {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+}
+#post .po-ghost { opacity: 0; }
+#post .po-src { opacity: 0; object-fit: contain; }
+#post.raw .po-src { opacity: 1; }
+#post.raw .po-nova,
+#post.raw .po-ghost { display: none; }
+#post.no-clip .po-fig { opacity: 0; }
+
+/* her shadow: warm and dark like the ground under the sky, soft all round */
+#post .po-shadow {
+  position: absolute;
+  left: calc(var(--cx) * 100%);
+  top: calc(var(--feet) * 100%);
+  width: 19%; height: 3.8%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(34, 12, 2, 0.78), rgba(34, 12, 2, 0.4) 55%, rgba(34, 12, 2, 0));
+  filter: blur(max(1px, calc(var(--u) * 0.2)));
+}
+
+/* ---- THE CONFETTI — over Nova, under the words --------------------------- */
+#post .po-fx {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* ---- PORTRAIT: sized off the width ------------------------------------ */
+@media (max-aspect-ratio: 1/1) {
+  #post .po-bg { background-position: 40% 50%; }
+  #post .po-top { padding-top: 2vh; }
+  #post .po-head { font-size: min(11.5vw, 7vh); }
+  #post .po-sub { font-size: max(16px, min(4.6vw, 2.6vh)); max-width: 22em; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #post.on .po-bg { animation: none; }
+  #post.head-on .po-head { animation: none; }
+  #post.head-on .po-head .w,
+  #post[data-result="retry"].head-on .po-head .w {
+    animation: poFade 400ms ease forwards;
+    animation-delay: 0ms;
+  }
+  #post .po-sub { transform: none; }
+}
+@keyframes poFade {
+  from { opacity: 0; transform: none; }
+  to   { opacity: 1; transform: none; }
+}

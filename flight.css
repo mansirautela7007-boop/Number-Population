@@ -1,0 +1,130 @@
+/* ============================================================================
+   FLIGHT.CSS — the delivery flight.
+
+   Everything here is geometry and light. There is no border, no outline and no
+   visible box-shadow edge anywhere in this sequence: the ship is a cut PNG,
+   the exhaust is a gradient with a soft edge, and the shadow is a cut PNG too.
+
+   The layer sits above the two picture layers and below the controls, so the
+   ship flies over the map and lands on the close-up while SKIP stays reachable.
+   ========================================================================= */
+
+#flight {
+  position: absolute; inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  overflow: hidden;
+}
+#flight[hidden] { display: none !important; }
+
+/* THE SHIP AND ITS SHADOW are siblings, both pinned to the same screen point.
+   The shadow must NOT inherit the ship's bank: ground does not tilt, and a
+   shadow that rolls with the hull reads as a sticker rather than as light. */
+#flight .fl-shadow,
+#flight .fl-ship {
+  position: absolute;
+  left: 0; top: 0;
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+}
+
+#flight .fl-shadow img,
+#flight .fl-ship img {
+  display: block;
+  width: 100%; height: auto;
+  user-select: none; -webkit-user-drag: none;
+}
+
+/* THE EXHAUST — drawn, not from the sheet. Each cone is a child of the ship,
+   so it inherits the bank and the scale for free and can never come unstuck
+   from its nozzle however the hull is turned.
+
+   The cone is pinned by its LEFT-MIDDLE to the nozzle: transform-origin 0 0
+   with rotate() before translateY(-50%) makes that point the fixed point of
+   the rotation, so the apex stays on the nozzle at every angle. Getting the
+   order the other way round pivots the cone about its corner and it walks off
+   the engine as soon as the ship banks. */
+#flight .fl-plume {
+  position: absolute;
+  transform-origin: 0 0;
+  background: radial-gradient(ellipse 100% 100% at 0% 50%,
+              rgba(255,255,255,0.96) 0%,
+              rgba(198,240,255,0.88) 14%,
+              rgba(112,206,255,0.72) 34%,
+              rgba(56,150,255,0.38) 62%,
+              rgba(40,110,255,0.00) 100%);
+  filter: blur(1.5px);
+  will-change: width, opacity;
+}
+
+/* THE CONSOLE STANDING DOWN. The level layer is faded, not cut, so the swap
+   back to the map is a hand-over rather than a jump. */
+#level.flying {
+  transition: opacity 460ms ease, filter 460ms ease;
+  opacity: 0;
+  filter: blur(3px);
+  pointer-events: none;
+}
+
+/* The intro's cast go with the intro. They were left standing on the map from
+   the last slide, and the delivery is not a scene they are in. */
+body.in-flight #ui { opacity: 0; pointer-events: none; transition: opacity 360ms ease; }
+
+/* SKIP is hidden for the whole of a level; the flight is not a level, and it
+   is long enough that it has to be escapable. */
+body.in-flight #skip { display: inline-flex; }
+body.in-flight #jumpWrap { display: none; }
+/* once it has landed there is nothing left to skip */
+body.flight-over #skip { display: none; }
+body.flight-over #ui { display: none; }
+
+/* REDUCED MOTION. The flight is replaced by a cross-fade with the ship already
+   landed, so there is nothing here that moves, spins or pulses. */
+@media (prefers-reduced-motion: reduce) {
+  #flight .fl-plume { display: none; }
+  #flight .fl-ship,
+  #flight .fl-shadow { transition: opacity 400ms linear; }
+}
+
+/* ---- NOVA, IN THE BOTTOM-LEFT CORNER ---------------------------------------
+   She stands on the bottom edge while the shuttle flies and says the line
+   (game.js, NOVA in FLIGHT.JS, places and sizes her). She comes up from under
+   the edge on the same overshooting curve the title screen's crew use, talks
+   in frames from her sprite sheet while her voice is going (SPRITE.JS), and
+   drops back out just before the next screen. Under the dialogue box, over
+   the map. */
+#flight .fl-nova {
+  position: absolute;
+  bottom: 0;
+  z-index: 3;
+  transform: translateY(110%);
+  transform-origin: 50% 100%;
+  transition: transform 720ms cubic-bezier(0.34, 1.42, 0.64, 1);
+  filter: drop-shadow(calc(var(--u) * 0.35) calc(var(--u) * 0.2)
+                      calc(var(--u) * 1.1) rgba(10, 4, 0, 0.6));
+}
+#flight .fl-nova .fig {
+  display: block;
+  width: 100%; height: 100%;
+  background-repeat: no-repeat;
+  transform-origin: 50% 100%;
+  /* the sheet has her gesturing to her right, which from the left-hand
+     corner would point off the screen: mirrored, she faces into the map */
+  scale: -1 1;
+}
+#flight .fl-nova.on { transform: translateY(0); }
+/* back down the way she came: the overshoot belongs at the start of leaving */
+#flight .fl-nova.out {
+  transform: translateY(110%);
+  transition: transform 560ms cubic-bezier(0.36, 0, 0.66, -0.4);
+}
+@media (prefers-reduced-motion: reduce) {
+  #flight .fl-nova,
+  #flight .fl-nova.out { transition: opacity 200ms linear; }
+  #flight .fl-nova.out { opacity: 0; }
+}
+
+/* NO INSTRUCTION PANEL ON THE DELIVERY, and no dialogue box: Nova
+   says her line out loud and nothing is drawn over the flight. */
+body.in-flight #level .panel,
+#flight .panel { display: none !important; }
