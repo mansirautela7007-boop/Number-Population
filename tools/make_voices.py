@@ -27,7 +27,8 @@ OUT = os.path.join(ROOT, 'assets', 'voice')
 # who speaks with which macOS voice, and how fast (words per minute)
 VOICES = {
     'narrator': ('Daniel', 165),   # warm UK storyteller
-    'rill':     ('Rishi', 168),    # the Officer
+    'veth':     ('Rishi', 165),    # Commander Veth, who teaches
+    'rill':     ('Aman', 175),     # Rill
     'team':     ('Tara', 175),     # the team member
     'computer': ('Fred', 165),     # the control-centre computer
 }
@@ -84,36 +85,44 @@ def lines(L):
     S, T4, C = L['story'], L['teach']['level4'], L['commas']
 
     add('narrator', S['lines']['narrator'])
-    for k, who in [('hello', 'rill'), ('ready', 'team'), ('error', 'computer'), ('verify', 'team'),
-                   ('huge', 'team'), ('check', 'rill'), ('closer', 'rill'), ('started', 'computer')]:
+    for k, who in [('request', 'veth'), ('error', 'computer'), ('verify', 'rill'), ('check', 'veth')]:
         add(who, S['lines'][k])
 
     add('narrator', T4['narrator'])
-    add('rill', T4['context'])
+    add('veth', T4['context'])
     for b in T4['beats']:
-        add('rill', b)
-    add('rill', L['lines']['swipe'])
+        add('veth', b)
+    for k in ('tapDigit', 'tapStart', 'continueIdle'):
+        add('veth', T4[k])
+    add('veth', L['lines']['swipe'])
     for t in T4['tries']:
-        add(t.get('who', 'rill'), t['say'])
+        add(t.get('who', 'veth'), t['say'])
         add('computer', t['right'])
-        add('rill', t['fb1'] + ' ' + t['fb2'])
-        add('rill', t['fb3'])
-        add('rill', t['idle'])
+        add('veth', t['fb1'] + ' ' + t['fb2'])
+        add('veth', t['fb3'])
+        add('veth', t['idle'])
     add('team', T4['done'])
-    add('rill', T4['outro'])
+    add('veth', T4['outro'])
 
     add('narrator', C['narrator'])
-    for i, t in enumerate(C['teach']):
-        add('computer' if i == 0 else 'rill', t)
-    for k in ('transitionIdle', 'howTo', 'prepIn', 'prepIntl', 'wrong1', 'wrong2', 'wrong3in', 'wrong3intl'):
-        add('rill', C[k])
+    for t in C['teach']:
+        add('veth', t)
+    for g in C['guided']:
+        for st in g['steps']:
+            for k in ('say', 'right', 'fb1', 'fb2', 'fb3', 'idle'):
+                add('veth', st[k])
+        add('veth', g['ready'])
+        add('computer', C['ready'].replace('{c}', g['country']))
+    for k in ('transitionIdle', 'sendIdle', 'yourTurn', 'prepIn', 'prepIntl', 'wrong1', 'wrong2',
+              'wrong3in', 'wrong3intl', 'continueIdle'):
+        add('veth', C[k])
     for p in C['practice']:
         add('computer', C['ready'].replace('{c}', p['country']))
-        add('rill', C['idle'].replace('{c}', p['country']))
+        add('veth', C['idle'].replace('{c}', p['country']))
     add('team', C['done'])
 
-    add('team', S['end']['team'])
-    add('rill', S['end']['officer'])
+    add('rill', S['end']['rill'])
+    add('veth', S['end']['veth'])
 
     seen, uniq = set(), []
     for who, t in out:

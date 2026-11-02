@@ -217,32 +217,31 @@
     "title": "POPULATION DATA VERIFICATION",
     "again_btn": "PLAY AGAIN",
     "level4": {
-      "context": "Let's look at this country's population.",
-      "contextTitle": "COUNTRY A — 4,32,56,781",
+      "narrator": "Level 1: From Lakhs to Crores.",
+      "context": "The population numbers don't match the data.",
       "beats": [
-        "Watch! When a digit moves one place to the left, its value becomes ten times its previous value.",
-        "Now move it one more place left! 40,00,000 becomes 4,00,00,000. That's ten times bigger than 40,00,000!",
-        "The digit 4 is in the crores place. It shows 4,00,00,000!",
-        "Now it's your turn! Let's check the population reports from different countries!",
-        "The population numbers don't match the data.",
-        "Read each country's data, set the correct number with the arrows, and tap VERIFY."
+        "We know that the value of every place in a number is ten times the value of the place to its right.",
+        "Let's look at the first country's population: 4,32,56,781.",
+        "The first digit, 4, is in the crores place!",
+        "Now it's your turn! Check the population reports from different countries!",
+        "Check each country's data, enter the correct number using the arrows, and tap VERIFY."
       ],
       "beatTitles": [
         "4,00,000 → 40,00,000",
-        "40,00,000 → 4,00,00,000",
-        "4 = 4,00,00,000",
-        "CHECK POPULATION REPORTS",
+        "COUNTRY A — 4,32,56,781",
         "",
+        "CHECK POPULATION REPORTS",
         ""
       ],
+      "tapDigit": "Tap the glowing digit 4.",
+      "tapStart": "Tap START to check the reports.",
       "tries": [
         {
           "target": 43256781,
           "country": "A",
-          "who": "rill",
+          "who": "veth",
           "say": "Check Country A's population data.",
           "words": "four crore thirty-two lakh fifty-six thousand seven hundred eighty-one",
-          "wrong": "23,56,781",
           "right": "Country A data verified!",
           "fb1": "The number doesn't match the country's data. Try again!",
           "fb2": "Start with four crore, then thirty-two lakh.",
@@ -255,7 +254,6 @@
           "who": "computer",
           "say": "Check Country B's population data.",
           "words": "five crore sixty-two lakh thirty-four thousand seven hundred eighty-one",
-          "wrong": "2,56,34,781",
           "right": "Country B data verified!",
           "fb1": "The number doesn't match the country's data. Try again!",
           "fb2": "Look at the crore and lakh groups in the data.",
@@ -268,7 +266,6 @@
           "who": "computer",
           "say": "Check Country C's population data.",
           "words": "two crore seventy-six lakh thirty-four thousand seven hundred eighty-one",
-          "wrong": "2,67,34,781",
           "right": "Country C data verified!",
           "fb1": "The number doesn't match the country's data. Try again!",
           "fb2": "Check the lakhs in the population data.",
@@ -281,7 +278,6 @@
           "who": "computer",
           "say": "Check Country D's population data.",
           "words": "forty-three lakh twenty-five thousand eight hundred seventeen",
-          "wrong": "3,25,817",
           "right": "Country D data verified!",
           "fb1": "The number doesn't match the country's data. Try again!",
           "fb2": "Look at the lakhs group.",
@@ -294,7 +290,6 @@
           "who": "computer",
           "say": "Check Country E's population data.",
           "words": "eighty-five lakh sixty-seven thousand two hundred nineteen",
-          "wrong": "58,67,219",
           "right": "Country E data verified!",
           "fb1": "The number doesn't match the country's data. Try again!",
           "fb2": "Check how many lakhs are written in the data.",
@@ -307,7 +302,6 @@
           "who": "computer",
           "say": "Check Country F's population data.",
           "words": "seven lakh twenty-four thousand five hundred sixty-three",
-          "wrong": "7,42,563",
           "right": "Country F data verified!",
           "fb1": "The number doesn't match the country's data. Try again!",
           "fb2": "Look at the thousands written in the data.",
@@ -320,7 +314,6 @@
           "who": "computer",
           "say": "Check Country G's population data.",
           "words": "six crore forty-three lakh twenty-five thousand eight hundred seventeen",
-          "wrong": "6,34,25,817",
           "right": "Country G data verified!",
           "fb1": "The number doesn't match the data. Try again!",
           "fb2": "Check the crore and lakh groups.",
@@ -333,7 +326,6 @@
           "who": "computer",
           "say": "Check Country H's population data.",
           "words": "fifty-seven lakh thirty-six thousand four hundred twenty-eight",
-          "wrong": "75,36,428",
           "right": "Country H data verified!",
           "fb1": "Check the population number again.",
           "fb2": "Look at the lakhs group in the data.",
@@ -346,7 +338,6 @@
           "who": "computer",
           "say": "Check Country I's population data.",
           "words": "eight crore twenty-six lakh forty-three thousand five hundred nineteen",
-          "wrong": "8,62,43,519",
           "right": "Country I data verified!",
           "fb1": "That number doesn't match. Try again!",
           "fb2": "Check the lakhs written in the data.",
@@ -356,9 +347,10 @@
       ],
       "done": "All countries' population data verified!",
       "outro": "Great! All the population records are ready!",
-      "narrator": "Level 1: From Lakhs to Crores."
+      "continueIdle": "Tap CONTINUE."
     },
-    "reported": "REPORTED NUMBER: {n}"
+    "start": "START",
+    "continue": "CONTINUE"
   },
   "post": {
     "skill": "place value",
@@ -395,36 +387,34 @@
     ]
   },
   "names": {
-    "rill": "OFFICER",
+    "rill": "RILL",
     "team": "TEAM MEMBER",
     "computer": "COMPUTER",
     "narrator": "NARRATOR"
   },
   "story": {
-    "centre": "WORLD POPULATION CONTROL CENTRE",
-    "records": "POPULATION RECORDS",
-    "alert": "ERROR! DATA MISMATCH",
-    "started": "VERIFICATION STARTED!",
+    "centre": "TITAN RESEARCH CENTRE",
+    "records": "POPULATION REPORTS FOR EARTH",
+    "earth": "EARTH",
+    "send": "SEND",
+    "alert": "VERIFICATION REQUIRED!",
     "country": "COUNTRY {c}",
     "lines": {
-      "hello": "Hello, team! Countries around the world need population reports!",
-      "ready": "The report is ready!",
+      "narrator": "Your mission: verify the population reports by finding out how much each digit is worth.",
+      "request": "Titan Research Centre has received a request from Earth to prepare population reports. The reports are ready! Let's send them!",
       "error": "ERROR! ERROR!",
-      "verify": "We need to verify the reports!",
-      "huge": "The data is huge! How do we check them?",
-      "check": "Let's check the value of each digit before sending the reports!",
-      "closer": "Let's take a closer look before sending the reports!",
-      "started": "Verification started!",
-      "narrator": "Your mission: verify the population reports by finding out how much each digit is worth."
+      "verify": "Some numbers need verification!",
+      "check": "Let's check the records before sending them!"
     },
     "end": {
-      "team": "ALL POPULATION REPORTS DELIVERED SUCCESSFULLY!",
-      "officer": "Great work, team!",
+      "rill": "All population reports delivered successfully!",
+      "veth": "Great work, team! Earth has received all the reports!",
       "headline": "MISSION COMPLETE!",
-      "sub": "Every population report was verified and delivered."
+      "sub": "Every population report was verified and delivered to Earth."
     }
   },
   "commas": {
+    "narrator": "Level 2: The Indian and International Number Systems.",
     "title": "POPULATION REPORTS",
     "indianHQ": "INDIAN HEADQUARTERS",
     "intlHQ": "INTERNATIONAL HEADQUARTERS",
@@ -441,33 +431,112 @@
     "send": "SEND",
     "continue": "CONTINUE",
     "country": "COUNTRY {c}",
+    "requests": "REQUESTS FROM INDIAN AND INTERNATIONAL HEADQUARTERS",
     "teach": [
-      "Requests from Indian and International Headquarters!",
-      "Both headquarters need population reports!",
-      "Oh! There is an error in the data.",
-      "Let's add commas the way each headquarters needs, to make the reports easier to read!",
-      "Both headquarters follow a different way of grouping digits.",
-      "Indian Headquarters uses thousands, lakhs and crores to read large numbers.",
+      "We received requests from both Indian and International headquarters!",
+      "Let's add commas according to each number system to make the reports easier to read!",
+      "The Indian and International number systems group digits in different ways.",
+      "The Indian number system uses thousands, lakhs and crores to read large numbers.",
       "Start from the right. Count three digits and put a comma. This is the Ones group.",
-      "Now count two digits and put another comma. This is the Thousands group.",
-      "Count two more digits for the Lakhs group. The remaining digit is in Crores!",
+      "Again, count two digits and put another comma. This is the Thousands group.",
+      "Now count two more digits for the Lakhs group. The remaining digit is in Crores!",
       "We read this as four crore thirty-two lakh fifty-six thousand seven hundred eighty-one.",
-      "International Headquarters uses thousands, millions and billions. Here, commas follow a different pattern!",
+      "The International number system uses thousands, millions and billions. Here, commas follow a different pattern!",
       "Start from the right again. Count three digits and put a comma. This is the Ones group.",
       "Now count three more digits and add a comma. This is the Thousands group.",
-      "The remaining 43 belongs to the Millions group. For even bigger numbers, we use Billions!",
+      "The remaining digits belong to the Millions group. For even bigger numbers, we use Billions!",
       "We read this as forty-three million two hundred fifty-six thousand seven hundred eighty-one.",
-      "Indian grouping uses three digits, then pairs of two. International grouping uses groups of three throughout!",
+      "Indian grouping uses three digits, then pairs of two.",
+      "International grouping uses groups of three throughout!",
       "Now prepare the population reports for both headquarters!"
     ],
     "transitionIdle": "Tap CONTINUE to prepare the reports.",
-    "howTo": "Tap the gap between two digits to add a comma. Tap it again to remove it. Then tap SEND.",
-    "practice": [
+    "guided": [
       {
         "country": "A",
         "n": 43256781,
-        "sys": "in"
+        "sys": "in",
+        "steps": [
+          {
+            "gap": 4,
+            "glow": [
+              5,
+              8
+            ],
+            "say": "Start from the right. Count three digits and place the first comma.",
+            "right": "Great! The first three digits are grouped!",
+            "fb1": "Check where you placed the comma.",
+            "fb2": "Count three digits from the right.",
+            "fb3": "Place the comma before 781.",
+            "idle": "Place the first comma."
+          },
+          {
+            "gap": 2,
+            "glow": [
+              3,
+              5
+            ],
+            "say": "Now count two digits to the left and place another comma.",
+            "right": "Yes! That's the Thousands group!",
+            "fb1": "Check the comma position.",
+            "fb2": "Count two digits to the left of the first comma.",
+            "fb3": "Place the comma before 56.",
+            "idle": "Place the next comma."
+          },
+          {
+            "gap": 0,
+            "glow": [
+              1,
+              3
+            ],
+            "say": "Count two more digits to the left and place the last comma.",
+            "right": "Perfect! The population is written in the Indian Number System!",
+            "fb1": "Check the last comma.",
+            "fb2": "Count two more digits to the left.",
+            "fb3": "Place the comma before 32.",
+            "idle": "Complete the number."
+          }
+        ],
+        "ready": "The Indian report of one country is ready!"
       },
+      {
+        "country": "D",
+        "n": 64325817,
+        "sys": "intl",
+        "steps": [
+          {
+            "gap": 4,
+            "glow": [
+              5,
+              8
+            ],
+            "say": "Start from the right and count three digits.",
+            "right": "Great! You've grouped the first three digits!",
+            "fb1": "Check where you placed the comma.",
+            "fb2": "Count three digits from the right.",
+            "fb3": "Place the comma before 817.",
+            "idle": "Place the first comma."
+          },
+          {
+            "gap": 1,
+            "glow": [
+              2,
+              5
+            ],
+            "say": "Continue counting three digits to the left. Place the next comma.",
+            "right": "Perfect! The population is written in the International Number System!",
+            "fb1": "Check the comma position.",
+            "fb2": "Count three more digits to the left.",
+            "fb3": "Place the comma before 325.",
+            "idle": "Complete the number."
+          }
+        ],
+        "ready": "The International report of one country is ready!"
+      }
+    ],
+    "sendIdle": "Tap SEND to deliver the report.",
+    "yourTurn": "Now it's your turn! Prepare all the remaining reports.",
+    "practice": [
       {
         "country": "B",
         "n": 56234781,
@@ -477,11 +546,6 @@
         "country": "C",
         "n": 27634781,
         "sys": "in"
-      },
-      {
-        "country": "D",
-        "n": 64325817,
-        "sys": "intl"
       },
       {
         "country": "E",
@@ -514,8 +578,8 @@
         "sys": "intl"
       }
     ],
-    "prepIn": "Prepare the population report for Indian Headquarters!",
-    "prepIntl": "Prepare the population report for International Headquarters!",
+    "prepIn": "Prepare for the Indian Headquarters!",
+    "prepIntl": "Prepare for the International Headquarters!",
     "ready": "Country {c} population report ready!",
     "wrong1": "Check the comma positions.",
     "wrong2": "Start with three digits from the right.",
@@ -523,6 +587,6 @@
     "wrong3intl": "Continue grouping three digits at a time.",
     "idle": "Complete Country {c}'s report.",
     "done": "All population reports for both the headquarters are ready!",
-    "narrator": "Level 2: The Indian and International Number Systems."
+    "continueIdle": "Tap CONTINUE."
   }
 }

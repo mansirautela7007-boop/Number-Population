@@ -2466,6 +2466,12 @@ var DIALOG = (function () {
                 narrator: i18n('names.narrator') };
   /* the two with no artwork get a drawn face */
   var DRAWN = {
+    veth: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#2b1f4a"/>' +
+          '<path d="M10 64 Q12 42 32 42 Q52 42 54 64Z" fill="#4b3a8c"/><path d="M26 42 L32 52 L38 42Z" fill="#ffd166"/>' +
+          '<circle cx="32" cy="27" r="12" fill="#c9b8ff"/><path d="M19 24 Q20 11 32 11 Q44 11 45 24 Q40 17 32 17 Q24 17 19 24Z" fill="#1d1533"/>' +
+          '<circle cx="27" cy="27" r="1.8" fill="#1d1533"/><circle cx="37" cy="27" r="1.8" fill="#1d1533"/>' +
+          '<path d="M28 33 Q32 35 36 33" fill="none" stroke="#1d1533" stroke-width="1.8" stroke-linecap="round"/>' +
+          '<rect x="14" y="48" width="9" height="3" rx="1" fill="#ffd166"/><rect x="41" y="48" width="9" height="3" rx="1" fill="#ffd166"/></svg>',
     narrator: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#2a1f3d"/>' +
           '<rect x="25" y="12" width="14" height="24" rx="7" fill="#d9c7ff"/>' +
           '<path d="M19 30 Q19 44 32 44 Q45 44 45 30" fill="none" stroke="#d9c7ff" stroke-width="3"/>' +
@@ -5596,30 +5602,42 @@ var NP_LEVEL = 4;
      places up to lakh, already known, and opens one new place per beat.
      The Tries are the two teaching ones and then the practice set, all on
      this same chart. */
-  /* 22 Oct 2026 — THE STORYBOARD'S LEVEL 1 (sheet "L1 V2"): Country A's
-     4,32,56,781 on the chart; the 4 stands in the lakh place, and each new
-     place that opens carries it one place left (x10 each time) until it is
-     the crore. Then the practice intro and how-to-play, and the eight
-     country reports as Tries — the same chart, drums and CHECK (now VERIFY).
-     `show` is the figure the drums roll to once the beat's move has landed,
-     `point` the column the hand then rests on, `title` the band's text. */
-  var L4_TITLES = i18n('teach.level4.beatTitles');
+  /* 2 Nov 2026 — THE STORYBOARD'S LEVEL 1 (sheet "L1 V3"), taught by
+     Commander Veth. The chart opens on the places up to lakh with a 4 in the
+     lakh: the hand runs across the places (each ten times the one to its
+     right) and the ten-lakhs opens, carrying the 4 one place left. Then the
+     crore opens on Country A's 4,32,56,781, and the child taps the 4 in the
+     crores place. START opens the practice, how-to-play is said, and the nine
+     country reports are the Tries — the same chart, drums and VERIFY.
+       show    the figure the drums roll to once the beat's move has landed
+       point   the column the hand then rests on
+       title   the band's text
+       tapCol  the beat waits for this column to be tapped (idle: the nudge)
+       button  the beat waits for this key to be pressed (idle: the nudge) */
+  var L4 = 'teach.level4.', L4_TITLES = i18n(L4 + 'beatTitles');
   SCRIPT[4] = {
     chartFrom: 3, chart: 4,
-    intro: { who: 'narrator', text: i18n('teach.level4.narrator') },
-    context: { who: 'rill', text: i18n('teach.level4.context'),
-               title: i18n('teach.level4.contextTitle') },
-    lead: { who: 'rill', text: '' },
+    teacher: 'veth',
+    intro: { who: 'narrator', text: i18n(L4 + 'narrator') },
+    context: { who: 'veth', text: i18n(L4 + 'context') },
+    lead: { who: 'veth', text: '' },
     start: 400000,
-    beats: i18n('teach.level4.beats').map(function (t, k) {
-      return { who: 'rill', act: ['extend:1', 'extend:1'][k] || '', text: t,
-               show: [4000000, 40000000, 43256781][k], point: [0, 0, 0][k],
-               title: L4_TITLES[k] || '' };
+    beats: i18n(L4 + 'beats').map(function (t, k) {
+      return { who: 'veth', text: t, title: L4_TITLES[k] || '',
+               act: ['name+extend:1', 'extend:1'][k] || '',
+               show: [4000000, 43256781][k],
+               point: [0, null, 0][k],
+               tapCol: k === 2 ? 0 : null,
+               button: k === 3 ? i18n('teach.start') : null,
+               idle: [null, null, i18n(L4 + 'tapDigit'), i18n(L4 + 'tapStart')][k] || null };
     }),
-    tries: i18n('teach.level4.tries'),
-    done: i18n('teach.level4.done'),
-    outro: i18n('teach.level4.outro')
+    tries: i18n(L4 + 'tries'),
+    done: i18n(L4 + 'done'),
+    outro: i18n(L4 + 'outro'),
+    continueIdle: i18n(L4 + 'continueIdle')
   };
+  /* who teaches this lesson: Veth on the crore chart, Rill on the others */
+  function teacher() { return (script && script.teacher) || 'rill'; }
 
   var T = {
     /* PACING (16 Oct 2026). A beat is VO-led: it is ready the moment its line
@@ -6193,7 +6211,7 @@ var NP_LEVEL = 4;
     clearMarks();
     chips.forEach(function (ch, k) { ch.classList.toggle('cur', k === i); });
     whenQuiet(function () {
-      say(item.who || 'rill', item.say);
+      say(item.who || teacher(), item.say);
       armIdle(item);
       var mine = lineNo, end = VOICE.ms(item.say) || 0;
       /* 16 Oct 2026: THE NUMBER IN WORDS GLOWS as Rill says it, and goes back
@@ -6211,7 +6229,7 @@ var NP_LEVEL = 4;
             SWIPE.show(cols[0] && cols[0].el.querySelector('.tc-screen'), cols[0] && cols[0].drum);
             var sw = i18n('lines.swipe');
             VOICE.play(sw);
-            DIALOG.say('rill', sw, { pos: 'bottom', ms: VOICE.ms(sw) });
+            DIALOG.say(teacher(), sw, { pos: 'bottom', ms: VOICE.ms(sw) });
           });
         });
       }
@@ -6233,7 +6251,7 @@ var NP_LEVEL = 4;
       after(IDLE_MS, function () {
         if (mine !== idleSeq || !tryOn) return;
         if (VOICE.playing() || performance.now() - lastAct < IDLE_MS - 100) return wait();
-        say('rill', item.idle);
+        say(teacher(), item.idle);
         if (ask) {
           ask.classList.add('lit');
           after(1600, function () { if (ask) ask.classList.remove('lit'); });
@@ -6294,7 +6312,7 @@ var NP_LEVEL = 4;
     whenQuiet(function () {
       var it = script.tries[idx];
       var spoke = it.right ? say('computer', it.right)
-                           : say('rill', i18n('teach.right', { figure: commas(it.target) }));
+                           : say(teacher(), i18n('teach.right', { figure: commas(it.target) }));
       /* the columns run left to right, which is the reading order the whole
          lesson has been in */
       var sd = pad(script.tries[idx].target);
@@ -6350,7 +6368,7 @@ var NP_LEVEL = 4;
        hint (odd misses); the reveal is said as the drums show it (even) */
     if (wrongCount % 2 === 1) {
       whenQuiet(function () {
-        say('rill', item.fb1 ? item.fb1 + ' ' + item.fb2
+        say(teacher(), item.fb1 ? item.fb1 + ' ' + item.fb2
                              : i18n('teach.wrongFirst', { words: item.words }));
       });
       return;
@@ -6376,7 +6394,7 @@ var NP_LEVEL = 4;
     /* hands off while she shows it */
     tryOn = false;
     root.classList.remove('trying');
-    say('rill', item.fb3 || i18n('teach.wrongShow'));
+    say(teacher(), item.fb3 || i18n('teach.wrongShow'));
 
     var answer = pad(item.target).split('').map(Number);
     var zeros = answer.map(function () { return 0; });
@@ -6392,7 +6410,7 @@ var NP_LEVEL = 4;
     t += spin + 200;
     after(t, function () {
       whenQuiet(function () {
-        say('rill', item.idle || i18n('teach.again', { words: item.words }));
+        say(teacher(), item.idle || i18n('teach.again', { words: item.words }));
         lastAct = performance.now();
         tryOn = true;
         setTouched(false);
@@ -6599,12 +6617,14 @@ var NP_LEVEL = 4;
   function navNext() {
     if (!root || !beatAt || tryOn) return;
     var a = beatAt;
+    clearWait();
     VOICE.stop(); lineNo++; beatTap = null;
     runBeats(a.list, a.i + 1, a.then);
   }
   function navBack() {
     if (!root || !beatAt || tryOn || beatAt.i <= 0) return;
     var b = beatAt.i - 1, lv = level, d = done;
+    clearWait();
     VOICE.stop(); lineNo++; beatTap = null;
     if (root.parentNode) root.parentNode.removeChild(root);
     if (onResize) { window.removeEventListener('resize', onResize); onResize = null; }
@@ -6634,6 +6654,11 @@ var NP_LEVEL = 4;
       INTRO.at(INTRO.now() + T.settle, function () {
         if (!root || mine !== lineNo) return;
         var go = function () { if (beatTap !== go) return; beatTap = null; cueNext(false); runBeats(list, i + 1, then); };
+        /* a beat the child has to answer (tap the 4, press START) holds
+           here until they do */
+        if (beat.tapCol != null || beat.button) {
+          return waitFor(beat, function () { runBeats(list, i + 1, then); });
+        }
         /* 16 Oct 2026 (Anmol): NO "Tap to continue" — the lesson runs on by
            itself, a T.settle breath after each line. */
         beatTap = go;
@@ -6647,6 +6672,8 @@ var NP_LEVEL = 4;
     if (act === 'example') { clearX10(); BOT.aside(); }
     if (act.indexOf('hop:') === 0) anim = actHop(0, act.slice(4).toUpperCase());
     else if (act === 'name') anim = actName(T.hopLead);
+    /* the hand runs across the places it has, then the next one opens */
+    else if (act.indexOf('name+extend') === 0) anim = actExtend(actName(T.hopLead) + 200, +act.split(':')[1] || 0);
     else if (act === 'times') anim = actTimes(200);
     else if (act === 'example') anim = actExample(200);
     else if (act === 'readback') anim = actReadback(200);
@@ -6666,6 +6693,53 @@ var NP_LEVEL = 4;
       SFX.play('lever');
       if (beat.point != null && cols[beat.point]) pointTo(cols[beat.point]);
       after(DRUM.ms + 900, function () { if (mine === lineNo) { animDone = true; check(); } });
+    });
+  }
+
+  /* WAITING ON THE CHILD (L1 V3): a column to tap — it glows and the hand
+     points at it — or a key under the chart (START, CONTINUE). Nothing
+     touched for IDLE_MS and the teacher says the beat's nudge again. */
+  var waitSeq = 0, waitEl = null;
+  function waitFor(beat, done) {
+    clearWait();
+    var mine = ++waitSeq, target;
+    if (beat.tapCol != null && cols[beat.tapCol]) {
+      target = cols[beat.tapCol].el;
+      target.classList.add('tap-me');
+      pointTo(cols[beat.tapCol]);
+    } else {
+      var G = TEACH.chart, C = TEACH.card;
+      target = waitEl = el('button', 'ctl tc-go tc-wait', root);
+      target.type = 'button';
+      target.textContent = beat.button;
+      target.style.top = (G.y + G.h + C.foot + TEACH.goGap) + '%';
+      if (goBtn) goBtn.style.visibility = 'hidden';
+    }
+    var fire = function (e) {
+      if (e) e.stopPropagation();
+      if (mine !== waitSeq) return;
+      clearWait();
+      SFX.play(beat.tapCol != null ? 'lock' : 'tick');
+      done();
+    };
+    target.addEventListener('click', fire);
+    target.waitFire = fire;
+    (function nag() {
+      after(IDLE_MS, function () {
+        if (mine !== waitSeq) return;
+        if (beat.idle && !VOICE.playing()) say(teacher(), beat.idle, null, true);
+        target.classList.remove('nag'); void target.offsetWidth; target.classList.add('nag');
+        nag();
+      });
+    })();
+  }
+  function clearWait() {
+    waitSeq++;
+    if (waitEl) { waitEl.remove(); waitEl = null; }
+    if (goBtn) goBtn.style.visibility = '';
+    cols.forEach(function (c) {
+      c.el.classList.remove('tap-me', 'nag');
+      if (c.el.waitFire) { c.el.removeEventListener('click', c.el.waitFire); c.el.waitFire = null; }
     });
   }
 
@@ -6721,8 +6795,9 @@ var NP_LEVEL = 4;
       TRACK.send('level_complete', { level: 1 });
       say('team', script.done, function () {
         whenQuiet(function () {
-          say('rill', script.outro, function () {
-            INTRO.at(INTRO.now() + TIME.screenGap, function () {
+          say(teacher(), script.outro, function () {
+            /* L1 V3: CONTINUE takes the reports on to Level 2 */
+            waitFor({ button: i18n('teach.continue'), idle: script.continueIdle }, function () {
               if (!root) return;
               finish();
               window.COMMAS.play();
@@ -6734,7 +6809,7 @@ var NP_LEVEL = 4;
     }
     root.classList.add('ended');
     root.classList.add('touched');            // PLAY AGAIN is lit, as CHECK is once a dial turns
-    say('rill', script.outro);
+    say(teacher(), script.outro);
     if (card) FX.confetti(60, card);
     SFX.play('clap');
     if (goBtn) goBtn.style.display = 'none';
@@ -6822,7 +6897,7 @@ var NP_LEVEL = 4;
     var b = from.tryAt != null ? script.beats.length
                                : Math.min(from.beat || 0, script.beats.length);
     script.beats.slice(0, b).forEach(function (beat) {
-      if (beat.act.indexOf('extend') === 0) {
+      if (beat.act.indexOf('extend') >= 0) {
         var up = +beat.act.split(':')[1] || 0, all = places();
         var m = up ? Math.min(all.length, cols.length + up) : all.length;
         buildChart(m, all.slice(all.length - m), true); BOT.startBy(cols[0], 0);
@@ -6859,6 +6934,7 @@ var NP_LEVEL = 4;
     if (!live) return;
     live = false;
     idleSeq++;
+    waitSeq++;
     DIALOG.hide();
     tryOn = false; beatTap = null;
     document.body.classList.add('no-map');
@@ -9435,7 +9511,7 @@ var NP_LEVEL = 4;
            Level 1 chart, Level 2's commas (COMMAS.JS), the closing story.
            ?dev=1&go= still opens any of them directly (see dev.js). */
         if (p[0] === 'commas') {
-          return window.COMMAS.play(p[1] === 'p' ? { practice: +p[2] } : p[1] === 'how' ? { howTo: true } : null);
+          return window.COMMAS.play(p[1] === 'p' ? { practice: +p[2] } : p[1] === 'g' ? { guided: +p[2] } : null);
         }
         if (p[0] === 'end') return window.STORY.end();
         if (p[0] === 'teach') return window.TEACH_SCREEN.play(lv, null, from);
@@ -10679,13 +10755,14 @@ var NP_LEVEL = 4;
 /* ########################################################################## */
 
 /* ============================================================================
-   STORY.JS — the storyboard's opening and closing scenes (sheet "Story").
+   STORY.JS — the storyboard's opening and closing scenes (sheet "Story V2").
 
-   The World Population Control Centre: a digital screen of country markers
-   over the darkened map. open(then) plays the opening — the reports arrive,
-   one blinks red, and the team sets out to verify them — and hands over to
-   the Level 1 chart. end() is the closing scene: every report delivered,
-   both headquarters green, MISSION COMPLETE and PLAY AGAIN.
+   The Titan Research Centre: a digital screen with a holographic Earth and
+   its country markers, over the darkened map. open(then) plays the opening —
+   Commander Veth has the reports ready to send to Earth, the screen flashes
+   VERIFICATION REQUIRED, and the team sets out to check them — and hands
+   over to the Level 1 chart. end() is the closing scene: every report
+   delivered, both headquarters green, MISSION COMPLETE and PLAY AGAIN.
 
    Every line goes through VOICE and DIALOG like the lesson's, so it is
    paced the same way and the pause freezes it the same way.
@@ -10694,10 +10771,10 @@ var STORY = (function () {
   'use strict';
 
   var stage = document.getElementById('stage');
-  /* where each country's marker sits on the control-centre screen, in % of
-     the screen; the first is Country A, the one that raises the alert */
-  var SPOTS = [[14, 30], [30, 18], [46, 32], [60, 16], [58, 52],
-               [12, 64], [28, 54], [42, 74], [60, 80]];
+  /* where each country's marker sits on the holographic Earth, in % of the
+     screen; the first is Country A, the one that raises the alert */
+  var SPOTS = [[24, 34], [34, 24], [44, 36], [30, 52], [42, 58],
+               [20, 62], [50, 46], [36, 74], [26, 44]];
   var RECORDS = [43256781, 56234781, 27634781, 4325817];
   var SETTLE = 600;
 
@@ -10737,6 +10814,8 @@ var STORY = (function () {
     el('div', 'sy-title', root).textContent = i18n('story.centre');
     screen = el('div', 'sy-screen', root);
     el('i', 'sy-grid', screen);
+    var earth = el('div', 'sy-earth', screen);
+    el('span', '', earth).textContent = i18n('story.earth');
     marks = SPOTS.map(function (p, k) {
       var m = el('span', 'sy-mark', screen);
       m.style.left = p[0] + '%';
@@ -10763,10 +10842,19 @@ var STORY = (function () {
       el('b', '', r).textContent = String(n);
       later(function () { r.classList.add('in'); SFX.play('chime'); }, 250 * k);
     });
+    var send = el('div', 'sy-send', recs);
+    send.textContent = i18n('story.send');
+    later(function () { send.classList.add('in'); }, 250 * RECORDS.length);
   }
+  /* SEND is pressed — and the screen flashes red instead */
   function alarm() {
+    var send = recs && recs.querySelector('.sy-send');
+    if (send) send.classList.add('pressed');
+    root.classList.add('red');
     marks[0].classList.add('alert');
-    if (recs) recs.firstChild.nextSibling.classList.add('alert');
+    if (recs) [].forEach.call(recs.querySelectorAll('.sy-rec'), function (r, k) {
+      if (k === 0 || k === 3) r.classList.add('alert');
+    });
     var a = el('div', 'sy-alert', root);
     a.textContent = i18n('story.alert');
     SFX.play('wrong');
@@ -10778,11 +10866,6 @@ var STORY = (function () {
     el('span', '', focus).textContent = i18n('story.country', { c: 'A' });
     el('b', '', focus).textContent = String(RECORDS[0]);
     SFX.play('zoom', 1);
-  }
-  function started() {
-    var s = el('div', 'sy-started', root);
-    s.textContent = i18n('story.started');
-    SFX.play('whir');
   }
 
   /* START: one tap before the story, because a browser plays no sound
@@ -10808,14 +10891,10 @@ var STORY = (function () {
     var L = function (k) { return i18n('story.lines.' + k); };
     run([
       { who: 'narrator', text: L('narrator') },
-      { who: 'rill', text: L('hello'), act: lightMarks },
-      { who: 'team', text: L('ready'), act: showRecords },
+      { who: 'veth', text: L('request'), act: function () { lightMarks(); showRecords(); } },
       { who: 'computer', text: L('error'), act: alarm },
-      { who: 'team', text: L('verify') },
-      { who: 'team', text: L('huge') },
-      { who: 'rill', text: L('check'), act: zoom },
-      { who: 'rill', text: L('closer') },
-      { who: 'computer', text: L('started'), act: started }
+      { who: 'rill', text: L('verify') },
+      { who: 'veth', text: L('check'), act: zoom }
     ], 0, function () {
       DIALOG.hide();
       root.classList.add('off');
@@ -10827,6 +10906,7 @@ var STORY = (function () {
     build('ending');
     TRACK.at('story end');
     marks.forEach(function (m) { m.classList.add('lit', 'ok'); });
+    root.classList.add('green');
     var hq = el('div', 'sy-hqs', root);
     [i18n('commas.indianHQ'), i18n('commas.intlHQ')].forEach(function (t) {
       var h = el('div', 'sy-hq', hq);
@@ -10836,8 +10916,8 @@ var STORY = (function () {
     FX.confetti(90);
     SFX.play('complete');
     run([
-      { who: 'team', text: i18n('story.end.team') },
-      { who: 'rill', text: i18n('story.end.officer') }
+      { who: 'rill', text: i18n('story.end.rill') },
+      { who: 'veth', text: i18n('story.end.veth'), act: function () { FX.confetti(70); SFX.play('chime'); } }
     ], 0, function () {
       DIALOG.hide();
       var c = el('div', 'sy-done', root);
@@ -10868,14 +10948,16 @@ window.STORY = STORY;
 /* ########################################################################## */
 
 /* ============================================================================
-   COMMAS.JS — Level 2 (sheet "L2 V2"): the Indian and International number
+   COMMAS.JS — Level 2 (sheet "L2 V3"): the Indian and International number
    systems, and the reports for both headquarters.
 
    The teaching puts the commas into 43256781 one group at a time, first the
    Indian way (3, then pairs) and then the International way (threes), and
-   sets the two side by side. Then ten country reports: the child taps the
-   gaps between the digits to place the commas and presses SEND, and the
-   report flies to its headquarters.
+   sets the two side by side. Two guided tutorials then place the commas one
+   at a time (Country A, Indian; Country D, International), and eight more
+   country reports follow: the child taps the gaps between the digits to
+   place the commas and presses SEND, and the report flies to its
+   headquarters.
 
    Wrong answers climb the storyboard's three rungs: the wrong commas shake,
    then the last three digits light, then the right gaps glow.
@@ -11021,6 +11103,11 @@ var COMMAS = (function () {
   }
 
   /* ---- TEACHING -------------------------------------------------------- */
+  /* a notice across the top of the screen, where the system's name goes */
+  function notify(text) {
+    sysEl.textContent = text;
+    sysEl.classList.add('on');
+  }
   function teach(then) {
     var t = i18n('commas.teach'), s = null;
     var gs = groups(DEMO, 'in'), gi = groups(DEMO, 'intl');
@@ -11040,60 +11127,62 @@ var COMMAS = (function () {
         });
       };
     };
+    /* COMPARE (L2 V3 rows 13-14): one system's strip at a time, its groups
+       lighting from the right and their commas going in as they do */
+    var compare = function (sys, tagKey) {
+      return function () {
+        var c = strip(DEMO, false);
+        c.el.classList.add('compare', sys);
+        el('span', 'cm-tag', c.el).textContent = i18n(tagKey);
+        var gl = groups(DEMO, sys), cuts = answer(DEMO, sys).slice().reverse();
+        gl.forEach(function (g, k) {
+          later(function () {
+            for (var d = g.from; d < g.to; d++) c.digits[d].classList.add('read');
+            if (cuts[k] != null) setComma(c, cuts[k], true);
+            SFX.play('click', 3);
+          }, 500 + 650 * k);
+        });
+      };
+    };
     var beats = [
       { who: 'narrator', text: i18n('commas.narrator') },
-      { who: 'computer', text: t[0], act: function () { setSys('both'); SFX.play('chime'); } },
-      { who: 'rill', text: t[1], act: function () {
-          demo(); titleEl.textContent = i18n('commas.country', { c: 'A' }); } },
-      { who: 'rill', text: t[2], act: function () {
-          s.el.classList.add('error'); SFX.play('wrong'); } },
-      { who: 'rill', text: t[3], act: function () { s.el.classList.remove('error'); } },
-      { who: 'rill', text: t[4] },
-      { who: 'rill', text: t[5], act: function () { setSys('in'); } },
-      { who: 'rill', text: t[6], act: step(gs[0], 4) },
-      { who: 'rill', text: t[7], act: step(gs[1], 2) },
-      { who: 'rill', text: t[8], act: function () {
+      { who: 'veth', text: t[0], act: function () {
+          setSys('both'); notify(i18n('commas.requests')); SFX.play('chime'); } },
+      { who: 'veth', text: t[1], act: function () {
+          demo(); setSys(null); titleEl.textContent = i18n('commas.country', { c: 'A' }); } },
+      { who: 'veth', text: t[2] },
+      { who: 'veth', text: t[3], act: function () { setSys('in'); } },
+      { who: 'veth', text: t[4], act: step(gs[0], 4) },
+      { who: 'veth', text: t[5], act: step(gs[1], 2) },
+      { who: 'veth', text: t[6], act: function () {
           step(gs[2], 0)();
           later(function () { label(s, gs[3].from, gs[3].to, gname(gs[3].name)); glow(s, 0, 1, 'glow2'); }, 900);
         } },
-      { who: 'rill', text: t[9], act: read(gs) },
-      { who: 'rill', text: t[10], act: function () { setSys('intl'); demo(); } },
-      { who: 'rill', text: t[11], act: step(gi[0], 4) },
-      { who: 'rill', text: t[12], act: step(gi[1], 1) },
-      { who: 'rill', text: t[13], act: function () {
+      { who: 'veth', text: t[7], act: read(gs) },
+      { who: 'veth', text: t[8], act: function () { setSys('intl'); demo(); } },
+      { who: 'veth', text: t[9], act: step(gi[0], 4) },
+      { who: 'veth', text: t[10], act: step(gi[1], 1) },
+      { who: 'veth', text: t[11], act: function () {
           step(gi[2])();
           later(function () { label(s, 0, 1, gname('billions'), true); }, 900);
         } },
-      { who: 'rill', text: t[14], act: read(gi) },
-      { who: 'rill', text: t[15], act: function () {
-          clearStrips(); setSys('both'); sysEl.classList.remove('on');
-          [['in', 'commas.indianSys'], ['intl', 'commas.intlSys']].forEach(function (p) {
-            var c = strip(DEMO, false);
-            c.el.classList.add('compare', p[0]);
-            el('span', 'cm-tag', c.el).textContent = i18n(p[1]);
-            answer(DEMO, p[0]).forEach(function (k) { setComma(c, k, true); });
-          });
-        } }
+      { who: 'veth', text: t[12], act: read(gi) },
+      { who: 'veth', text: t[13], act: function () {
+          clearStrips(); setSys('both');
+          titleEl.textContent = i18n('commas.title');
+          compare('in', 'commas.indianSys')();
+        } },
+      { who: 'veth', text: t[14], act: compare('intl', 'commas.intlSys') }
     ];
     (function run(i) {
       if (!root) return;
       if (i >= beats.length) {
         /* "Now prepare the reports for both headquarters!" waits on CONTINUE */
-        talk('rill', t[16]);
-        var mine = ++idleSeq;
-        button(i18n('commas.continue'), function () {
-          idleSeq++; button(i18n('commas.send'), null);
+        talk('veth', t[15]);
+        waitButton(i18n('commas.continue'), i18n('commas.transitionIdle'), function () {
           SFX.play('whir');
           then();
         });
-        (function nag() {
-          later(function () {
-            if (mine !== idleSeq) return;
-            if (!VOICE.playing()) { talk('rill', i18n('commas.transitionIdle')); btn.classList.add('pulse'); }
-            later(function () { btn.classList.remove('pulse'); }, 1600);
-            nag();
-          }, IDLE_MS);
-        })();
         return;
       }
       var b = beats[i];
@@ -11102,35 +11191,110 @@ var COMMAS = (function () {
     })(0);
   }
 
-  /* ---- PRACTICE -------------------------------------------------------- */
-  function howTo(then) {
-    clearStrips();
-    titleEl.textContent = i18n('commas.title');
-    setSys(null);
-    var s = strip(12345678, false);
-    s.el.classList.add('demo');
-    s.gaps.forEach(function (g) { g.classList.add('hint'); });
-    later(function () { setComma(s, 4, true); SFX.play('click', 3); }, 1400);
-    talk('rill', i18n('commas.howTo'), then);
+  /* the key under the strip, waiting to be pressed; nothing pressed for
+     IDLE_MS and the Commander says `idle` while it pulses */
+  function waitButton(text, idle, fn) {
+    var mine = ++idleSeq;
+    button(text, function () {
+      if (mine !== idleSeq) return;
+      idleSeq++;
+      button(text, null);
+      fn();
+    });
+    (function nag() {
+      later(function () {
+        if (mine !== idleSeq) return;
+        if (!VOICE.playing()) talk('veth', idle);
+        btn.classList.remove('pulse'); void btn.offsetWidth; btn.classList.add('pulse');
+        nag();
+      }, IDLE_MS);
+    })();
   }
 
+  /* ---- GUIDED TUTORIALS (L2 V3 rows 21-28) ------------------------------
+     One comma at a time: the Commander says where, the digits to count
+     light, and only that one gap is right. A wrong tap puts the comma in,
+     shakes it and takes it out again, and the three rungs climb as in the
+     practice — then SEND, and the report flies to its headquarters. */
+  var guide = null;
+  function guided(g, then) {
+    item = { country: g.country, n: g.n, sys: g.sys };
+    clearStrips();
+    titleEl.textContent = i18n('commas.country', { c: g.country });
+    setSys(g.sys);
+    guide = { g: g, s: strip(g.n, true), k: -1, then: then };
+    button(i18n('commas.send'), null);
+    nextStep();
+  }
+  function nextStep() {
+    var G = guide;
+    if (!G) return;
+    G.k++; misses = 0;
+    if (G.k >= G.g.steps.length) return readyToSend();
+    var st = G.g.steps[G.k];
+    G.s.gaps.forEach(function (gp) { gp.classList.remove('hint'); });
+    glow(G.s, st.glow[0], st.glow[1]);
+    talk('veth', st.say);
+    tryOn = true;
+    armIdle(st.idle, function () { G.s.gaps[st.gap].classList.add('hint'); });
+  }
+  function guidedTap(k) {
+    var G = guide, st = G.g.steps[G.k], s = G.s;
+    lastAct = performance.now();
+    if (s.on[k]) return;                        // a comma already placed
+    if (k === st.gap) {
+      tryOn = false; idleSeq++;
+      setComma(s, k, true);
+      s.gaps[k].classList.remove('hint', 'bad');
+      s.gaps[k].classList.add('ok');
+      SFX.play('lock');
+      talk('veth', st.right, nextStep);
+      return;
+    }
+    misses++;
+    SFX.play('wrong');
+    setComma(s, k, true);
+    s.gaps[k].classList.add('bad');
+    s.el.classList.remove('shake'); void s.el.offsetWidth; s.el.classList.add('shake');
+    later(function () { setComma(s, k, false); s.gaps[k].classList.remove('bad'); }, 700);
+    if (misses === 1) talk('veth', st.fb1);
+    else if (misses === 2) { glow(s, st.glow[0], st.glow[1], 'glow2'); talk('veth', st.fb2); }
+    else { s.gaps[st.gap].classList.add('hint'); talk('veth', st.fb3); }
+  }
+  function readyToSend() {
+    var G = guide, s = G.s;
+    glow(s, 0, 0);
+    s.el.classList.add('right');
+    groups(G.g.n, G.g.sys).forEach(function (g) { label(s, g.from, g.to, gname(g.name)); });
+    talk('veth', G.g.ready);
+    waitButton(i18n('commas.send'), i18n('commas.sendIdle'), function () {
+      SFX.play('lock');
+      talk('computer', i18n('commas.ready', { c: G.g.country }), function () {
+        flyTo(s, hqs[G.g.sys], function () { guide = null; G.then(); });
+      });
+    });
+  }
+
+  /* ---- PRACTICE -------------------------------------------------------- */
   function practice(i) {
     var list = i18n('commas.practice');
     if (i >= list.length) return finishLevel();
+    guide = null;
     idx = i; item = list[i]; misses = 0;
     clearStrips();
     titleEl.textContent = i18n('commas.country', { c: item.country });
     setSys(item.sys);
-    var s = strip(item.n, true);
+    strip(item.n, true);
     button(i18n('commas.send'), null);
-    talk('rill', i18n(item.sys === 'in' ? 'commas.prepIn' : 'commas.prepIntl'));
+    talk('veth', i18n(item.sys === 'in' ? 'commas.prepIn' : 'commas.prepIntl'));
     tryOn = true;
-    armIdle();
+    armIdle(i18n('commas.idle', { c: item.country }));
   }
   function cur() { return strips[0]; }
 
   function toggle(s, k) {
     if (!tryOn || s !== cur()) return;
+    if (guide) return guidedTap(k);
     setComma(s, k, !s.on[k]);
     s.gaps[k].classList.remove('bad');
     SFX.play('click', 3);
@@ -11139,19 +11303,22 @@ var COMMAS = (function () {
     button(i18n('commas.send'), any ? send : null);
   }
 
-  function armIdle() {
+  /* INACTIVITY: nothing touched for IDLE_MS and the Commander says `line`,
+     the gaps pulse, and `extra` shows whatever else the step points at */
+  function armIdle(line, extra) {
     var mine = ++idleSeq;
     lastAct = performance.now();
     (function wait() {
       later(function () {
         if (mine !== idleSeq || !tryOn) return;
         if (VOICE.playing() || performance.now() - lastAct < IDLE_MS - 100) return wait();
-        talk('rill', i18n('commas.idle', { c: item.country }));
+        talk('veth', line);
         var s = cur();
         if (s) {
           s.el.classList.add('pulse');
           later(function () { s.el.classList.remove('pulse'); }, 1600);
         }
+        if (extra) extra();
         lastAct = performance.now();
         wait();
       }, IDLE_MS);
@@ -11213,14 +11380,14 @@ var COMMAS = (function () {
     s.el.classList.remove('shake'); void s.el.offsetWidth; s.el.classList.add('shake');
     var len = String(item.n).length;
     if (misses === 1) {
-      talk('rill', i18n('commas.wrong1'));
+      talk('veth', i18n('commas.wrong1'));
     } else if (misses === 2) {
       glow(s, len - 3, len);
-      talk('rill', i18n('commas.wrong2'));
+      talk('veth', i18n('commas.wrong2'));
     } else {
       glow(s, len - 3, len);
       want.forEach(function (k) { s.gaps[k].classList.add('hint'); });
-      talk('rill', i18n(item.sys === 'in' ? 'commas.wrong3in' : 'commas.wrong3intl'));
+      talk('veth', i18n(item.sys === 'in' ? 'commas.wrong3in' : 'commas.wrong3intl'));
     }
   }
 
@@ -11232,13 +11399,29 @@ var COMMAS = (function () {
     FX.confetti(70);
     SFX.play('complete');
     TRACK.send('level_complete', { level: 2 });
+    /* L2 V3: the team's line, then CONTINUE to the ending */
     talk('team', i18n('commas.done'), function () {
-      later(function () { stop(); STORY.end(); }, 400);
+      waitButton(i18n('commas.continue'), i18n('commas.continueIdle'), function () {
+        stop(); STORY.end();
+      });
     });
   }
 
   /* ---- RUN ------------------------------------------------------------- */
-  /* from: null for the whole level, or { practice: N } to open at report N */
+  /* L2 V3's order: the teaching, guided tutorial 1 (Country A, Indian) and 2
+     (Country D, International), "now it's your turn", then the reports */
+  function tutorials(then) {
+    var g = i18n('commas.guided');
+    guided(g[0], function () {
+      guided(g[1], function () {
+        clearStrips(); setSys('both');
+        titleEl.textContent = i18n('commas.title');
+        talk('veth', i18n('commas.yourTurn'), then);
+      });
+    });
+  }
+  /* from: null for the whole level, { guided: N } to open at tutorial N, or
+     { practice: N } to open at report N */
   function play(from) {
     if (live) return;
     live = true;
@@ -11247,8 +11430,15 @@ var COMMAS = (function () {
     build();
     sent = { in: 0, intl: 0 };
     if (from && from.practice != null) return practice(from.practice);
-    if (from && from.howTo) return howTo(function () { practice(0); });
-    teach(function () { howTo(function () { practice(0); }); });
+    if (from && from.guided === 1) {
+      return guided(i18n('commas.guided')[1], function () { tutorials0(); });
+    }
+    if (from && from.guided === 0) return tutorials(function () { practice(0); });
+    teach(function () { tutorials(function () { practice(0); }); });
+    function tutorials0() {
+      clearStrips(); setSys('both');
+      talk('veth', i18n('commas.yourTurn'), function () { practice(0); });
+    }
   }
 
   function stop() {
@@ -11256,7 +11446,7 @@ var COMMAS = (function () {
     idleSeq++; tryOn = false; live = false;
     DIALOG.hide();
     if (root && root.parentNode) root.parentNode.removeChild(root);
-    root = null; strips = []; hqs = {};
+    root = null; strips = []; hqs = {}; guide = null;
   }
 
   return {
@@ -11266,13 +11456,15 @@ var COMMAS = (function () {
     solve: function () {
       var s = cur();
       if (!tryOn || !s) return false;
+      if (guide) { guidedTap(guide.g.steps[guide.k].gap); return true; }
+      s.gaps.forEach(function (g, k) { setComma(s, k, false); g.classList.remove('bad'); });
       answer(item.n, item.sys).forEach(function (k) { setComma(s, k, true); });
       send();
       return true;
     },
     state: function () {
       var s = cur();
-      return { live: live, idx: idx, tryOn: tryOn, misses: misses,
+      return { live: live, idx: idx, tryOn: tryOn, misses: misses, guided: !!guide,
                commas: s ? commaSet(s) : [], sent: sent };
     }
   };
@@ -11284,25 +11476,23 @@ window.COMMAS = COMMAS;
 /* ########################################################################## */
 
 /* ============================================================================
-   DEV.JS — jump to any screen of the game.
+   DEV.JS — the QA panel: jump to any screen of the game, and auto-solve.
 
-   Add ?dev=1 to the URL and a small DEV menu appears in the top-left corner.
-   Picking a screen reloads the page at ?dev=1&go=<target>, and intro.js starts
-   the game there instead of on the title (see devRoute in intro.js). Reloading
-   rather than jumping in place means every screen starts from a clean page,
-   exactly as it would in play.
+   A QA key sits in the bottom-left corner. Its panel lists every screen;
+   picking one reloads the page at ?go=<target> at once, and the game starts there
+   instead of at the beginning (see npUp in intro.js). Reloading rather than
+   jumping in place means every screen starts from a clean page, exactly as
+   it would in play. AUTO-SOLVE answers whatever the game is waiting on.
 
-   ?demo=1 honours go= the same way but shows no menu: it is what the
-   ending-demo.html preview page opens. Without either, this file does nothing.
+   ?qa=0 hides the key. ?demo=1 honours go= the same way but shows nothing:
+   it is what the preview pages open.
    ========================================================================= */
 (function () {
   var q = new URLSearchParams(location.search);
-  /* ON A LOCAL SERVER (Live Server, 127.0.0.1 / localhost) the menu is up
-     without asking; ?dev=0 hides it there. Anywhere else it needs ?dev=1. */
-  var local = /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
-  var menu = q.get('dev') === '1' ||
-             (local && q.get('dev') !== '0' && q.get('demo') !== '1');
-  if (!menu && q.get('demo') !== '1') return;
+  /* 2 Nov 2026: THE QA PANEL IS ALWAYS UP (bottom-left), so a jump works
+     on any server; ?qa=0 hides it, and ?demo=1 (the preview pages) never
+     shows it. go= is honoured either way. */
+  var menu = q.get('qa') !== '0' && q.get('demo') !== '1';
 
   /* read by intro.js once everything has loaded */
   window.DEV_GO = q.get('go') || null;
@@ -11317,7 +11507,9 @@ window.COMMAS = COMMAS;
       var t = st.text.length > 40 ? st.text.slice(0, 40) + '\u2026' : st.text;
       items.push({ go: 'teach:' + lv.id + ':' + st.go, label: st.kind + ' ' + st.n + ' \u2014 ' + t });
     });
-    var l2 = [{ go: 'commas', label: 'Teaching' }, { go: 'commas:how', label: 'How to play' }];
+    var l2 = [{ go: 'commas', label: 'Teaching' },
+              { go: 'commas:g:0', label: 'Guided tutorial 1 \u2014 Country A (Indian)' },
+              { go: 'commas:g:1', label: 'Guided tutorial 2 \u2014 Country D (International)' }];
     i18n('commas.practice').forEach(function (r, i) {
       l2.push({ go: 'commas:p:' + i, label: 'Report ' + (i + 1) + ' \u2014 Country ' + r.country + ' (' + r.sys + ')' });
     });
@@ -11367,29 +11559,75 @@ window.COMMAS = COMMAS;
     return list;
   }
 
+  /* ---- THE QA PANEL (2 Nov 2026) ----------------------------------------
+     A QA key in the bottom-left corner opens a panel to jump to any screen
+     of the game (the page reloads at ?go=<target>, so every screen starts
+     clean) and an AUTO-SOLVE key that answers whatever the game is waiting
+     on right now: START, the glowing digit, a chart report, a comma step or
+     report, SEND and CONTINUE. Between questions it skips to the next line.
+     ?qa=0 hides it. */
+  function autoSolve() {
+    var d = document, T = window.TEACH_SCREEN, C = window.COMMAS;
+    var gate = d.querySelector('#story .sy-start');
+    if (gate) { gate.click(); return 'Pressed START.'; }
+    var tap = d.querySelector('#teach .tc-col.tap-me');
+    if (tap) { tap.click(); return 'Tapped the glowing digit.'; }
+    var wait = d.querySelector('#teach .tc-wait');
+    if (wait) { wait.click(); return 'Pressed ' + wait.textContent + '.'; }
+    if (T && T.live() && T.state().tryOn) {
+      var ask = d.querySelector('#teach .tc-ask-words');
+      T.solve();
+      return 'Solved: ' + (ask ? ask.textContent : 'the report') + '.';
+    }
+    if (C && C.state().live && C.state().tryOn) {
+      C.solve();
+      return 'Placed the comma' + (C.state().guided ? '' : 's') + ' and sent.';
+    }
+    var btn = d.querySelector('#commas .cm-btn.on');
+    if (btn) { btn.click(); return 'Pressed ' + btn.textContent + '.'; }
+    var fwd = d.querySelector('#teach .tc-nav.fwd.on');
+    if (fwd && !fwd.disabled) { fwd.click(); return 'Skipped to the next line.'; }
+    return 'Nothing to solve yet — wait for the next question.';
+  }
+
   function build() {
     var css = document.createElement('style');
     css.textContent =
-      '#devMenu{position:fixed;top:8px;left:8px;z-index:99999;display:flex;' +
-      'align-items:center;gap:6px;padding:4px 6px;border-radius:6px;' +
-      'background:rgba(10,14,22,.85);color:#9fd8ff;font:12px/1.2 system-ui,sans-serif;' +
-      'box-shadow:0 2px 8px rgba(0,0,0,.4);opacity:.35;transition:opacity .15s}' +
-      /* faint until reached for, so it does not cover the game's own corner */
-      '#devMenu:hover,#devMenu:focus-within{opacity:1}' +
-      '#devMenu b{letter-spacing:.08em;font-size:11px}' +
-      '#devMenu select{max-width:260px;font:inherit;color:#fff;background:#1a2230;' +
-      'border:1px solid #33465e;border-radius:4px;padding:2px 4px}' +
-      '#devMenu button{font:inherit;color:#fff;background:#1a2230;border:1px solid #33465e;' +
-      'border-radius:4px;padding:2px 6px;cursor:pointer}';
+      '#qaBtn{position:fixed;left:12px;bottom:12px;z-index:99999;width:52px;height:52px;' +
+      'border-radius:50%;border:2px solid #ffd166;background:#1a2230;color:#ffd166;' +
+      'font:700 15px/1 system-ui,sans-serif;letter-spacing:.06em;cursor:pointer;' +
+      'box-shadow:0 2px 10px rgba(0,0,0,.5);opacity:.8}' +
+      '#qaBtn:hover,#qaBtn.open{opacity:1}' +
+      '#qaPanel{position:fixed;left:12px;bottom:74px;z-index:99999;width:320px;max-width:calc(100vw - 24px);' +
+      'padding:12px;border-radius:10px;background:rgba(10,14,22,.96);color:#dbe9f6;' +
+      'font:13px/1.35 system-ui,sans-serif;box-shadow:0 4px 18px rgba(0,0,0,.6);' +
+      'border:1px solid #33465e;display:none}' +
+      '#qaPanel.open{display:block}' +
+      '#qaPanel h3{margin:0 0 8px;font-size:12px;letter-spacing:.14em;color:#ffd166}' +
+      '#qaPanel label{display:block;margin:0 0 4px;color:#9fb6cc;font-size:11px;letter-spacing:.08em}' +
+      '#qaPanel select{width:100%;font:inherit;color:#fff;background:#1a2230;border:1px solid #33465e;' +
+      'border-radius:6px;padding:6px}' +
+      '#qaPanel .row{display:flex;gap:6px;margin-top:8px}' +
+      '#qaPanel button{flex:1;font:600 13px system-ui,sans-serif;color:#fff;background:#24344a;' +
+      'border:1px solid #3d5876;border-radius:6px;padding:8px;cursor:pointer}' +
+      '#qaPanel button:hover{background:#2f4560}' +
+      '#qaPanel button.solve{background:#1f5f3a;border-color:#3f9a64}' +
+      '#qaPanel button.solve:hover{background:#28784a}' +
+      '#qaPanel .status{margin-top:8px;min-height:18px;color:#7cf29a;font-size:12px}';
     document.head.appendChild(css);
 
-    var box = document.createElement('div');
-    box.id = 'devMenu';
-    var tag = document.createElement('b');
-    tag.textContent = 'DEV';
-    var sel = document.createElement('select');
-    sel.setAttribute('aria-label', 'Jump to a screen');
+    var key = document.createElement('button');
+    key.id = 'qaBtn'; key.type = 'button'; key.textContent = 'QA';
+    key.title = 'QA panel: jump to any screen, auto-solve';
 
+    var panel = document.createElement('div');
+    panel.id = 'qaPanel';
+    panel.innerHTML =
+      '<h3>QA PANEL</h3>' +
+      '<label for="qaJump">JUMP TO</label><select id="qaJump"></select>' +
+      '<div class="row"><button type="button" class="solve">✔ Auto-solve</button></div>' +
+      '<div class="status" aria-live="polite"></div>';
+    var sel = panel.querySelector('select');
     targets().forEach(function (g) {
       var og = document.createElement('optgroup');
       og.label = g.group;
@@ -11401,27 +11639,39 @@ window.COMMAS = COMMAS;
       sel.appendChild(og);
     });
     sel.value = window.DEV_GO || 'story';
-
-    /* the same screen again, from the start */
-    var again = document.createElement('button');
-    again.type = 'button'; again.textContent = '↻';
-    again.title = 'Restart this screen';
+    var status = panel.querySelector('.status');
 
     var go = function (target) {
       var u = new URLSearchParams(location.search);
-      u.set('dev', '1'); u.set('go', target);
+      u.delete('dev');
+      u.set('go', target);
       location.search = u.toString();
     };
-    sel.addEventListener('change', function () { go(sel.value); });
-    again.addEventListener('click', function () { go(sel.value); });
-
-    /* keep taps and keys on the menu from reaching the game underneath */
-    ['pointerdown', 'click', 'keydown'].forEach(function (ev) {
-      box.addEventListener(ev, function (e) { e.stopPropagation(); });
+    key.addEventListener('click', function () {
+      var open = !panel.classList.contains('open');
+      panel.classList.toggle('open', open);
+      key.classList.toggle('open', open);
+    });
+    /* picking a screen jumps straight there, as the old DEV menu did */
+    sel.addEventListener('change', function () {
+      status.textContent = 'Jumping…';
+      go(sel.value);
+    });
+    panel.querySelector('.solve').addEventListener('click', function () {
+      var msg;
+      try { msg = autoSolve(); } catch (e) { msg = 'Could not solve: ' + e.message; }
+      status.textContent = msg;
     });
 
-    box.appendChild(tag); box.appendChild(sel); box.appendChild(again);
-    document.body.appendChild(box);
+    /* keep taps and keys on the QA controls from reaching the game */
+    [key, panel].forEach(function (box) {
+      ['pointerdown', 'click', 'keydown'].forEach(function (ev) {
+        box.addEventListener(ev, function (e) { e.stopPropagation(); });
+      });
+    });
+
+    document.body.appendChild(key);
+    document.body.appendChild(panel);
   }
 
   if (!menu) return;

@@ -256,3 +256,65 @@
 @media (prefers-reduced-motion: reduce) {
   #story *, #commas * { animation: none !important; }
 }
+
+/* ============================================================================
+   2 Nov 2026 — STORY V2, L1 V3, L2 V3
+   ========================================================================= */
+
+/* ---- the Titan Research Centre's holographic Earth ------------------- */
+#story .sy-earth {
+  position: absolute; left: 35%; top: 48%; transform: translate(-50%, -50%);
+  width: calc(var(--u) * 26); aspect-ratio: 1; border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255,255,255,0.35), transparent 40%),
+    radial-gradient(ellipse 22% 14% at 30% 40%, rgba(124,242,154,0.55), transparent 70%),
+    radial-gradient(ellipse 16% 22% at 62% 55%, rgba(124,242,154,0.5), transparent 70%),
+    radial-gradient(ellipse 14% 10% at 48% 75%, rgba(124,242,154,0.45), transparent 70%),
+    radial-gradient(circle at 50% 50%, rgba(47,150,255,0.55), rgba(10,60,130,0.35) 70%, rgba(47,216,255,0.15));
+  box-shadow: 0 0 calc(var(--u) * 3) rgba(47,216,255,0.55), inset 0 0 calc(var(--u) * 2) rgba(47,216,255,0.6);
+  animation: syHolo 4s ease-in-out infinite;
+}
+#story .sy-earth span {
+  position: absolute; left: 50%; bottom: calc(var(--u) * -2.6); transform: translateX(-50%);
+  font-size: calc(var(--u) * 1.2); letter-spacing: 0.3em; color: #7fe3ff;
+}
+#story .sy-mark { z-index: 1; }
+@keyframes syHolo { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.18); } }
+
+/* SEND under the reports — pressed, and the screen turns red */
+#story .sy-send {
+  justify-self: end; margin-top: calc(var(--u) * 0.6);
+  padding: calc(var(--u) * 0.5) calc(var(--u) * 2.4); border-radius: calc(var(--u) * 0.5);
+  font-weight: 700; letter-spacing: 0.24em; font-size: calc(var(--u) * 1.4);
+  color: #eafcff; background: linear-gradient(180deg, #1b2733, #0f171f);
+  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 0.12)) rgba(63,208,255,0.85), 0 0 calc(var(--u) * 1.2) rgba(47,216,255,0.5);
+  opacity: 0; transition: opacity 300ms ease, transform 120ms ease;
+}
+#story .sy-send.in { opacity: 1; }
+#story .sy-send.pressed { transform: scale(0.94); }
+#story.red .sy-screen {
+  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 0.22)) #ff5a46, 0 0 calc(var(--u) * 3) rgba(255,80,60,0.6);
+  animation: syRed 0.5s steps(2) 4;
+}
+#story.red .sy-earth { filter: hue-rotate(150deg) saturate(1.6); animation: none; }
+#story.green .sy-earth { box-shadow: 0 0 calc(var(--u) * 3.4) rgba(124,242,154,0.8), inset 0 0 calc(var(--u) * 2) rgba(124,242,154,0.6); }
+@keyframes syRed { 0%, 100% { background-color: transparent; } 50% { background-color: rgba(255,60,40,0.18); } }
+
+/* ---- L1 V3: tap the glowing 4; START / CONTINUE under the chart ------ */
+#teach .tc-col.tap-me { cursor: pointer; }
+#teach .tc-col.tap-me .tc-screen {
+  box-shadow: 0 0 0 max(2px, calc(var(--u) * 0.3)) #ffd166, 0 0 calc(var(--u) * 2.4) rgba(255,209,102,0.85);
+  animation: syBlink 1s ease-in-out infinite;
+}
+#teach .tc-col.tap-me.nag .tc-screen { animation: syBlink 0.35s ease-in-out 4; }
+#teach .tc-wait {
+  pointer-events: auto; opacity: 1; color: #eafcff;
+  text-shadow: 0 0 calc(var(--u) * 0.8) rgba(47,216,255,0.9);
+  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 0.12)) rgba(63,208,255,0.85),
+              inset 0 0 calc(var(--u) * 1.4) rgba(47,216,255,0.3);
+}
+#teach .tc-wait.nag { animation: syBlink 0.4s ease-in-out 3; }
+
+/* ---- L2 V3: a guided comma that is right, and the requests notice ---- */
+#commas .cm-gap.ok .cm-comma { color: #7cf29a; text-shadow: 0 0 calc(var(--u) * 0.8) rgba(124,242,154,0.9); }
+#commas .cm-area { gap: calc(var(--u) * 2.2); }
