@@ -300,13 +300,12 @@
 #story.green .sy-earth { box-shadow: 0 0 calc(var(--u) * 3.4) rgba(124,242,154,0.8), inset 0 0 calc(var(--u) * 2) rgba(124,242,154,0.6); }
 @keyframes syRed { 0%, 100% { background-color: transparent; } 50% { background-color: rgba(255,60,40,0.18); } }
 
-/* ---- L1 V3: tap the glowing 4; START / CONTINUE under the chart ------ */
-#teach .tc-col.tap-me { cursor: pointer; }
-#teach .tc-col.tap-me .tc-screen {
+/* ---- L1: the glowing 4 (a visual cue only); START under the chart ---- */
+#teach .tc-col.cue .tc-screen {
   box-shadow: 0 0 0 max(2px, calc(var(--u) * 0.3)) #ffd166, 0 0 calc(var(--u) * 2.4) rgba(255,209,102,0.85);
-  animation: syBlink 1s ease-in-out infinite;
+  animation: syPulse 0.9s ease-in-out infinite;
 }
-#teach .tc-col.tap-me.nag .tc-screen { animation: syBlink 0.35s ease-in-out 4; }
+@keyframes syPulse { 0%, 100% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(1.04); filter: brightness(1.25); } }
 #teach .tc-wait {
   pointer-events: auto; opacity: 1; color: #eafcff;
   text-shadow: 0 0 calc(var(--u) * 0.8) rgba(47,216,255,0.9);
@@ -318,3 +317,233 @@
 /* ---- L2 V3: a guided comma that is right, and the requests notice ---- */
 #commas .cm-gap.ok .cm-comma { color: #7cf29a; text-shadow: 0 0 calc(var(--u) * 0.8) rgba(124,242,154,0.9); }
 #commas .cm-area { gap: calc(var(--u) * 2.2); }
+
+/* ============================================================================
+   6 Nov 2026 — QA FIXES
+   ========================================================================= */
+
+/* ---- the LEVEL n banner, and the Level 1 place value chart on it ----- */
+.lv-banner {
+  position: absolute; inset: 0; z-index: 60;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: calc(var(--u) * 3.2);
+  background: radial-gradient(ellipse 85% 80% at 50% 45%, rgba(6,20,38,0.96), rgba(3,8,16,0.99));
+  font-family: var(--display); color: #eaf6ff;
+  opacity: 0; transition: opacity 480ms ease; pointer-events: none;
+}
+.lv-banner.on { opacity: 1; }
+.lv-title {
+  font-weight: 700; font-size: calc(var(--u) * 7); letter-spacing: 0.2em; text-indent: 0.2em;
+  color: #ffd166; text-shadow: 0 0 calc(var(--u) * 2) rgba(255,209,102,0.55), 0 calc(var(--u) * 0.2) calc(var(--u) * 0.4) rgba(0,0,0,0.8);
+  animation: syPop 600ms cubic-bezier(0.34,1.56,0.64,1);
+}
+.lv-pvc { display: flex; gap: calc(var(--u) * 0.5); }
+.lv-col {
+  width: calc(var(--u) * 9.4); padding: calc(var(--u) * 1.4) 0;
+  border-radius: calc(var(--u) * 0.6); text-align: center;
+  font-weight: 700; font-size: calc(var(--u) * 1.05); letter-spacing: 0.04em;
+  color: #9fb6cc; background: rgba(12,30,48,0.95);
+  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 0.14)) #2b4a66;
+  animation: syPop 420ms cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.lv-col.hi {
+  color: #0b1420; background: #ffd166;
+  box-shadow: 0 0 calc(var(--u) * 1.8) rgba(255,209,102,0.8);
+}
+
+/* ---- Story: ERROR ERROR on the monitor itself, flashing and glitching - */
+#story .sy-alert.on-screen {
+  top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 4; white-space: nowrap;
+  padding: calc(var(--u) * 1) calc(var(--u) * 3);
+  font-size: calc(var(--u) * 5); letter-spacing: 0.16em;
+  background: rgba(60,6,4,0.55); color: #ff4a3a;
+  text-shadow: 0 0 calc(var(--u) * 1.2) rgba(255,60,40,0.95);
+  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 0.2)) #ff5a46, 0 0 calc(var(--u) * 3) rgba(255,60,40,0.6);
+  animation: syBlink 0.45s steps(2) infinite;
+}
+#story .sy-alert.on-screen::before,
+#story .sy-alert.on-screen::after {
+  content: attr(data-text); position: absolute; inset: 0;
+  display: grid; place-items: center; pointer-events: none;
+}
+#story .sy-alert.on-screen::before { color: #2fd8ff; mix-blend-mode: screen; animation: syGlitchA 0.6s steps(2) infinite; }
+#story .sy-alert.on-screen::after { color: #ffd166; mix-blend-mode: screen; animation: syGlitchB 0.5s steps(2) infinite; }
+@keyframes syGlitchA { 0%, 100% { transform: translate(0, 0); clip-path: inset(0 0 60% 0); } 50% { transform: translate(-0.6%, 2%); clip-path: inset(40% 0 20% 0); } }
+@keyframes syGlitchB { 0%, 100% { transform: translate(0, 0); clip-path: inset(70% 0 0 0); } 50% { transform: translate(0.8%, -2%); clip-path: inset(10% 0 55% 0); } }
+
+/* ---- Level 1: the number in words under the title --------------------- */
+#teach .tc-words {
+  position: absolute; left: 50%; transform: translate(-50%, -50%) translateY(calc(var(--u) * 0.6));
+  z-index: 5; white-space: nowrap;
+  font-family: var(--display); font-size: calc(var(--u) * 1.9); color: #ffd166;
+  text-shadow: 0 0 calc(var(--u) * 0.6) rgba(255,209,102,0.5), 0 calc(var(--u) * 0.1) 0 rgba(0,0,0,0.85);
+  opacity: 0; transition: opacity 320ms ease, transform 360ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+#teach .tc-words.on { opacity: 1; transform: translate(-50%, -50%); }
+
+/* ---- Level 1: how-to-play inside the guided example ------------------- */
+#teach.hl-arrows .tc-arrow { opacity: 1; }
+#teach.hl-arrows .tc-col:not(.off) .tc-arrow {
+  box-shadow: 0 0 0 max(2px, calc(var(--u) * 0.2)) #ffd166, 0 0 calc(var(--u) * 1.4) rgba(255,209,102,0.85);
+  animation: syPulse 0.9s ease-in-out infinite;
+}
+#teach.hl-verify .tc-go {
+  opacity: 1; color: #fff;
+  box-shadow: 0 0 0 max(2px, calc(var(--u) * 0.24)) #ffd166, 0 0 calc(var(--u) * 2) rgba(255,209,102,0.85);
+  animation: syPulse 0.9s ease-in-out infinite;
+}
+
+/* ---- Level 2: the command centre with the two headquarters ----------- */
+#commas .cm-scene { display: flex; gap: calc(var(--u) * 5); }
+#commas .cm-hqpanel {
+  position: relative; width: calc(var(--u) * 31);
+  display: grid; justify-items: center; gap: calc(var(--u) * 0.6);
+  padding: calc(var(--u) * 2.2) calc(var(--u) * 1.6) calc(var(--u) * 1.8);
+  border-radius: calc(var(--u) * 1.2);
+  background: linear-gradient(180deg, rgba(14,48,80,0.95), rgba(6,20,36,0.96));
+  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 0.18)) #2fd8ff, 0 0 calc(var(--u) * 2.4) rgba(47,216,255,0.45);
+  opacity: 0; transform: translateY(12%) scale(0.92);
+  transition: opacity 420ms ease, transform 520ms cubic-bezier(0.34,1.56,0.64,1);
+}
+#commas .cm-hqpanel.hq-in { box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 0.18)) #ffb347, 0 0 calc(var(--u) * 2.4) rgba(255,179,71,0.45); }
+#commas .cm-hqpanel.hq-intl { box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 0.18)) #b692ff, 0 0 calc(var(--u) * 2.4) rgba(182,146,255,0.45); }
+#commas .cm-hqpanel.shown { opacity: 1; transform: none; }
+#commas .cm-hqicon { width: calc(var(--u) * 6); height: calc(var(--u) * 6); color: #7fe3ff; }
+#commas .cm-hqicon svg { width: 100%; height: 100%; }
+#commas .cm-hqpanel b { font-size: calc(var(--u) * 1.5); letter-spacing: 0.08em; white-space: nowrap; }
+#commas .cm-hqsub { font-size: calc(var(--u) * 1.2); color: #9fb6cc; }
+#commas .cm-req {
+  position: absolute; top: calc(var(--u) * -1.3); right: calc(var(--u) * -1.3);
+  display: flex; align-items: center; gap: calc(var(--u) * 0.4);
+  padding: calc(var(--u) * 0.4) calc(var(--u) * 0.9); border-radius: 999px;
+  background: #ff5a46; color: #fff; font-size: calc(var(--u) * 1); font-weight: 700; letter-spacing: 0.08em;
+  box-shadow: 0 0 calc(var(--u) * 1.2) rgba(255,90,70,0.8);
+  animation: syBlink 0.9s ease-in-out infinite;
+}
+#commas .cm-req svg { width: calc(var(--u) * 1.4); height: calc(var(--u) * 1.4); }
+#commas .cm-req em { font-style: normal; }
+
+/* ============================================================================
+   6 Nov 2026 — THE COVER (STORY.gate): the crew from the world bible
+   ========================================================================= */
+#story.cover { background: #120b06; }
+#story.cover .cv-bg {
+  position: absolute; inset: -3%;
+  background-size: cover; background-position: 50% 55%;
+  animation: cvPush 24s ease-in-out infinite alternate;
+}
+@keyframes cvPush { from { transform: scale(1); } to { transform: scale(1.06) translateX(-1%); } }
+#story.cover .cv-haze {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(90deg, rgba(8,10,20,0.88) 0%, rgba(8,10,20,0.62) 34%, rgba(8,10,20,0.05) 58%, rgba(8,10,20,0.15) 100%),
+    radial-gradient(ellipse 60% 50% at 70% 30%, rgba(255,170,60,0.18), transparent 70%),
+    linear-gradient(0deg, rgba(4,6,12,0.75) 0%, transparent 26%);
+}
+#story.cover .cv-drift { position: absolute; inset: 0; pointer-events: none; }
+#story.cover .cv-drift span {
+  position: absolute; font-family: var(--display); font-weight: 700;
+  font-size: calc(var(--u) * 1.8); letter-spacing: 0.08em;
+  color: rgba(255,214,150,0.32); text-shadow: 0 0 calc(var(--u) * 1) rgba(255,170,60,0.35);
+  animation: cvFloat 14s ease-in-out infinite;
+}
+@keyframes cvFloat {
+  0%, 100% { transform: translateY(0); opacity: 0.2; }
+  50% { transform: translateY(calc(var(--u) * -2.4)); opacity: 0.75; }
+}
+
+/* the crew, standing on the bay floor */
+#story.cover .cv-cast { position: absolute; inset: 0; pointer-events: none; }
+#story.cover .cv-actor {
+  position: absolute; bottom: -1.5%; transform: translateX(-50%);
+  aspect-ratio: auto; display: flex; justify-content: center; align-items: flex-end;
+}
+#story.cover .cv-actor img {
+  position: relative; height: 100%; width: auto; display: block;
+  filter: drop-shadow(0 calc(var(--u) * 0.6) calc(var(--u) * 1.4) rgba(0,0,0,0.55))
+          drop-shadow(0 0 calc(var(--u) * 0.6) color-mix(in srgb, var(--glow) 55%, transparent));
+  opacity: 0; transform: translateY(18%);
+  transition: opacity 600ms ease var(--d), transform 900ms cubic-bezier(0.16, 1, 0.3, 1) var(--d);
+}
+#story.cover.on .cv-actor img { opacity: 1; transform: none; animation: cvSway 5.5s ease-in-out calc(var(--d) + 900ms) infinite; }
+#story.cover .cv-actor.nova img { animation-duration: 3.6s; }
+@keyframes cvSway { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.1%); } }
+#story.cover .cv-halo {
+  position: absolute; left: 50%; bottom: 1%; width: 140%; aspect-ratio: 3 / 1;
+  transform: translateX(-50%); border-radius: 50%;
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--glow) 55%, transparent) 0%, transparent 70%);
+  opacity: 0; transition: opacity 900ms ease var(--d);
+}
+#story.cover.on .cv-halo { opacity: 0.85; }
+#story.cover .cv-actor.veth { z-index: 1; }
+#story.cover .cv-actor.rill { z-index: 2; }
+#story.cover .cv-actor.nova { z-index: 3; }
+
+/* the name, and START */
+#story.cover .cv-side {
+  position: absolute; left: 6%; top: 50%; width: 40%;
+  transform: translateY(-50%);
+  display: grid; justify-items: start; gap: calc(var(--u) * 1.1);
+}
+#story.cover .cv-kicker {
+  font-family: var(--display); font-weight: 700; font-size: calc(var(--u) * 1.25);
+  letter-spacing: 0.32em; color: #7fe3ff;
+  padding: calc(var(--u) * 0.35) calc(var(--u) * 1); border-radius: 999px;
+  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 0.12)) rgba(127,227,255,0.6);
+  opacity: 0; transform: translateY(40%); transition: all 600ms ease 100ms;
+}
+#story.cover .cv-title {
+  margin: 0; display: grid; line-height: 0.92;
+  font-family: var(--display); font-weight: 700; letter-spacing: 0.04em;
+}
+#story.cover .cv-word {
+  font-size: calc(var(--u) * 6.6);
+  background: linear-gradient(180deg, #fff6d8 0%, #ffd166 45%, #ff9b3d 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 calc(var(--u) * 0.3) 0 #7a3a08) drop-shadow(0 0 calc(var(--u) * 1.6) rgba(255,170,60,0.55));
+  opacity: 0; transform: translateX(-8%);
+  transition: opacity 600ms ease, transform 800ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+#story.cover .cv-word.w0 { font-size: calc(var(--u) * 5.6); transition-delay: 200ms; }
+#story.cover .cv-word.w1 { transition-delay: 340ms; }
+#story.cover .cv-sub {
+  margin: 0; max-width: 92%;
+  font-family: var(--display); font-size: calc(var(--u) * 1.7); line-height: 1.35; color: #e6eef7;
+  text-shadow: 0 calc(var(--u) * 0.1) calc(var(--u) * 0.4) rgba(0,0,0,0.8);
+  opacity: 0; transition: opacity 600ms ease 520ms;
+}
+#story.cover .cv-start {
+  margin-top: calc(var(--u) * 1.2);
+  border: 0; cursor: pointer; padding: 0; background: none; font: inherit;
+  opacity: 0; transform: scale(0.8);
+  transition: opacity 500ms ease 700ms, transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1) 700ms;
+}
+#story.cover .cv-start span {
+  display: block; padding: calc(var(--u) * 1.1) calc(var(--u) * 5.4); border-radius: 999px;
+  font-family: var(--display); font-weight: 700; font-size: calc(var(--u) * 2.6);
+  letter-spacing: 0.24em; text-indent: 0.24em; color: #3a1a02;
+  background: linear-gradient(180deg, #ffe08a 0%, #ffb53d 60%, #f07a12 100%);
+  box-shadow: 0 calc(var(--u) * 0.4) 0 #8a3e05, 0 0 calc(var(--u) * 2.4) rgba(255,180,60,0.7),
+              inset 0 calc(var(--u) * 0.2) 0 rgba(255,255,255,0.6);
+  animation: cvBeat 1.8s ease-in-out 1.6s infinite;
+}
+#story.cover .cv-start:hover span { filter: brightness(1.08); }
+#story.cover .cv-start:active span { transform: translateY(calc(var(--u) * 0.3)); box-shadow: 0 calc(var(--u) * 0.1) 0 #8a3e05, 0 0 calc(var(--u) * 1.6) rgba(255,180,60,0.6); }
+@keyframes cvBeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+#story.cover .cv-mission {
+  margin: 0; font-family: var(--display); font-size: calc(var(--u) * 1.2);
+  letter-spacing: 0.14em; color: rgba(230,238,247,0.75); text-transform: uppercase;
+  opacity: 0; transition: opacity 600ms ease 900ms;
+}
+#story.cover.on .cv-kicker, #story.cover.on .cv-word { opacity: 1; transform: none; }
+#story.cover.on .cv-sub, #story.cover.on .cv-mission { opacity: 1; }
+#story.cover.on .cv-start { opacity: 1; transform: none; }
+
+/* START pressed: the crew and the name leave together */
+#story.cover.leaving { opacity: 0; transition: opacity 650ms ease 150ms; }
+#story.cover.leaving .cv-actor img { transform: translateY(12%); opacity: 0; transition-delay: 0ms; animation: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  #story.cover .cv-bg, #story.cover .cv-drift span, #story.cover .cv-actor img, #story.cover .cv-start span { animation: none !important; }
+}

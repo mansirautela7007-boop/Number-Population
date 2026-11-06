@@ -73,6 +73,20 @@ def spoken(text):
     return t
 
 
+def group_lines(n):
+    """the guided read-back, one caption per group, exactly as TEACH.JS's
+    groupLine() builds them: "Four crore…", …, "Seven hundred eighty-one." """
+    parts = []
+    for size, name in ((10 ** 7, 'crore'), (10 ** 5, 'lakh'), (10 ** 3, 'thousand')):
+        q, n = divmod(n, size)
+        if q:
+            parts.append((three(q) if q >= 100 else two(q)) + ' ' + name)
+    if n:
+        parts.append(three(n))
+    return [p[0].upper() + p[1:] + ('.' if i == len(parts) - 1 else '\u2026')
+            for i, p in enumerate(parts)]
+
+
 def key(text):
     """the same key VOICE.JS builds: tags out, spaces collapsed, lower case"""
     return re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', '', str(text))).strip().lower()
@@ -88,36 +102,39 @@ def lines(L):
     for k, who in [('request', 'veth'), ('error', 'computer'), ('verify', 'rill'), ('check', 'veth')]:
         add(who, S['lines'][k])
 
-    add('narrator', T4['narrator'])
     add('veth', T4['context'])
     for b in T4['beats']:
         add('veth', b)
-    for k in ('tapDigit', 'tapStart', 'continueIdle'):
-        add('veth', T4[k])
-    add('veth', L['lines']['swipe'])
+    add('veth', T4['tapStart'])
+    for h in T4.get('howTo', []):
+        add('veth', h)
     for t in T4['tries']:
         add(t.get('who', 'veth'), t['say'])
-        add('computer', t['right'])
+        add(t.get('rightWho', 'computer'), t['right'])
         add('veth', t['fb1'] + ' ' + t['fb2'])
         add('veth', t['fb3'])
         add('veth', t['idle'])
-    add('team', T4['done'])
+        if t.get('guide'):
+            for g in group_lines(t['target']):
+                add('veth', g)
+        if t.get('after'):
+            add('veth', t['after'])
+    add(T4.get('doneWho', 'team'), T4['done'])
     add('veth', T4['outro'])
 
-    add('narrator', C['narrator'])
     for t in C['teach']:
         add('veth', t)
     for g in C['guided']:
         for st in g['steps']:
             for k in ('say', 'right', 'fb1', 'fb2', 'fb3', 'idle'):
                 add('veth', st[k])
-        add('veth', g['ready'])
-        add('computer', C['ready'].replace('{c}', g['country']))
+        for k in ('remaining', 'ready', 'sent'):
+            add('veth', g[k])
     for k in ('transitionIdle', 'sendIdle', 'yourTurn', 'prepIn', 'prepIntl', 'wrong1', 'wrong2',
-              'wrong3in', 'wrong3intl', 'continueIdle'):
+              'wrong3in', 'wrong3intl'):
         add('veth', C[k])
     for p in C['practice']:
-        add('computer', C['ready'].replace('{c}', p['country']))
+        add(C.get('readyWho', 'computer'), C['ready'].replace('{c}', p['country']))
         add('veth', C['idle'].replace('{c}', p['country']))
     add('team', C['done'])
 

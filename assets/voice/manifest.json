@@ -24,19 +24,14 @@
   "ms": 2319,
   "who": "veth"
  },
- "level 1: from lakhs to crores.": {
-  "file": "narrator-c6306bf953.m4a",
-  "ms": 2231,
-  "who": "narrator"
- },
  "the population numbers don't match the data.": {
   "file": "veth-4d126c5fc4.m4a",
   "ms": 2667,
   "who": "veth"
  },
- "we know that the value of every place in a number is ten times the value of the place to its right.": {
-  "file": "veth-7606079c71.m4a",
-  "ms": 5535,
+ "we know that the value of every place in a number is ten times bigger than the value of the place at the right.": {
+  "file": "veth-07706fce50.m4a",
+  "ms": 6034,
   "who": "veth"
  },
  "let's look at the first country's population: 4,32,56,781.": {
@@ -49,19 +44,9 @@
   "ms": 3155,
   "who": "veth"
  },
- "now it's your turn! check the population reports from different countries!": {
-  "file": "veth-7a2b98d807.m4a",
-  "ms": 4350,
-  "who": "veth"
- },
- "check each country's data, enter the correct number using the arrows, and tap verify.": {
-  "file": "veth-e8addeae2b.m4a",
-  "ms": 5279,
-  "who": "veth"
- },
- "tap the glowing digit 4.": {
-  "file": "veth-2b93b195d6.m4a",
-  "ms": 1362,
+ "check the population reports from different countries!": {
+  "file": "veth-6c1b544e3e.m4a",
+  "ms": 2899,
   "who": "veth"
  },
  "tap start to check the reports.": {
@@ -69,25 +54,25 @@
   "ms": 1838,
   "who": "veth"
  },
- "tap continue.": {
-  "file": "veth-9df1db7d38.m4a",
-  "ms": 851,
+ "to change a digit, swipe it up or down, or use the arrows.": {
+  "file": "veth-1eb9155075.m4a",
+  "ms": 4114,
   "who": "veth"
  },
- "to change a number, swipe it up or down.": {
-  "file": "veth-b97eafd3ee.m4a",
-  "ms": 2918,
+ "when the number is ready, tap verify.": {
+  "file": "veth-7142340e85.m4a",
+  "ms": 2519,
   "who": "veth"
  },
  "check country a's population data.": {
-  "file": "veth-364d7e1be5.m4a",
-  "ms": 2156,
-  "who": "veth"
+  "file": "narrator-b27aacfeb0.m4a",
+  "ms": 2151,
+  "who": "narrator"
  },
- "country a data verified!": {
-  "file": "computer-c5d74cf597.m4a",
-  "ms": 2392,
-  "who": "computer"
+ "yes correct! four crore thirty-two lakh fifty-six thousand seven hundred eighty-one. country a data verified!": {
+  "file": "narrator-44c3a307c4.m4a",
+  "ms": 7223,
+  "who": "narrator"
  },
  "the number doesn't match the country's data. try again! start with four crore, then thirty-two lakh.": {
   "file": "veth-de3506df03.m4a",
@@ -99,20 +84,45 @@
   "ms": 6220,
   "who": "veth"
  },
- "read country a's data and enter the correct population.": {
-  "file": "veth-fa2e3bac5f.m4a",
-  "ms": 3468,
+ "enter country a's correct population.": {
+  "file": "veth-13fa579c0c.m4a",
+  "ms": 2308,
+  "who": "veth"
+ },
+ "four crore…": {
+  "file": "veth-0a5a92f752.m4a",
+  "ms": 842,
+  "who": "veth"
+ },
+ "thirty-two lakh…": {
+  "file": "veth-f8742d2221.m4a",
+  "ms": 965,
+  "who": "veth"
+ },
+ "fifty-six thousand…": {
+  "file": "veth-ac0012ed88.m4a",
+  "ms": 1330,
+  "who": "veth"
+ },
+ "seven hundred eighty-one.": {
+  "file": "veth-5d109c8551.m4a",
+  "ms": 1574,
+  "who": "veth"
+ },
+ "now it's your turn!": {
+  "file": "veth-127844bcfd.m4a",
+  "ms": 1262,
   "who": "veth"
  },
  "check country b's population data.": {
-  "file": "computer-af422ee00c.m4a",
-  "ms": 2852,
-  "who": "computer"
+  "file": "narrator-804c54d00b.m4a",
+  "ms": 2221,
+  "who": "narrator"
  },
- "country b data verified!": {
-  "file": "computer-dbf6ab2fb4.m4a",
-  "ms": 2323,
-  "who": "computer"
+ "yes correct! five crore sixty-two lakh thirty-four thousand seven hundred eighty-one. country b data verified!": {
+  "file": "narrator-5bc6bf4ad6.m4a",
+  "ms": 7305,
+  "who": "narrator"
  },
  "the number doesn't match the country's data. try again! look at the crore and lakh groups in the data.": {
   "file": "veth-246fd0a7e5.m4a",
@@ -130,14 +140,14 @@
   "who": "veth"
  },
  "check country c's population data.": {
-  "file": "computer-9d1f833a78.m4a",
-  "ms": 2898,
-  "who": "computer"
+  "file": "narrator-3ee07a8411.m4a",
+  "ms": 2291,
+  "who": "narrator"
  },
- "country c data verified!": {
-  "file": "computer-cf40699850.m4a",
-  "ms": 2369,
-  "who": "computer"
+ "yes correct! two crore seventy-six lakh thirty-four thousand seven hundred eighty-one. country c data verified!": {
+  "file": "narrator-be14ea9da8.m4a",
+  "ms": 7339,
+  "who": "narrator"
  },
  "the number doesn't match the country's data. try again! check the lakhs in the population data.": {
   "file": "veth-c036555a9c.m4a",
@@ -155,14 +165,14 @@
   "who": "veth"
  },
  "check country d's population data.": {
-  "file": "computer-f279553c80.m4a",
-  "ms": 2852,
-  "who": "computer"
+  "file": "narrator-68667ca321.m4a",
+  "ms": 2198,
+  "who": "narrator"
  },
- "country d data verified!": {
-  "file": "computer-bf97b49c10.m4a",
-  "ms": 2323,
-  "who": "computer"
+ "yes correct! forty-three lakh twenty-five thousand eight hundred seventeen. country d data verified!": {
+  "file": "narrator-280492cacc.m4a",
+  "ms": 6538,
+  "who": "narrator"
  },
  "the number doesn't match the country's data. try again! look at the lakhs group.": {
   "file": "veth-370f9b3aba.m4a",
@@ -180,14 +190,14 @@
   "who": "veth"
  },
  "check country e's population data.": {
-  "file": "computer-b7eda05c1a.m4a",
-  "ms": 2829,
-  "who": "computer"
+  "file": "narrator-38dc54e979.m4a",
+  "ms": 2174,
+  "who": "narrator"
  },
- "country e data verified!": {
-  "file": "computer-5e7486f1dd.m4a",
-  "ms": 2346,
-  "who": "computer"
+ "yes correct! eighty-five lakh sixty-seven thousand two hundred nineteen. country e data verified!": {
+  "file": "narrator-965babeba8.m4a",
+  "ms": 6585,
+  "who": "narrator"
  },
  "the number doesn't match the country's data. try again! check how many lakhs are written in the data.": {
   "file": "veth-11ca15111f.m4a",
@@ -205,14 +215,14 @@
   "who": "veth"
  },
  "check country f's population data.": {
-  "file": "computer-4b6ebf3250.m4a",
-  "ms": 2875,
-  "who": "computer"
+  "file": "narrator-a7842e75f7.m4a",
+  "ms": 2221,
+  "who": "narrator"
  },
- "country f data verified!": {
-  "file": "computer-08e5bc2e67.m4a",
-  "ms": 2358,
-  "who": "computer"
+ "yes correct! seven lakh twenty-four thousand five hundred sixty-three. country f data verified!": {
+  "file": "narrator-e00cfd0ce3.m4a",
+  "ms": 6608,
+  "who": "narrator"
  },
  "the number doesn't match the country's data. try again! look at the thousands written in the data.": {
   "file": "veth-b02a024cd5.m4a",
@@ -230,14 +240,14 @@
   "who": "veth"
  },
  "check country g's population data.": {
-  "file": "computer-4306dead71.m4a",
-  "ms": 2875,
-  "who": "computer"
+  "file": "narrator-92cf1bcc47.m4a",
+  "ms": 2256,
+  "who": "narrator"
  },
- "country g data verified!": {
-  "file": "computer-2c39a62155.m4a",
-  "ms": 2358,
-  "who": "computer"
+ "yes correct! six crore forty-three lakh twenty-five thousand eight hundred seventeen. country g data verified!": {
+  "file": "narrator-76dd87dc50.m4a",
+  "ms": 7258,
+  "who": "narrator"
  },
  "the number doesn't match the data. try again! check the crore and lakh groups.": {
   "file": "veth-26350d2949.m4a",
@@ -255,14 +265,14 @@
   "who": "veth"
  },
  "check country h's population data.": {
-  "file": "computer-dc02547894.m4a",
-  "ms": 3061,
-  "who": "computer"
+  "file": "narrator-c7cf44cabb.m4a",
+  "ms": 2335,
+  "who": "narrator"
  },
- "country h data verified!": {
-  "file": "computer-bb85d3eb35.m4a",
-  "ms": 2416,
-  "who": "computer"
+ "yes correct! fifty-seven lakh thirty-six thousand four hundred twenty-eight. country h data verified!": {
+  "file": "narrator-dc6a224eb9.m4a",
+  "ms": 6759,
+  "who": "narrator"
  },
  "check the population number again. look at the lakhs group in the data.": {
   "file": "veth-1b1e48bd94.m4a",
@@ -280,14 +290,14 @@
   "who": "veth"
  },
  "check country i's population data.": {
-  "file": "computer-21680da32b.m4a",
-  "ms": 2898,
-  "who": "computer"
+  "file": "narrator-53056735c0.m4a",
+  "ms": 2186,
+  "who": "narrator"
  },
- "country i data verified!": {
-  "file": "computer-e312bada20.m4a",
-  "ms": 2288,
-  "who": "computer"
+ "yes correct! eight crore twenty-six lakh forty-three thousand five hundred nineteen. country i data verified!": {
+  "file": "narrator-ad92caf24f.m4a",
+  "ms": 7096,
+  "who": "narrator"
  },
  "that number doesn't match. try again! check the lakhs written in the data.": {
   "file": "veth-5b5b8e5f92.m4a",
@@ -300,27 +310,22 @@
   "who": "veth"
  },
  "all countries' population data verified!": {
-  "file": "team-aefd2b8ac5.m4a",
-  "ms": 2127,
-  "who": "team"
+  "file": "rill-bc75accc80.m4a",
+  "ms": 2020,
+  "who": "rill"
  },
  "great! all the population records are ready!": {
   "file": "veth-f41f38a66e.m4a",
   "ms": 2934,
   "who": "veth"
  },
- "level 2: the indian and international number systems.": {
-  "file": "narrator-143ee67648.m4a",
-  "ms": 3508,
-  "who": "narrator"
- },
  "we received requests from both indian and international headquarters!": {
-  "file": "veth-c989780003.m4a",
+  "file": "veth-48544ca60f.m4a",
   "ms": 4014,
   "who": "veth"
  },
- "let's add commas according to each number system to make the reports easier to read!": {
-  "file": "veth-6056c5169c.m4a",
+ "let's add commas according to each number system to make the reports easier to read.": {
+  "file": "veth-acfd695837.m4a",
   "ms": 4722,
   "who": "veth"
  },
@@ -329,9 +334,9 @@
   "ms": 4490,
   "who": "veth"
  },
- "the indian number system uses thousands, lakhs and crores to read large numbers.": {
-  "file": "veth-145494713b.m4a",
-  "ms": 5407,
+ "indian number system uses thousands, lakhs and crores to read large numbers.": {
+  "file": "veth-87bdf2d355.m4a",
+  "ms": 5129,
   "who": "veth"
  },
  "start from the right. count three digits and put a comma. this is the ones group.": {
@@ -339,14 +344,14 @@
   "ms": 5127,
   "who": "veth"
  },
- "again, count two digits and put another comma. this is the thousands group.": {
-  "file": "veth-1f493f75f7.m4a",
-  "ms": 4771,
+ "now, count two digits and put another comma. this is the thousands group.": {
+  "file": "veth-d6db18900e.m4a",
+  "ms": 4676,
   "who": "veth"
  },
- "now count two more digits for the lakhs group. the remaining digit is in crores!": {
-  "file": "veth-9851f7f156.m4a",
-  "ms": 4896,
+ "next, count two more digits for the lakhs group. the remaining digit belongs to the crores group.": {
+  "file": "veth-f1bc5dcaa5.m4a",
+  "ms": 6011,
   "who": "veth"
  },
  "we read this as four crore thirty-two lakh fifty-six thousand seven hundred eighty-one.": {
@@ -354,8 +359,8 @@
   "ms": 5151,
   "who": "veth"
  },
- "the international number system uses thousands, millions and billions. here, commas follow a different pattern!": {
-  "file": "veth-a4dc2fff32.m4a",
+ "the international number system uses thousands, millions and billions. here, commas follow a different pattern.": {
+  "file": "veth-664c9d1a7a.m4a",
   "ms": 7381,
   "who": "veth"
  },
@@ -364,13 +369,13 @@
   "ms": 5510,
   "who": "veth"
  },
- "now count three more digits and add a comma. this is the thousands group.": {
-  "file": "veth-374e4d904c.m4a",
-  "ms": 4409,
+ "now count three more digits and place another comma. this is the thousands group.": {
+  "file": "veth-f4bad763da.m4a",
+  "ms": 4815,
   "who": "veth"
  },
- "the remaining digits belong to the millions group. for even bigger numbers, we use billions!": {
-  "file": "veth-0040cd42d2.m4a",
+ "the remaining digits belong to the millions group. for even bigger numbers, we use billions.": {
+  "file": "veth-ca6feec93a.m4a",
   "ms": 5744,
   "who": "veth"
  },
@@ -379,19 +384,19 @@
   "ms": 5256,
   "who": "veth"
  },
- "indian grouping uses three digits, then pairs of two.": {
-  "file": "veth-77dad4dc4f.m4a",
-  "ms": 3422,
+ "in the indian number system, we group the last three digits first, then the remaining digits in pairs of two.": {
+  "file": "veth-691dd41f1e.m4a",
+  "ms": 6673,
   "who": "veth"
  },
- "international grouping uses groups of three throughout!": {
-  "file": "veth-6af92cf4f0.m4a",
-  "ms": 3177,
+ "in the international number system, we group digits in sets of three throughout.": {
+  "file": "veth-7ca2258c72.m4a",
+  "ms": 4839,
   "who": "veth"
  },
- "now prepare the population reports for both headquarters!": {
-  "file": "veth-3ff40f4c9d.m4a",
-  "ms": 3387,
+ "let's prepare the population reports for both the headquarters.": {
+  "file": "veth-994a2ecc3a.m4a",
+  "ms": 3514,
   "who": "veth"
  },
  "start from the right. count three digits and place the first comma.": {
@@ -399,9 +404,9 @@
   "ms": 4035,
   "who": "veth"
  },
- "great! the first three digits are grouped!": {
-  "file": "veth-4018d2cc53.m4a",
-  "ms": 2783,
+ "correct! you marked the first three digits in the ones group.": {
+  "file": "veth-f0470f21e8.m4a",
+  "ms": 3636,
   "who": "veth"
  },
  "check where you placed the comma.": {
@@ -429,9 +434,9 @@
   "ms": 3201,
   "who": "veth"
  },
- "yes! that's the thousands group!": {
-  "file": "veth-21c658ea76.m4a",
-  "ms": 2132,
+ "correct! you marked the next two digits in the thousands group.": {
+  "file": "veth-ae93a6aeea.m4a",
+  "ms": 3647,
   "who": "veth"
  },
  "check the comma position.": {
@@ -459,9 +464,9 @@
   "ms": 3281,
   "who": "veth"
  },
- "perfect! the population is written in the indian number system!": {
-  "file": "veth-14f3544a44.m4a",
-  "ms": 3930,
+ "yes! correct! you marked the next two digits in the lakhs group.": {
+  "file": "veth-a62f1cf232.m4a",
+  "ms": 4256,
   "who": "veth"
  },
  "check the last comma.": {
@@ -484,24 +489,29 @@
   "ms": 1279,
   "who": "veth"
  },
- "the indian report of one country is ready!": {
-  "file": "veth-e9ff7d020e.m4a",
+ "the remaining digit belongs to the crores group!": {
+  "file": "veth-7dfeed1c02.m4a",
+  "ms": 2644,
+  "who": "veth"
+ },
+ "the indian report of one country is ready.": {
+  "file": "veth-edbda9c88f.m4a",
   "ms": 2667,
   "who": "veth"
  },
- "country a population report ready!": {
-  "file": "computer-4dc062cb91.m4a",
-  "ms": 2973,
-  "who": "computer"
+ "perfect! the data is written in the indian number system!": {
+  "file": "veth-672c2f3d90.m4a",
+  "ms": 3640,
+  "who": "veth"
  },
  "start from the right and count three digits.": {
   "file": "veth-25591f5c28.m4a",
   "ms": 2573,
   "who": "veth"
  },
- "great! you've grouped the first three digits!": {
-  "file": "veth-6ad8dfd999.m4a",
-  "ms": 2899,
+ "yes! correct! you marked the first three digits in the ones group.": {
+  "file": "veth-c8cf6b4005.m4a",
+  "ms": 4326,
   "who": "veth"
  },
  "place the comma before 817.": {
@@ -514,9 +524,9 @@
   "ms": 3775,
   "who": "veth"
  },
- "perfect! the population is written in the international number system!": {
-  "file": "veth-ed945d1183.m4a",
-  "ms": 4255,
+ "correct! you marked the next three digits in the thousands group.": {
+  "file": "veth-f777a92e92.m4a",
+  "ms": 3763,
   "who": "veth"
  },
  "count three more digits to the left.": {
@@ -529,15 +539,20 @@
   "ms": 2886,
   "who": "veth"
  },
- "the international report of one country is ready!": {
-  "file": "veth-0427f7d730.m4a",
+ "the remaining digits belong to the millions group!": {
+  "file": "veth-b188bcceb1.m4a",
+  "ms": 2702,
+  "who": "veth"
+ },
+ "the international report of one country is ready.": {
+  "file": "veth-806c30f673.m4a",
   "ms": 2969,
   "who": "veth"
  },
- "country d population report ready!": {
-  "file": "computer-1c1b21ce7d.m4a",
-  "ms": 2961,
-  "who": "computer"
+ "perfect! the data is written in the international number system!": {
+  "file": "veth-c1c824af21.m4a",
+  "ms": 3965,
+  "who": "veth"
  },
  "tap continue to prepare the reports.": {
   "file": "veth-0e39e24645.m4a",
@@ -585,9 +600,9 @@
   "who": "veth"
  },
  "country b population report ready!": {
-  "file": "computer-9733444af4.m4a",
-  "ms": 2961,
-  "who": "computer"
+  "file": "narrator-ea55154d37.m4a",
+  "ms": 2219,
+  "who": "narrator"
  },
  "complete country b's report.": {
   "file": "veth-82a3196708.m4a",
@@ -595,9 +610,9 @@
   "who": "veth"
  },
  "country c population report ready!": {
-  "file": "computer-9737521de2.m4a",
-  "ms": 3008,
-  "who": "computer"
+  "file": "narrator-431cad739d.m4a",
+  "ms": 2242,
+  "who": "narrator"
  },
  "complete country c's report.": {
   "file": "veth-b17e4f470c.m4a",
@@ -605,9 +620,9 @@
   "who": "veth"
  },
  "country e population report ready!": {
-  "file": "computer-0cc1403085.m4a",
-  "ms": 2938,
-  "who": "computer"
+  "file": "narrator-a71d2e1109.m4a",
+  "ms": 2149,
+  "who": "narrator"
  },
  "complete country e's report.": {
   "file": "veth-5e8c99ddce.m4a",
@@ -615,9 +630,9 @@
   "who": "veth"
  },
  "country f population report ready!": {
-  "file": "computer-ab6ef1365b.m4a",
-  "ms": 2996,
-  "who": "computer"
+  "file": "narrator-a88d00b072.m4a",
+  "ms": 2196,
+  "who": "narrator"
  },
  "complete country f's report.": {
   "file": "veth-3d9eb5f55c.m4a",
@@ -625,9 +640,9 @@
   "who": "veth"
  },
  "country g population report ready!": {
-  "file": "computer-f2e0ab4528.m4a",
-  "ms": 2996,
-  "who": "computer"
+  "file": "narrator-2b4be8da09.m4a",
+  "ms": 2207,
+  "who": "narrator"
  },
  "complete country g's report.": {
   "file": "veth-75fd7c9316.m4a",
@@ -635,9 +650,9 @@
   "who": "veth"
  },
  "country h population report ready!": {
-  "file": "computer-196d4f3853.m4a",
-  "ms": 3054,
-  "who": "computer"
+  "file": "narrator-8ff5154b63.m4a",
+  "ms": 2242,
+  "who": "narrator"
  },
  "complete country h's report.": {
   "file": "veth-c5ae4e6609.m4a",
@@ -645,9 +660,9 @@
   "who": "veth"
  },
  "country i population report ready!": {
-  "file": "computer-bcf3c367c8.m4a",
-  "ms": 2880,
-  "who": "computer"
+  "file": "narrator-dbfb309819.m4a",
+  "ms": 2138,
+  "who": "narrator"
  },
  "complete country i's report.": {
   "file": "veth-cdd89ec605.m4a",
@@ -655,9 +670,9 @@
   "who": "veth"
  },
  "country j population report ready!": {
-  "file": "computer-166f911c15.m4a",
-  "ms": 3031,
-  "who": "computer"
+  "file": "narrator-a17582b50e.m4a",
+  "ms": 2207,
+  "who": "narrator"
  },
  "complete country j's report.": {
   "file": "veth-4fb0bfc3bb.m4a",

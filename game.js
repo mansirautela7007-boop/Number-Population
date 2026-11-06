@@ -202,6 +202,7 @@ var PAUSE = (function () {
     videos.forEach(function (v) { v.pause(); });
     if (typeof SFX !== 'undefined') SFX.suspend();
     if (window.VOICE) VOICE.hold();
+    if (window.AUDIO) AUDIO.hold();
   }
   function resume() {
     if (!paused) return;
@@ -223,6 +224,7 @@ var PAUSE = (function () {
     anims = []; videos = [];
     if (typeof SFX !== 'undefined') SFX.resume();
     if (window.VOICE) VOICE.unhold();
+    if (window.AUDIO) AUDIO.unhold();
   }
 
   /* ---- when -------------------------------------------------------------- */
@@ -2045,13 +2047,25 @@ var VOICE = (function () {
     };
     x.send();
   })();
+  /* 6 Nov 2026: THE CLIP'S OWN END ENDS THE LINE. A line with a clip used
+     to end on a timer worked out from the clip's length, so a clip that
+     started late (still loading) or ran long was cut off by the next line.
+     Now the audio's "ended" event ends it, a PACE.clipTail breath later;
+     the timer is only a cap. If the browser will not play it at all (no tap
+     yet, a failed file) the line falls back to the clip's measured length. */
   function startAudio(c, fromMs) {
     stopAudio();
     var a = audio = new Audio(ASSET('assets/voice/' + c.file));
     a.muted = muted;
     if (fromMs > 0) a.addEventListener('loadedmetadata', function () { a.currentTime = fromMs / 1000; }, { once: true });
+    var mine = cur;
+    var timed = function () { if (cur === mine && audio === a && cur) cur.ms = Math.min(cur.ms, Math.max(cur.est, elapsed())); };
+    a.addEventListener('ended', function () {
+      if (cur === mine && audio === a && cur) cur.ms = elapsed() + PACE.clipTail;
+    });
+    a.addEventListener('error', timed);
     var p = a.play();
-    if (p && p.catch) p.catch(function () {});
+    if (p && p.catch) p.catch(timed);
   }
   function stopAudio() {
     if (audio) { audio.pause(); audio = null; }
@@ -2062,6 +2076,7 @@ var VOICE = (function () {
     if (unlocked) return;
     unlocked = true;
     if (cur && cur.clip && !held && (!audio || audio.paused) && elapsed() < cur.clip.ms - 200) {
+      cur.ms = cur.est + Math.max(4000, cur.clip.ms);
       startAudio(cur.clip, elapsed());
     }
   }
@@ -2087,9 +2102,18 @@ var VOICE = (function () {
   }
   function loop() {
     if (tick) return;
+    var lastT = now();
     tick = setInterval(function () {
+      var t = now(), dt = t - lastT;
+      lastT = t;
       if (!cur) { clearInterval(tick); tick = null; return; }
       if (held) return;
+      /* 6 Nov 2026: A CLIP STILL LOADING OR BUFFERING HOLDS ITS LINE. While
+         the audio is meant to be playing but has no data yet, the line's
+         clock does not run (up to 10 s in all), so a slow file is never cut
+         off by its own cap — and the words wait with it. */
+      if (cur.clip && audio && !audio.paused && !audio.ended && audio.readyState < 3 &&
+          (cur.stall = (cur.stall || 0) + dt) < 10000) cur.from += dt;
       if (elapsed() >= cur.ms) {
         var c = cur;
         cur = null; quietAt = now();
@@ -2108,7 +2132,7 @@ var VOICE = (function () {
     /* the same line asked for again while it is still up is said once */
     if (cur && cur.k === k) {
       if (onEnd) { var prev = cur.onEnd; cur.onEnd = function () { if (prev) prev(); onEnd(); }; }
-      return Math.max(0, cur.ms - elapsed());
+      return Math.max(0, (cur.est || cur.ms) - elapsed());
     }
     stop();
     lastK = k;
@@ -2117,13 +2141,15 @@ var VOICE = (function () {
     if (c && c.ms) {
       /* the clip sets the line's length, and the words type along with it */
       cur.clip = c;
-      cur.ms = Math.max(PACE.min, c.ms + PACE.clipTail);
+      cur.est = Math.max(PACE.min, c.ms + PACE.clipTail);
+      /* only a cap: the clip's "ended" brings the end in (startAudio) */
+      cur.ms = cur.est + Math.max(4000, c.ms);
       cur.type = c.ms * 0.85;
       if (!held) startAudio(c, 0);
     }
     if (held) cur.pausedAt = 0;
     loop();
-    return cur.ms;
+    return cur.est || cur.ms;
   }
   function then(text) {
     if (!cur) return play(text);
@@ -2156,6 +2182,11 @@ var VOICE = (function () {
     mute: function (m) { muted = !!m; if (audio) audio.muted = muted; },
     /* the START press: the tap that lets the browser play sound */
     unlock: unlock,
+    /* is this line the one being said right now */
+    saying: function (text) { return !!cur && cur.k === key(text); },
+    /* a line is up — being said, or paused part-way (playing() is false
+       while the game is paused, but the line is not over) */
+    busy: function () { return !!cur; },
     hasClip: function (text) { return !!CLIPS[key(text)]; },
     /* the typewriter follows this: 0..1 across the typing part of the line */
     progress: function (text) {
@@ -2186,6 +2217,94 @@ var VOICE = (function () {
   };
 })();
 window.VOICE = VOICE;
+
+/* ########################################################################## */
+/*  AUDIO.JS — background music and recorded sound effects                   */
+/* ########################################################################## */
+
+/* ============================================================================
+   AUDIO.JS (6 Nov 2026) — the background music, and recorded sound effects
+   layered ON TOP of SFX.JS's synthesised ones (which all still play).
+   Every file is CC0 from OpenGameArt; see assets/audio/CREDITS.md.
+
+     AUDIO.music('story' | 'level1' | 'level2')   cross-fade to that loop
+     AUDIO.sfx('correct' | 'click' | 'swish' | 'whoosh' | 'alarm' |
+               'notify' | 'fanfare')               a one-shot
+
+   The music sits low and dips further while a voice-over is playing, so the
+   lines are always clear. PAUSE.JS holds it with everything else, and a
+   browser that will not play sound before the first tap gets the music
+   started on that tap.
+   ========================================================================= */
+var AUDIO = (function () {
+  var DIR = 'assets/audio/';
+  var TRACKS = {
+    story: 'music/story-space-overworld.m4a',
+    level1: 'music/level1-outer-space.m4a',
+    level2: 'music/level2-space-flight.m4a'
+  };
+  /* one-shots and how loud each is against the synthesised sounds */
+  var FX = {
+    correct: 0.55, click: 0.5, swish: 0.45, whoosh: 0.5,
+    alarm: 0.4, notify: 0.5, fanfare: 0.5
+  };
+  var MUSIC_VOL = 0.22, DUCK = 0.4;          // under a voice-over: 40% of that
+  var cur = null, name = '', held = false, level = 0, fadeT = null, duckT = null;
+
+  function src(path) { return (window.ASSET ? ASSET(DIR + path) : DIR + path); }
+  function tryPlay(a) { var p = a.play(); if (p && p.catch) p.catch(function () {}); }
+
+  /* the music's level follows the voice: down while a line is said */
+  function target() { return MUSIC_VOL * (window.VOICE && VOICE.playing() ? DUCK : 1); }
+  function tick() {
+    if (!cur || held) return;
+    var t = target();
+    level += (t - level) * 0.18;
+    if (Math.abs(t - level) < 0.002) level = t;
+    cur.volume = Math.max(0, Math.min(1, level));
+  }
+
+  function music(n) {
+    if (!TRACKS[n] || name === n) return;
+    name = n;
+    var old = cur;
+    var a = new Audio(src(TRACKS[n]));
+    a.loop = true;
+    a.volume = 0;
+    level = 0;
+    cur = a;
+    if (!held) tryPlay(a);
+    if (!duckT) duckT = setInterval(tick, 80);
+    /* the old loop fades out under the new one */
+    if (old) {
+      var v = old.volume;
+      var f = setInterval(function () {
+        v -= 0.02;
+        if (v <= 0) { clearInterval(f); old.pause(); return; }
+        old.volume = v;
+      }, 60);
+    }
+  }
+  function sfx(n) {
+    if (!(n in FX) || held) return;
+    var a = new Audio(src('sfx/' + n + '.m4a'));
+    a.volume = FX[n];
+    tryPlay(a);
+  }
+  /* the first tap starts music the browser would not start on its own */
+  ['pointerdown', 'keydown'].forEach(function (ev) {
+    document.addEventListener(ev, function () { if (cur && cur.paused && !held) tryPlay(cur); }, true);
+  });
+
+  return {
+    music: music,
+    sfx: sfx,
+    hold: function () { held = true; if (cur) cur.pause(); },
+    unhold: function () { held = false; if (cur) tryPlay(cur); },
+    state: function () { return { track: name, playing: !!cur && !cur.paused, volume: cur ? +cur.volume.toFixed(3) : 0 }; }
+  };
+})();
+window.AUDIO = AUDIO;
 /* a line is being said right now: the dials wait for it (16 Oct 2026) */
 function voiceBusy() { return !!(window.VOICE && VOICE.playing()); }
 
@@ -2464,14 +2583,11 @@ var DIALOG = (function () {
   var NAMES = { veth: 'COMMANDER VETH', rill: i18n('names.rill'), nova: 'NOVA',
                 team: i18n('names.team'), computer: i18n('names.computer'),
                 narrator: i18n('names.narrator') };
-  /* the two with no artwork get a drawn face */
+  /* 6 Nov 2026: Commander Veth's portrait, cropped from his world-bible
+     character sheet (the same cut-out as the cover) */
+  var PORTRAIT = { veth: 'assets/portraits/veth.png' };
+  /* the ones with no artwork get a drawn face */
   var DRAWN = {
-    veth: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#2b1f4a"/>' +
-          '<path d="M10 64 Q12 42 32 42 Q52 42 54 64Z" fill="#4b3a8c"/><path d="M26 42 L32 52 L38 42Z" fill="#ffd166"/>' +
-          '<circle cx="32" cy="27" r="12" fill="#c9b8ff"/><path d="M19 24 Q20 11 32 11 Q44 11 45 24 Q40 17 32 17 Q24 17 19 24Z" fill="#1d1533"/>' +
-          '<circle cx="27" cy="27" r="1.8" fill="#1d1533"/><circle cx="37" cy="27" r="1.8" fill="#1d1533"/>' +
-          '<path d="M28 33 Q32 35 36 33" fill="none" stroke="#1d1533" stroke-width="1.8" stroke-linecap="round"/>' +
-          '<rect x="14" y="48" width="9" height="3" rx="1" fill="#ffd166"/><rect x="41" y="48" width="9" height="3" rx="1" fill="#ffd166"/></svg>',
     narrator: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#2a1f3d"/>' +
           '<rect x="25" y="12" width="14" height="24" rx="7" fill="#d9c7ff"/>' +
           '<path d="M19 30 Q19 44 32 44 Q45 44 45 30" fill="none" stroke="#d9c7ff" stroke-width="3"/>' +
@@ -2530,7 +2646,7 @@ var DIALOG = (function () {
     face.style.backgroundRepeat = '';
     face.style.backgroundImage = DRAWN[who]
       ? 'url("data:image/svg+xml,' + encodeURIComponent(DRAWN[who]) + '")'
-      : 'url("' + ASSET('assets/portraits/' + who + '.webp') + '")';
+      : 'url("' + ASSET(PORTRAIT[who] || 'assets/portraits/' + who + '.webp') + '")';
   }
 
   function build() {
@@ -2556,6 +2672,9 @@ var DIALOG = (function () {
   function say(who, line, o) {
     o = o || {};
     if (!NAMES[who] || !line) return hide();
+    /* 6 Nov 2026: THE NARRATOR IS HEARD, NOT SHOWN — the voice plays and no
+       dialogue box comes up (every module's lines come through here) */
+    if (who === 'narrator') return hide();
     if (!box) build();
     clearTimeout(hideT);
     if (raf) cancelAnimationFrame(raf);
@@ -5612,13 +5731,17 @@ var NP_LEVEL = 4;
        show    the figure the drums roll to once the beat's move has landed
        point   the column the hand then rests on
        title   the band's text
-       tapCol  the beat waits for this column to be tapped (idle: the nudge)
+       cue     this column glows and pulses while the line is said — a
+               visual cue only, nothing to tap (6 Nov 2026)
+       words   this figure is shown in words under the title
        button  the beat waits for this key to be pressed (idle: the nudge) */
   var L4 = 'teach.level4.', L4_TITLES = i18n(L4 + 'beatTitles');
   SCRIPT[4] = {
     chartFrom: 3, chart: 4,
     teacher: 'veth',
-    intro: { who: 'narrator', text: i18n(L4 + 'narrator') },
+    /* 6 Nov 2026: no narrated title — an on-screen LEVEL 1 banner, with the
+       place value chart in Indian order and this level's places lit */
+    banner: { title: i18n(L4 + 'banner'), chart: i18n(L4 + 'chart'), focus: i18n(L4 + 'chartFocus') },
     context: { who: 'veth', text: i18n(L4 + 'context') },
     lead: { who: 'veth', text: '' },
     start: 400000,
@@ -5627,13 +5750,16 @@ var NP_LEVEL = 4;
                act: ['name+extend:1', 'extend:1'][k] || '',
                show: [4000000, 43256781][k],
                point: [0, null, 0][k],
-               tapCol: k === 2 ? 0 : null,
+               cue: k === 2 ? 0 : null,
+               words: k === 1 ? 43256781 : null,
                button: k === 3 ? i18n('teach.start') : null,
-               idle: [null, null, i18n(L4 + 'tapDigit'), i18n(L4 + 'tapStart')][k] || null };
+               idle: [null, null, null, i18n(L4 + 'tapStart')][k] || null };
     }),
     tries: i18n(L4 + 'tries'),
     done: i18n(L4 + 'done'),
+    doneWho: i18n(L4 + 'doneWho'),
     outro: i18n(L4 + 'outro'),
+    howTo: i18n(L4 + 'howTo'),
     continueIdle: i18n(L4 + 'continueIdle')
   };
   /* who teaches this lesson: Veth on the crore chart, Rill on the others */
@@ -5719,6 +5845,48 @@ var NP_LEVEL = 4;
     cols.forEach(function (c, i) { c.drum.set(+s[i], !!roll); });
   }
   function setTitle(t) { if (titleText && t) titleText.textContent = t; }
+
+  /* A NUMBER IN WORDS, the Indian way, made from the figure itself:
+     43256781 -> "four crore thirty-two lakh fifty-six thousand seven hundred
+     eighty-one". groupWords gives the same words one group at a time. */
+  var ONES_W = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+                'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen',
+                'eighteen', 'nineteen'];
+  var TENS_X = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+  function upTo99(n) { return n < 20 ? ONES_W[n] : TENS_X[Math.floor(n / 10)] + (n % 10 ? '-' + ONES_W[n % 10] : ''); }
+  function upTo999(n) {
+    var h = Math.floor(n / 100), r = n % 100;
+    return [h ? ONES_W[h] + ' hundred' : '', r ? upTo99(r) : ''].filter(Boolean).join(' ');
+  }
+  /* left to right: { words, low } — low is the place, counted from the
+     right (ones = 0), where the group ends */
+  function groupWords(n) {
+    var out = [];
+    [[1e7, 'crore', 7], [1e5, 'lakh', 5], [1e3, 'thousand', 3]].forEach(function (p) {
+      var q = Math.floor(n / p[0]);
+      n %= p[0];
+      if (q) out.push({ words: (q >= 100 ? upTo999(q) : upTo99(q)) + ' ' + p[1], low: p[2] });
+    });
+    if (n) out.push({ words: upTo999(n), low: 0 });
+    return out;
+  }
+  function indianWords(n) {
+    return groupWords(n).map(function (g) { return g.words; }).join(' ');
+  }
+  function cap(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
+
+  /* the number in words under the title band (L1 V3, the country beat) */
+  var wordsEl = null;
+  function showWords(n) {
+    if (!root) return;
+    if (!wordsEl || !wordsEl.isConnected) {
+      wordsEl = el('div', 'tc-words', root);
+      wordsEl.style.top = ((TEACH.chart.y - TEACH.card.top) * 0.8) + '%';
+    }
+    wordsEl.textContent = cap(indianWords(n));
+    wordsEl.classList.add('on');
+  }
+  function hideWords() { if (wordsEl) wordsEl.classList.remove('on'); }
   function digits() { return cols.map(function (c) { return c.drum.digit(); }); }
   function value() { return digits().reduce(function (a, d) { return a * 10 + d; }, 0); }
 
@@ -6210,8 +6378,10 @@ var NP_LEVEL = 4;
     setTouched(false);
     clearMarks();
     chips.forEach(function (ch, k) { ch.classList.toggle('cur', k === i); });
+    hideWords();
     whenQuiet(function () {
-      say(item.who || teacher(), item.say);
+      /* the guided report goes on into its how-to-play (6 Nov 2026) */
+      say(item.who || teacher(), item.say, item.guide ? function () { howTo(item); } : null);
       armIdle(item);
       var mine = lineNo, end = VOICE.ms(item.say) || 0;
       /* 16 Oct 2026: THE NUMBER IN WORDS GLOWS as Rill says it, and goes back
@@ -6219,28 +6389,65 @@ var NP_LEVEL = 4;
       var wordsAt = cueMs(item.say, 'words', item.words, false);
       VOICE.reach(item.say, wordsAt, function () { if (root && mine === lineNo) ask.classList.add('lit'); });
       VOICE.reach(item.say, end + 300, function () { if (root) ask.classList.remove('lit'); });
-      if (level && level.id === NP_LEVEL && i === 0) {
-        /* AND THE SWIPE LINE WAITS: the number line is said out, then a
-           beat of T.beforeSwipe, and only then the hand and "swipe it up or
-           down" — its own clip, its own box */
-        VOICE.reach(item.say, end, function () {
-          INTRO.at(INTRO.now() + T.beforeSwipe, function () {
-            if (!root || mine !== lineNo || !tryOn || root.classList.contains('touched')) return;
-            SWIPE.show(cols[0] && cols[0].el.querySelector('.tc-screen'), cols[0] && cols[0].drum);
-            var sw = i18n('lines.swipe');
-            VOICE.play(sw);
-            DIALOG.say(teacher(), sw, { pos: 'bottom', ms: VOICE.ms(sw) });
-          });
-        });
-      }
     });
     /* the country's data in words, and the number its report wrongly has */
     ask.innerHTML = '';
+    /* the words are made from the figure itself (6 Nov 2026) */
     el('span', 'tc-ask-words', ask).textContent =
-      i18n('teach.ask', { words: item.words, country: item.country || '' });
+      i18n('teach.ask', { words: cap(indianWords(item.target)), country: item.country || '' });
     if (item.wrong) el('span', 'tc-ask-wrong', ask).textContent = i18n('teach.reported', { n: item.wrong });
     ask.classList.add('on');
-    after(700, function () { tryOn = true; root.classList.add('trying'); });
+    /* the guided report is opened by its how-to-play instead */
+    if (!item.guide) after(700, function () { tryOn = true; root.classList.add('trying'); });
+  }
+
+  /* THE GUIDED READ-BACK (6 Nov 2026): the hand moves group by group —
+     crore, lakh, thousand, then the rest — each group lit while its part is
+     said and captioned ("Four crore…", "Thirty-two lakh…", …). The caption
+     text is groupLine(), which tools/make_voices.py builds the same way. */
+  function groupLine(g, last) { return cap(g.words) + (last ? '.' : '\u2026'); }
+  function readGroups(n, done) {
+    var gs = groupWords(n), N = cols.length;
+    var lit = function (from, to, on) {
+      for (var k = from; k <= to; k++) if (cols[k]) cols[k].el.classList.toggle('read', on);
+    };
+    (function next(k) {
+      if (!root) return;
+      cols.forEach(function (c) { c.el.classList.remove('read'); });
+      if (k >= gs.length) { pointTo(null); return done(); }
+      var g = gs[k], high = k ? gs[k - 1].low : N;
+      var from = N - high, to = N - 1 - g.low;
+      lit(from, to, true);
+      whenQuiet(function () {
+        say(teacher(), groupLine(g, k === gs.length - 1), function () {
+          after(250, function () { next(k + 1); });
+        }, true);
+        pointTo(cols[from]);
+      });
+    })(0);
+  }
+
+  /* HOW TO PLAY, INSIDE THE GUIDED EXAMPLE (6 Nov 2026): before the child
+     sets Country A, the controls are shown one at a time — the arrows (and
+     the swipe, on the first dial), then VERIFY — each lit while its line is
+     said. Then the report is open, with the hand guiding it. */
+  function howTo(item) {
+    var lines = script.howTo || [], mine = tryIdx;
+    var step = function (k) {
+      if (!root || tryIdx !== mine) return;
+      root.classList.remove('hl-arrows', 'hl-verify');
+      if (k >= lines.length) {
+        tryOn = true; root.classList.add('trying');
+        lastAct = performance.now();
+        guideHand();
+        return;
+      }
+      root.classList.add(k === 0 ? 'hl-arrows' : 'hl-verify');
+      if (k === 0) SWIPE.show(cols[0] && cols[0].el.querySelector('.tc-screen'), cols[0] && cols[0].drum);
+      else SWIPE.hide();
+      say(teacher(), lines[k], function () { after(T.settle, function () { step(k + 1); }); });
+    };
+    whenQuiet(function () { step(0); });
   }
 
   function armIdle(item) {
@@ -6275,10 +6482,25 @@ var NP_LEVEL = 4;
   }
 
 
+  /* THE GUIDED REPORT (L1 V3, Country A "with guide"): the hand rests on
+     the first place, from the left, whose digit is not yet right, and moves
+     on as each one is set; once all are right it goes, leaving VERIFY */
+  function guideHand() {
+    var item = script && script.tries[tryIdx];
+    if (!root || !tryOn || !item || !item.guide) return;
+    var want = pad(item.target), d = digits();
+    for (var i = 0; i < cols.length; i++) {
+      if (cols[i].el.classList.contains('off')) continue;
+      if (d[i] !== +want[i]) return pointTo(cols[i]);
+    }
+    pointTo(null);
+  }
+
   function onChanged() {
     if (!root) return;
     if (tryOn) setTouched(true);
     lastAct = performance.now();
+    guideHand();
     /* the rung went with the attempt it was about */
     root.classList.remove('bad');
     clearMarks();
@@ -6296,6 +6518,7 @@ var NP_LEVEL = 4;
   function good() {
     tryOn = false;
     idleSeq++;
+    AUDIO.sfx('correct');
     if (chips[tryIdx]) chips[tryIdx].classList.add('done');
     SWIPE.hide();
     if (ask) ask.classList.remove('on');
@@ -6311,7 +6534,7 @@ var NP_LEVEL = 4;
     var idx = tryIdx;
     whenQuiet(function () {
       var it = script.tries[idx];
-      var spoke = it.right ? say('computer', it.right)
+      var spoke = it.right ? say(it.rightWho || 'computer', it.right)
                            : say(teacher(), i18n('teach.right', { figure: commas(it.target) }));
       /* the columns run left to right, which is the reading order the whole
          lesson has been in */
@@ -6330,8 +6553,17 @@ var NP_LEVEL = 4;
       var last = idx + 1 >= script.tries.length;
       var readback = cols.length * T.read + T.read;
       after(last ? Math.max(T.win, readback, spoke) : Math.max(T.win, spoke + 400), function () {
-        if (!last) startTry(idx + 1);
-        else lead();
+        if (last) return lead();
+        /* L1 V3: the guided Country A is read back part by part, and then
+           "Now it's your turn!" */
+        var then = script.tries[idx].after;
+        var turn = function () {
+          if (!then) return startTry(idx + 1);
+          whenQuiet(function () {
+            say(teacher(), then, function () { after(T.settle, function () { startTry(idx + 1); }); });
+          });
+        };
+        if (it.guide) readGroups(it.target, turn); else turn();
       });
     });
   }
@@ -6481,7 +6713,16 @@ var NP_LEVEL = 4;
     var ended = false;
     var end = function () { if (ended) return; ended = true; if (onEnd) onEnd(); };
     var ms = VOICE.play(text, end);
-    if (onEnd) INTRO.at(INTRO.now() + (ms ? ms + 1500 : 0), end);
+    /* the stall watchdog: if the line has not ended by ms + 1.5 s it ends
+       now — unless VOICE is still saying it, in which case it waits on (the
+       clip's own end is what ends a line now) */
+    if (onEnd) (function watch(wait) {
+      INTRO.at(INTRO.now() + wait, function () {
+        if (ended) return;
+        if (VOICE.saying(text)) return watch(500);
+        end();
+      });
+    })(ms ? ms + 1500 : 0);
     DIALOG.say(speaker, text, { pos: 'bottom', ms: ms });
     /* kept for the value cues: the line, and how long it takes to say (with
        no clip, how long the dialogue box takes to type it — 38ms a letter) */
@@ -6562,6 +6803,7 @@ var NP_LEVEL = 4;
       go.addEventListener('click', function (e) {
         e.stopPropagation();
         if (go.disabled || !root || !root.classList.contains('touched')) return;
+        AUDIO.sfx('click');
         submit();
       });
     }
@@ -6648,6 +6890,14 @@ var NP_LEVEL = 4;
     var beat = list[i], act = beat.act || '';
     var voDone = false, animDone = false, ready = false, mine;
     if (beat.title) setTitle(beat.title);
+    cols.forEach(function (c) { c.el.classList.remove('cue'); });
+    if (beat.words) showWords(beat.words);
+    /* THE GLOWING DIGIT: lit and pulsing while the line is said, and the
+       hand on it — a cue to look, with nothing to tap (6 Nov 2026) */
+    if (beat.cue != null && cols[beat.cue]) {
+      cols[beat.cue].el.classList.add('cue');
+      pointTo(cols[beat.cue]);
+    }
     function check() {
       if (!voDone || !animDone || ready) return;
       ready = true;
@@ -6656,7 +6906,7 @@ var NP_LEVEL = 4;
         var go = function () { if (beatTap !== go) return; beatTap = null; cueNext(false); runBeats(list, i + 1, then); };
         /* a beat the child has to answer (tap the 4, press START) holds
            here until they do */
-        if (beat.tapCol != null || beat.button) {
+        if (beat.button) {
           return waitFor(beat, function () { runBeats(list, i + 1, then); });
         }
         /* 16 Oct 2026 (Anmol): NO "Tap to continue" — the lesson runs on by
@@ -6672,6 +6922,8 @@ var NP_LEVEL = 4;
     if (act === 'example') { clearX10(); BOT.aside(); }
     if (act.indexOf('hop:') === 0) anim = actHop(0, act.slice(4).toUpperCase());
     else if (act === 'name') anim = actName(T.hopLead);
+    /* the cue holds at least this long even when the line is short */
+    else if (beat.cue != null) anim = 1600;
     /* the hand runs across the places it has, then the next one opens */
     else if (act.indexOf('name+extend') === 0) anim = actExtend(actName(T.hopLead) + 200, +act.split(':')[1] || 0);
     else if (act === 'times') anim = actTimes(200);
@@ -6696,30 +6948,23 @@ var NP_LEVEL = 4;
     });
   }
 
-  /* WAITING ON THE CHILD (L1 V3): a column to tap — it glows and the hand
-     points at it — or a key under the chart (START, CONTINUE). Nothing
-     touched for IDLE_MS and the teacher says the beat's nudge again. */
+  /* WAITING ON THE CHILD (L1 V3): a key under the chart (START). Nothing
+     pressed for IDLE_MS and the teacher says the beat's nudge again. */
   var waitSeq = 0, waitEl = null;
   function waitFor(beat, done) {
     clearWait();
-    var mine = ++waitSeq, target;
-    if (beat.tapCol != null && cols[beat.tapCol]) {
-      target = cols[beat.tapCol].el;
-      target.classList.add('tap-me');
-      pointTo(cols[beat.tapCol]);
-    } else {
-      var G = TEACH.chart, C = TEACH.card;
-      target = waitEl = el('button', 'ctl tc-go tc-wait', root);
-      target.type = 'button';
-      target.textContent = beat.button;
-      target.style.top = (G.y + G.h + C.foot + TEACH.goGap) + '%';
-      if (goBtn) goBtn.style.visibility = 'hidden';
-    }
+    var mine = ++waitSeq, G = TEACH.chart, C = TEACH.card;
+    var target = waitEl = el('button', 'ctl tc-go tc-wait', root);
+    target.type = 'button';
+    target.textContent = beat.button;
+    target.style.top = (G.y + G.h + C.foot + TEACH.goGap) + '%';
+    if (goBtn) goBtn.style.visibility = 'hidden';
     var fire = function (e) {
       if (e) e.stopPropagation();
       if (mine !== waitSeq) return;
       clearWait();
-      SFX.play(beat.tapCol != null ? 'lock' : 'tick');
+      SFX.play('tick');
+      AUDIO.sfx('click');
       done();
     };
     target.addEventListener('click', fire);
@@ -6737,10 +6982,7 @@ var NP_LEVEL = 4;
     waitSeq++;
     if (waitEl) { waitEl.remove(); waitEl = null; }
     if (goBtn) goBtn.style.visibility = '';
-    cols.forEach(function (c) {
-      c.el.classList.remove('tap-me', 'nag');
-      if (c.el.waitFire) { c.el.removeEventListener('click', c.el.waitFire); c.el.waitFire = null; }
-    });
+    cols.forEach(function (c) { c.el.classList.remove('nag'); });
   }
 
   /* THE TAP CUE: the hand and "tap to continue", once a beat is ready */
@@ -6792,12 +7034,14 @@ var NP_LEVEL = 4;
       if (goBtn) goBtn.style.display = 'none';
       if (card) FX.confetti(60, card);
       SFX.play('clap');
+      AUDIO.sfx('fanfare');
       TRACK.send('level_complete', { level: 1 });
-      say('team', script.done, function () {
+      say(script.doneWho || 'team', script.done, function () {
         whenQuiet(function () {
           say(teacher(), script.outro, function () {
-            /* L1 V3: CONTINUE takes the reports on to Level 2 */
-            waitFor({ button: i18n('teach.continue'), idle: script.continueIdle }, function () {
+            /* 6 Nov 2026: no CONTINUE — Level 2 follows on by itself after
+               the screen's usual gap, the chart fading out as it comes */
+            INTRO.at(INTRO.now() + TIME.screenGap, function () {
               if (!root) return;
               finish();
               window.COMMAS.play();
@@ -6845,6 +7089,7 @@ var NP_LEVEL = 4;
     level = lv;
     script = SCRIPT[lv.id];
     if (!script) return then && then();
+    if (lv.id === NP_LEVEL) AUDIO.music('level1');
     live = true; done = then || null;
 
     if (!INTRO.running()) INTRO.clockStart(); else INTRO.clockStart();
@@ -6884,9 +7129,8 @@ var NP_LEVEL = 4;
         });
       });
     };
-    if (script.intro && script.intro.text) {
-      say(script.intro.who, script.intro.text, function () { after(T.settle, opening); });
-    } else opening();
+    if (script.banner) levelBanner(script.banner, opening);
+    else opening();
   }
 
   /* DEV JUMP: start at beat N, or straight at Try N. The chart is first put
@@ -10751,6 +10995,48 @@ var NP_LEVEL = 4;
 })();
 
 /* ########################################################################## */
+/*  LEVEL BANNER                                                            */
+/* ########################################################################## */
+
+/* 6 Nov 2026: THE LEVEL TITLE IS SHOWN, NOT SAID. levelBanner({ title,
+   chart, focus }, then) puts "LEVEL n" across the stage — with, where
+   `chart` is given, a row of place-value columns in that order and the
+   `focus` ones lit — holds it, fades it, and calls then(). No dialogue box
+   and no voice. On setTimeout, which PAUSE.JS freezes with everything else. */
+function levelBanner(o, then) {
+  var stage = document.getElementById('stage');
+  var b = document.createElement('div');
+  b.className = 'lv-banner';
+  var t = document.createElement('div');
+  t.className = 'lv-title';
+  t.textContent = o.title;
+  b.appendChild(t);
+  if (o.chart && o.chart.length) {
+    var row = document.createElement('div');
+    row.className = 'lv-pvc';
+    o.chart.forEach(function (name, k) {
+      var c = document.createElement('div');
+      c.className = 'lv-col' + ((o.focus || []).indexOf(name) >= 0 ? ' hi' : '');
+      c.style.animationDelay = (120 * k) + 'ms';
+      c.textContent = name;
+      row.appendChild(c);
+    });
+    b.appendChild(row);
+  }
+  stage.appendChild(b);
+  void b.offsetWidth;
+  b.classList.add('on');
+  if (window.SFX) SFX.play('chime');
+  if (window.AUDIO) AUDIO.sfx('swish');
+  var hold = o.chart && o.chart.length ? 3600 : 1900;
+  setTimeout(function () { b.classList.remove('on'); }, hold);
+  setTimeout(function () {
+    if (b.parentNode) b.parentNode.removeChild(b);
+    if (then) then();
+  }, hold + 520);
+}
+
+/* ########################################################################## */
 /*  STORY.JS                                                                */
 /* ########################################################################## */
 
@@ -10792,17 +11078,34 @@ var STORY = (function () {
   }
 
   /* a line said, and `then` a breath after it has finished */
+  /* 6 Nov 2026: A LINE WAITS FOR THE ONE BEFORE IT. A line asked for while
+     another is still being said (an answer pressed mid-instruction) starts
+     when that one has finished, so no voice-over is ever cut off. Only the
+     newest request waits. */
+  var talkSeq = 0;
   function talk(who, text, then) {
-    var ms = VOICE.play(text, function () { if (then) later(then, SETTLE); });
-    DIALOG.say(who, text, { pos: 'bottom', ms: ms });
-    return ms;
+    var mine = ++talkSeq;
+    (function go() {
+      if (!root || mine !== talkSeq) return;
+      if (VOICE.busy() && !VOICE.saying(text)) return later(go, 120);
+      var ms = VOICE.play(text, function () { if (then) later(then, SETTLE); });
+      DIALOG.say(who, text, { pos: 'bottom', ms: ms });
+    })();
   }
   function run(list, i, then) {
     if (!root) return;
     if (i >= list.length) return then && then();
     var b = list[i];
     if (b.act) b.act();
-    talk(b.who, b.text, function () { run(list, i + 1, then); });
+    var next = function () { run(list, i + 1, then); };
+    /* a voice-only beat: heard, with its words shown in the scene itself,
+       not in the dialogue box */
+    if (b.voiceOnly) {
+      DIALOG.hide();
+      VOICE.play(b.text, function () { later(next, SETTLE); });
+      return;
+    }
+    talk(b.who, b.text, next);
   }
 
   function build(mode) {
@@ -10855,7 +11158,9 @@ var STORY = (function () {
     if (recs) [].forEach.call(recs.querySelectorAll('.sy-rec'), function (r, k) {
       if (k === 0 || k === 3) r.classList.add('alert');
     });
-    var a = el('div', 'sy-alert', root);
+    AUDIO.sfx('alarm');
+    var a = el('div', 'sy-alert on-screen', screen);
+    a.setAttribute('data-text', i18n('story.alert'));
     a.textContent = i18n('story.alert');
     SFX.play('wrong');
     FX.shake(stage, 0.5, 500);
@@ -10870,19 +11175,95 @@ var STORY = (function () {
 
   /* START: one tap before the story, because a browser plays no sound
      until the player has touched the page */
+  /* 6 Nov 2026: THE COVER. The Titan viewport (world bible, section 02)
+     behind; the crew — Commander Veth, Rill and Nova, cut out from the
+     world bible's character sheets — standing on the bay floor, each with
+     the glow colour that is theirs; the game's name and START on the left.
+     It comes up once its pictures are decoded, so nothing pops in late. */
+  var COVER = 'assets/cover/';
+  var CAST_ART = [
+    { key: 'rill', src: 'ril.png', h: 80, left: 55, glow: '#7cf2c8', delay: 260 },
+    { key: 'veth', src: 'veth.png', h: 88, left: 68, glow: '#b692ff', delay: 120 },
+    { key: 'nova', src: 'nova.png', h: 68, left: 82, glow: '#2fd8ff', delay: 400 }
+  ];
+  var FLOATERS = ['4,32,56,781', '43,256,781', '1,00,00,000', '10,00,000', '57,36,428', '82,643,519'];
+
   function gate(then) {
-    build('gate');
-    var b = el('button', 'sy-btn sy-start', root);
+    stop();
+    document.body.classList.remove('no-map');
+    root = el('div', 'story cover', stage);
+    root.id = 'story';
+    AUDIO.music('story');
+    root.addEventListener('pointerdown', function (e) { e.stopPropagation(); });
+
+    var bg = el('i', 'cv-bg', root);
+    bg.style.backgroundImage = 'url("' + ASSET(COVER + 'titan-viewport.jpg') + '")';
+    el('i', 'cv-haze', root);
+
+    /* numbers drifting in the haze beyond the glass */
+    var drift = el('div', 'cv-drift', root);
+    FLOATERS.forEach(function (n, k) {
+      var f = el('span', '', drift);
+      f.textContent = n;
+      /* over the window, right of the title */
+      f.style.left = (50 + (k * 29) % 42) + '%';
+      f.style.top = (14 + (k * 17) % 30) + '%';
+      f.style.animationDelay = (-k * 2.3) + 's';
+    });
+
+    var cast = el('div', 'cv-cast', root);
+    var imgs = CAST_ART.map(function (c) {
+      var a = el('div', 'cv-actor ' + c.key, cast);
+      a.style.height = c.h + '%';
+      a.style.left = c.left + '%';
+      a.style.setProperty('--glow', c.glow);
+      a.style.setProperty('--d', c.delay + 'ms');
+      el('i', 'cv-halo', a);
+      var im = el('img', '', a);
+      im.alt = '';
+      im.draggable = false;
+      im.src = ASSET(COVER + c.src);
+      return im;
+    });
+
+    var side = el('div', 'cv-side', root);
+    el('div', 'cv-kicker', side).textContent = i18n('cover.kicker');
+    var h = el('h1', 'cv-title', side);
+    i18n('cover.title').forEach(function (w, k) {
+      var sp = el('span', 'cv-word w' + k, h);
+      sp.textContent = w;
+    });
+    el('p', 'cv-sub', side).textContent = i18n('cover.sub');
+    var b = el('button', 'cv-start', side);
     b.type = 'button';
-    b.textContent = i18n('ui.start');
+    el('span', '', b).textContent = i18n('ui.start');
+    el('p', 'cv-mission', side).textContent = i18n('cover.mission');
+
     b.addEventListener('click', function (e) {
       e.stopPropagation();
+      if (root.classList.contains('leaving')) return;
       SFX.arm();
       VOICE.unlock();
+      SFX.play('launch');
+      AUDIO.sfx('click'); AUDIO.sfx('swish');
+      AUDIO.music('story');
       TRACK.send('game_start');
-      stop();
-      if (then) then();
+      root.classList.add('leaving');
+      later(function () { stop(); if (then) then(); }, 700);
     });
+
+    /* up once every picture can be drawn whole */
+    var left = imgs.length + 1, shown = false;
+    var show = function () {
+      if (shown || --left > 0) return;
+      shown = true;
+      void root.offsetWidth;
+      root.classList.add('on');
+    };
+    imgs.forEach(function (im) { imgReady(im, show); });
+    var pre = new Image();
+    pre.src = ASSET(COVER + 'titan-viewport.jpg');
+    imgReady(pre, show);
   }
 
   function open(then) {
@@ -10892,7 +11273,8 @@ var STORY = (function () {
     run([
       { who: 'narrator', text: L('narrator') },
       { who: 'veth', text: L('request'), act: function () { lightMarks(); showRecords(); } },
-      { who: 'computer', text: L('error'), act: alarm },
+      /* 6 Nov 2026: the Computer's ERROR is on the monitor, not in a box */
+      { who: 'computer', text: L('error'), act: alarm, voiceOnly: true },
       { who: 'rill', text: L('verify') },
       { who: 'veth', text: L('check'), act: zoom }
     ], 0, function () {
@@ -10904,6 +11286,7 @@ var STORY = (function () {
 
   function end() {
     build('ending');
+    AUDIO.music('story');
     TRACK.at('story end');
     marks.forEach(function (m) { m.classList.add('lit', 'ok'); });
     root.classList.add('green');
@@ -10929,6 +11312,7 @@ var STORY = (function () {
       again.addEventListener('click', function (e) { e.stopPropagation(); location.reload(); });
       FX.confetti(60, c);
       SFX.play('clap');
+      AUDIO.sfx('fanfare');
       TRACK.send('game_complete', {});
     });
   }
@@ -10983,10 +11367,19 @@ var COMMAS = (function () {
     var t = setTimeout(function () { if (root) fn(); }, ms);
     timers.push(t);
   }
+  /* 6 Nov 2026: A LINE WAITS FOR THE ONE BEFORE IT. A line asked for while
+     another is still being said (an answer pressed mid-instruction) starts
+     when that one has finished, so no voice-over is ever cut off. Only the
+     newest request waits. */
+  var talkSeq = 0;
   function talk(who, text, then) {
-    var ms = VOICE.play(text, function () { if (then) later(then, SETTLE); });
-    DIALOG.say(who, text, { pos: 'bottom', ms: ms });
-    return ms;
+    var mine = ++talkSeq;
+    (function go() {
+      if (!root || mine !== talkSeq) return;
+      if (VOICE.busy() && !VOICE.saying(text)) return later(go, 120);
+      var ms = VOICE.play(text, function () { if (then) later(then, SETTLE); });
+      DIALOG.say(who, text, { pos: 'bottom', ms: ms });
+    })();
   }
 
   /* THE GROUPING RULE. Commas sit after the 3rd digit from the right, then
@@ -11091,7 +11484,10 @@ var COMMAS = (function () {
     area = el('div', 'cm-area', root);
     btn = el('button', 'cm-btn', root);
     btn.type = 'button';
-    btn.addEventListener('click', function (e) { e.stopPropagation(); if (btn.onpress) btn.onpress(); });
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (btn.onpress) { AUDIO.sfx('click'); btn.onpress(); }
+    });
     root.addEventListener('pointerdown', function (e) { e.stopPropagation(); });
     void root.offsetWidth;
     root.classList.add('on');
@@ -11103,6 +11499,35 @@ var COMMAS = (function () {
   }
 
   /* ---- TEACHING -------------------------------------------------------- */
+  /* THE COMMAND CENTRE (6 Nov 2026): the two headquarters as big panels
+     in the middle of the screen, each with a request coming in. Drawn in
+     CSS and inline SVG — a placeholder until there is artwork for it. */
+  var scene = null;
+  var HQ_ICON = '<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="10" y="22" width="44" height="32" rx="2" fill="none" stroke="currentColor" stroke-width="3"/>' +
+    '<path d="M6 24 L32 8 L58 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>' +
+    '<path d="M20 30 V48 M32 30 V48 M44 30 V48" stroke="currentColor" stroke-width="3"/></svg>';
+  var MAIL_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>' +
+    '<path d="M3 6 L12 13 L21 6" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+  function hqScene() {
+    clearScene();
+    AUDIO.sfx('notify');
+    scene = el('div', 'cm-scene', area);
+    [['in', 'commas.indianHQ', 'commas.hqIndianSub'], ['intl', 'commas.intlHQ', 'commas.hqIntlSub']].forEach(function (p, k) {
+      var pn = el('div', 'cm-hqpanel hq-' + p[0], scene);
+      el('i', 'cm-hqicon', pn).innerHTML = HQ_ICON;
+      el('b', '', pn).textContent = i18n(p[1]);
+      el('span', 'cm-hqsub', pn).textContent = i18n(p[2]);
+      var req = el('span', 'cm-req', pn);
+      req.innerHTML = MAIL_ICON;
+      el('em', '', req).textContent = i18n('commas.newRequest');
+      later(function () { pn.classList.add('shown'); SFX.play('chime'); }, 250 + 450 * k);
+    });
+  }
+  function clearScene() {
+    if (scene && scene.parentNode) scene.parentNode.removeChild(scene);
+    scene = null;
+  }
+
   /* a notice across the top of the screen, where the system's name goes */
   function notify(text) {
     sysEl.textContent = text;
@@ -11111,7 +11536,7 @@ var COMMAS = (function () {
   function teach(then) {
     var t = i18n('commas.teach'), s = null;
     var gs = groups(DEMO, 'in'), gi = groups(DEMO, 'intl');
-    var demo = function () { clearStrips(); s = strip(DEMO, false); };
+    var demo = function () { clearScene(); clearStrips(); s = strip(DEMO, false); };
     var step = function (g, comma) {
       return function () {
         glow(s, g.from, g.to);
@@ -11145,11 +11570,13 @@ var COMMAS = (function () {
       };
     };
     var beats = [
-      { who: 'narrator', text: i18n('commas.narrator') },
+      /* 6 Nov 2026: the requests arrive in the command centre — the two
+         headquarters as big panels, each with a request coming in */
       { who: 'veth', text: t[0], act: function () {
-          setSys('both'); notify(i18n('commas.requests')); SFX.play('chime'); } },
+          setSys('both'); notify(i18n('commas.requests')); hqScene(); SFX.play('chime'); } },
       { who: 'veth', text: t[1], act: function () {
-          demo(); setSys(null); titleEl.textContent = i18n('commas.country', { c: 'A' }); } },
+          /* 6 Nov 2026: the teaching example carries no country label */
+          demo(); setSys(null); } },
       { who: 'veth', text: t[2] },
       { who: 'veth', text: t[3], act: function () { setSys('in'); } },
       { who: 'veth', text: t[4], act: step(gs[0], 4) },
@@ -11177,9 +11604,9 @@ var COMMAS = (function () {
     (function run(i) {
       if (!root) return;
       if (i >= beats.length) {
-        /* "Now prepare the reports for both headquarters!" waits on CONTINUE */
-        talk('veth', t[15]);
-        waitButton(i18n('commas.continue'), i18n('commas.transitionIdle'), function () {
+        /* 6 Nov 2026: no CONTINUE — "Let's prepare the population reports…"
+           is said, and the first report follows */
+        talk('veth', t[15], function () {
           SFX.play('whir');
           then();
         });
@@ -11248,6 +11675,7 @@ var COMMAS = (function () {
       s.gaps[k].classList.remove('hint', 'bad');
       s.gaps[k].classList.add('ok');
       SFX.play('lock');
+      AUDIO.sfx('correct');
       talk('veth', st.right, nextStep);
       return;
     }
@@ -11261,16 +11689,24 @@ var COMMAS = (function () {
     else if (misses === 2) { glow(s, st.glow[0], st.glow[1], 'glow2'); talk('veth', st.fb2); }
     else { s.gaps[st.gap].classList.add('hint'); talk('veth', st.fb3); }
   }
+  /* L2 V3 (6 Nov 2026): once the commas are in, the digits left over
+     light and are named ("The remaining digit belongs to the Crores
+     group!"), the report is ready, and SEND is answered with "Perfect! The
+     data is written in the … Number System!" before it flies */
   function readyToSend() {
-    var G = guide, s = G.s;
-    glow(s, 0, 0);
-    s.el.classList.add('right');
-    groups(G.g.n, G.g.sys).forEach(function (g) { label(s, g.from, g.to, gname(g.name)); });
-    talk('veth', G.g.ready);
-    waitButton(i18n('commas.send'), i18n('commas.sendIdle'), function () {
-      SFX.play('lock');
-      talk('computer', i18n('commas.ready', { c: G.g.country }), function () {
-        flyTo(s, hqs[G.g.sys], function () { guide = null; G.then(); });
+    var G = guide, s = G.s, gl = groups(G.g.n, G.g.sys), top = gl[gl.length - 1];
+    glow(s, top.from, top.to, 'glow2');
+    talk('veth', G.g.remaining, function () {
+      glow(s, 0, 0, 'glow2');
+      s.el.classList.add('right');
+      gl.forEach(function (g) { label(s, g.from, g.to, gname(g.name)); });
+      talk('veth', G.g.ready);
+      waitButton(i18n('commas.send'), i18n('commas.sendIdle'), function () {
+        SFX.play('lock');
+        AUDIO.sfx('correct');
+        talk('veth', G.g.sent, function () {
+          flyTo(s, hqs[G.g.sys], function () { guide = null; G.then(); });
+        });
       });
     });
   }
@@ -11341,8 +11777,9 @@ var COMMAS = (function () {
     s.gaps.forEach(function (g) { g.classList.remove('bad', 'hint'); });
     s.el.classList.add('right');
     SFX.play('lock');
+    AUDIO.sfx('correct');
     FX.confetti(30, s.el);
-    talk('computer', i18n('commas.ready', { c: item.country }), function () {
+    talk(i18n('commas.readyWho'), i18n('commas.ready', { c: item.country }), function () {
       flyTo(s, hqs[item.sys], function () { practice(idx + 1); });
     });
   }
@@ -11353,6 +11790,7 @@ var COMMAS = (function () {
     var dx = (b.left + b.width / 2) - (a.left + a.width / 2);
     var dy = (b.top + b.height / 2) - (a.top + a.height / 2);
     SFX.play('whir');
+    AUDIO.sfx('whoosh');
     var anim = s.el.animate([
       { transform: 'translate(0,0) scale(1)', opacity: 1 },
       { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(0.2)', opacity: 0.2 }
@@ -11398,12 +11836,11 @@ var COMMAS = (function () {
     button(i18n('commas.send'), null);
     FX.confetti(70);
     SFX.play('complete');
+    AUDIO.sfx('fanfare');
     TRACK.send('level_complete', { level: 2 });
-    /* L2 V3: the team's line, then CONTINUE to the ending */
+    /* L2 V3: the team's line, then on to the ending by itself (6 Nov 2026) */
     talk('team', i18n('commas.done'), function () {
-      waitButton(i18n('commas.continue'), i18n('commas.continueIdle'), function () {
-        stop(); STORY.end();
-      });
+      later(function () { stop(); STORY.end(); }, 900);
     });
   }
 
@@ -11427,6 +11864,7 @@ var COMMAS = (function () {
     live = true;
     document.body.classList.remove('no-map');
     TRACK.at('level 2'); TRACK.send('lesson_start', { level: 2 });
+    AUDIO.music('level2');
     build();
     sent = { in: 0, intl: 0 };
     if (from && from.practice != null) return practice(from.practice);
@@ -11434,7 +11872,11 @@ var COMMAS = (function () {
       return guided(i18n('commas.guided')[1], function () { tutorials0(); });
     }
     if (from && from.guided === 0) return tutorials(function () { practice(0); });
-    teach(function () { tutorials(function () { practice(0); }); });
+    /* 6 Nov 2026: an on-screen LEVEL 2 banner, then the teaching */
+    levelBanner({ title: i18n('commas.banner') }, function () {
+      if (!root) return;
+      teach(function () { tutorials(function () { practice(0); }); });
+    });
     function tutorials0() {
       clearStrips(); setSys('both');
       talk('veth', i18n('commas.yourTurn'), function () { practice(0); });
@@ -11446,7 +11888,7 @@ var COMMAS = (function () {
     idleSeq++; tryOn = false; live = false;
     DIALOG.hide();
     if (root && root.parentNode) root.parentNode.removeChild(root);
-    root = null; strips = []; hqs = {}; guide = null;
+    root = null; strips = []; hqs = {}; guide = null; scene = null;
   }
 
   return {
@@ -11563,15 +12005,12 @@ window.COMMAS = COMMAS;
      A QA key in the bottom-left corner opens a panel to jump to any screen
      of the game (the page reloads at ?go=<target>, so every screen starts
      clean) and an AUTO-SOLVE key that answers whatever the game is waiting
-     on right now: START, the glowing digit, a chart report, a comma step or
-     report, SEND and CONTINUE. Between questions it skips to the next line.
-     ?qa=0 hides it. */
+     on right now: START, a chart report, a comma step or report, and SEND.
+     Between questions it skips to the next line. ?qa=0 hides it. */
   function autoSolve() {
     var d = document, T = window.TEACH_SCREEN, C = window.COMMAS;
     var gate = d.querySelector('#story .sy-start');
     if (gate) { gate.click(); return 'Pressed START.'; }
-    var tap = d.querySelector('#teach .tc-col.tap-me');
-    if (tap) { tap.click(); return 'Tapped the glowing digit.'; }
     var wait = d.querySelector('#teach .tc-wait');
     if (wait) { wait.click(); return 'Pressed ' + wait.textContent + '.'; }
     if (T && T.live() && T.state().tryOn) {
