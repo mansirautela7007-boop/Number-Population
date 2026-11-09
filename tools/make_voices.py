@@ -87,6 +87,28 @@ def group_lines(n):
             for i, p in enumerate(parts)]
 
 
+def correct_line(n, system, template):
+    """Level 2's read-back, built exactly as COMMAS.JS's spokenParts() does:
+    "Correct! The number is 3 crore 46 lakh 25 thousand 7 hundred 81." """
+    units = ([(10 ** 7, 'crore'), (10 ** 5, 'lakh'), (10 ** 3, 'thousand')] if system == 'in'
+             else [(10 ** 9, 'billion'), (10 ** 6, 'million'), (10 ** 3, 'thousand')])
+    parts, rest = [], n
+    for size, name in units:
+        q, rest = divmod(rest, size)
+        if q:
+            parts.append('%d %s' % (q, name))
+    h, r = divmod(rest, 100)
+    if h:
+        parts.append('%d hundred' % h)
+    if r:
+        parts.append(str(r))
+    return template.replace('{n}', ' '.join(parts))
+
+
+def cap(t):
+    return t[0].upper() + t[1:]
+
+
 def key(text):
     """the same key VOICE.JS builds: tags out, spaces collapsed, lower case"""
     return re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', '', str(text))).strip().lower()
@@ -98,25 +120,25 @@ def lines(L):
     add = lambda who, t: t and out.append((who, t))
     S, T4, C = L['story'], L['teach']['level4'], L['commas']
 
-    add('narrator', S['lines']['narrator'])
-    for k, who in [('request', 'veth'), ('error', 'computer'), ('verify', 'rill'), ('check', 'veth')]:
+    add('narrator', L['cover']['vo'])
+    for k, who in [('request', 'veth'), ('ready', 'rill'), ('error', 'computer'), ('verify', 'rill'), ('check', 'veth')]:
         add(who, S['lines'][k])
 
     add('veth', T4['context'])
     for b in T4['beats']:
         add('veth', b)
-    add('veth', T4['tapStart'])
     for h in T4.get('howTo', []):
         add('veth', h)
+    # the number names, said when the number box is tapped
+    add('narrator', cap(indian_words(T4['example'])))
+    for t in T4['tries']:
+        add('narrator', cap(indian_words(t['target'])))
     for t in T4['tries']:
         add(t.get('who', 'veth'), t['say'])
         add(t.get('rightWho', 'computer'), t['right'])
         add('veth', t['fb1'] + ' ' + t['fb2'])
         add('veth', t['fb3'])
         add('veth', t['idle'])
-        if t.get('guide'):
-            for g in group_lines(t['target']):
-                add('veth', g)
         if t.get('after'):
             add('veth', t['after'])
     add(T4.get('doneWho', 'team'), T4['done'])
@@ -133,10 +155,11 @@ def lines(L):
     for k in ('transitionIdle', 'sendIdle', 'yourTurn', 'prepIn', 'prepIntl', 'wrong1', 'wrong2',
               'wrong3in', 'wrong3intl'):
         add('veth', C[k])
+    add('veth', C['retry'])
     for p in C['practice']:
-        add(C.get('readyWho', 'computer'), C['ready'].replace('{c}', p['country']))
+        add('veth', correct_line(p['n'], p['sys'], C['correct']))
+        add(C.get('readyWho', 'computer'), C['readyIn' if p['sys'] == 'in' else 'readyIntl'])
         add('veth', C['idle'].replace('{c}', p['country']))
-    add('team', C['done'])
 
     add('rill', S['end']['rill'])
     add('veth', S['end']['veth'])

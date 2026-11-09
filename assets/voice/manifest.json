@@ -1,13 +1,18 @@
 {
- "your mission: verify the population reports by finding out how much each digit is worth.": {
-  "file": "narrator-810b13d687.m4a",
-  "ms": 5354,
+ "number population!": {
+  "file": "narrator-5b846e1727.m4a",
+  "ms": 1279,
   "who": "narrator"
  },
- "titan research centre has received a request from earth to prepare population reports. the reports are ready! let's send them!": {
-  "file": "veth-c4bb53f4e6.m4a",
-  "ms": 7841,
+ "titan research centre has received a request to prepare population reports.": {
+  "file": "veth-ba3d2de310.m4a",
+  "ms": 4752,
   "who": "veth"
+ },
+ "the reports are ready! let's send them!": {
+  "file": "rill-ac8754a71c.m4a",
+  "ms": 2292,
+  "who": "rill"
  },
  "error! error!": {
   "file": "computer-e2c31fd101.m4a",
@@ -34,24 +39,19 @@
   "ms": 6034,
   "who": "veth"
  },
- "let's look at the first country's population: 4,32,56,781.": {
-  "file": "veth-099d1dd4b4.m4a",
-  "ms": 7082,
+ "let's look at the first country's population: 5,17,40,962.": {
+  "file": "veth-dc7598f4fc.m4a",
+  "ms": 6861,
   "who": "veth"
  },
- "the first digit, 4, is in the crores place!": {
-  "file": "veth-ae3cb3d9e1.m4a",
-  "ms": 3155,
+ "the first digit, 5, is in the crores place!": {
+  "file": "veth-24d1ae910b.m4a",
+  "ms": 3341,
   "who": "veth"
  },
  "check the population reports from different countries!": {
   "file": "veth-6c1b544e3e.m4a",
   "ms": 2899,
-  "who": "veth"
- },
- "tap start to check the reports.": {
-  "file": "veth-92b0b8ec57.m4a",
-  "ms": 1838,
   "who": "veth"
  },
  "to change a digit, swipe it up or down, or use the arrows.": {
@@ -64,49 +64,79 @@
   "ms": 2519,
   "who": "veth"
  },
+ "five crore seventeen lakh forty thousand nine hundred sixty-two": {
+  "file": "narrator-89e564fa7e.m4a",
+  "ms": 3991,
+  "who": "narrator"
+ },
+ "six crore three lakh eighty-two thousand five hundred forty-seven": {
+  "file": "narrator-f1b1cdb40a.m4a",
+  "ms": 3819,
+  "who": "narrator"
+ },
+ "twenty-nine lakh fifty thousand four hundred sixteen": {
+  "file": "narrator-6ec4e426a3.m4a",
+  "ms": 3201,
+  "who": "narrator"
+ },
+ "seven crore thirty-one lakh four thousand two hundred ninety-eight": {
+  "file": "narrator-7a471d0620.m4a",
+  "ms": 3658,
+  "who": "narrator"
+ },
+ "eight lakh forty-five thousand six hundred three": {
+  "file": "narrator-09b692c7e6.m4a",
+  "ms": 2859,
+  "who": "narrator"
+ },
+ "three crore ninety-two lakh seventy-six thousand fifty-four": {
+  "file": "narrator-44a0d755d6.m4a",
+  "ms": 3623,
+  "who": "narrator"
+ },
+ "forty-six lakh eighteen thousand seven hundred thirty": {
+  "file": "narrator-3a81a858e6.m4a",
+  "ms": 3225,
+  "who": "narrator"
+ },
+ "nine crore fifty-seven thousand three hundred twelve": {
+  "file": "narrator-22b8a29fb3.m4a",
+  "ms": 3079,
+  "who": "narrator"
+ },
+ "twelve lakh three thousand five hundred eighty-nine": {
+  "file": "narrator-acea411199.m4a",
+  "ms": 2806,
+  "who": "narrator"
+ },
+ "two crore fifty-eight lakh forty thousand one hundred seventy-six": {
+  "file": "narrator-c4fc0c447e.m4a",
+  "ms": 3910,
+  "who": "narrator"
+ },
  "check country a's population data.": {
   "file": "narrator-b27aacfeb0.m4a",
   "ms": 2151,
   "who": "narrator"
  },
- "yes correct! four crore thirty-two lakh fifty-six thousand seven hundred eighty-one. country a data verified!": {
-  "file": "narrator-44c3a307c4.m4a",
-  "ms": 7223,
+ "yes correct! six crore three lakh eighty-two thousand five hundred forty-seven. country a data verified!": {
+  "file": "narrator-a25646b600.m4a",
+  "ms": 6898,
   "who": "narrator"
  },
- "the number doesn't match the country's data. try again! start with four crore, then thirty-two lakh.": {
-  "file": "veth-de3506df03.m4a",
-  "ms": 6185,
+ "the number doesn't match the country's data. try again! start with six crore, then three lakh.": {
+  "file": "veth-f35f30f287.m4a",
+  "ms": 5848,
   "who": "veth"
  },
- "check each group: 4 crore, 32 lakh, 56 thousand and 781.": {
-  "file": "veth-9ca8ac572d.m4a",
-  "ms": 6220,
+ "check each group: 6 crore, 3 lakh, 82 thousand and 547.": {
+  "file": "veth-7309982f0d.m4a",
+  "ms": 5813,
   "who": "veth"
  },
  "enter country a's correct population.": {
   "file": "veth-13fa579c0c.m4a",
   "ms": 2308,
-  "who": "veth"
- },
- "four crore…": {
-  "file": "veth-0a5a92f752.m4a",
-  "ms": 842,
-  "who": "veth"
- },
- "thirty-two lakh…": {
-  "file": "veth-f8742d2221.m4a",
-  "ms": 965,
-  "who": "veth"
- },
- "fifty-six thousand…": {
-  "file": "veth-ac0012ed88.m4a",
-  "ms": 1330,
-  "who": "veth"
- },
- "seven hundred eighty-one.": {
-  "file": "veth-5d109c8551.m4a",
-  "ms": 1574,
   "who": "veth"
  },
  "now it's your turn!": {
@@ -119,19 +149,19 @@
   "ms": 2221,
   "who": "narrator"
  },
- "yes correct! five crore sixty-two lakh thirty-four thousand seven hundred eighty-one. country b data verified!": {
-  "file": "narrator-5bc6bf4ad6.m4a",
-  "ms": 7305,
+ "yes correct! twenty-nine lakh fifty thousand four hundred sixteen. country b data verified!": {
+  "file": "narrator-68644d2920.m4a",
+  "ms": 6318,
   "who": "narrator"
  },
- "the number doesn't match the country's data. try again! look at the crore and lakh groups in the data.": {
-  "file": "veth-246fd0a7e5.m4a",
-  "ms": 6220,
+ "the number doesn't match the country's data. try again! look at the lakhs group. there are no crores, so put 0 in the crore place.": {
+  "file": "veth-4532cbcdc5.m4a",
+  "ms": 8565,
   "who": "veth"
  },
- "the data says five crore sixty-two lakh.": {
-  "file": "veth-32df9084d1.m4a",
-  "ms": 2505,
+ "the data says twenty-nine lakh fifty thousand.": {
+  "file": "veth-eda80af528.m4a",
+  "ms": 2888,
   "who": "veth"
  },
  "enter the population number shown in country b's data.": {
@@ -144,9 +174,9 @@
   "ms": 2291,
   "who": "narrator"
  },
- "yes correct! two crore seventy-six lakh thirty-four thousand seven hundred eighty-one. country c data verified!": {
-  "file": "narrator-be14ea9da8.m4a",
-  "ms": 7339,
+ "yes correct! seven crore thirty-one lakh four thousand two hundred ninety-eight. country c data verified!": {
+  "file": "narrator-cccb7b9ba9.m4a",
+  "ms": 6805,
   "who": "narrator"
  },
  "the number doesn't match the country's data. try again! check the lakhs in the population data.": {
@@ -154,9 +184,9 @@
   "ms": 5779,
   "who": "veth"
  },
- "the number begins with two crore seventy-six lakh.": {
-  "file": "veth-012774e437.m4a",
-  "ms": 2888,
+ "the number begins with seven crore thirty-one lakh.": {
+  "file": "veth-1aabbf5b2a.m4a",
+  "ms": 2853,
   "who": "veth"
  },
  "check the data and enter the correct number.": {
@@ -169,19 +199,19 @@
   "ms": 2198,
   "who": "narrator"
  },
- "yes correct! forty-three lakh twenty-five thousand eight hundred seventeen. country d data verified!": {
-  "file": "narrator-280492cacc.m4a",
-  "ms": 6538,
+ "yes correct! eight lakh forty-five thousand six hundred three. country d data verified!": {
+  "file": "narrator-bea38168fd.m4a",
+  "ms": 5923,
   "who": "narrator"
  },
- "the number doesn't match the country's data. try again! look at the lakhs group.": {
-  "file": "veth-370f9b3aba.m4a",
-  "ms": 5001,
+ "the number doesn't match the country's data. try again! look at the lakhs group. there are no crores or ten-lakhs, so put 0 in those places.": {
+  "file": "veth-be0ca500a7.m4a",
+  "ms": 9447,
   "who": "veth"
  },
- "the population begins with 43 lakh.": {
-  "file": "veth-36862e96b8.m4a",
-  "ms": 2516,
+ "the population begins with 8 lakh.": {
+  "file": "veth-c3c632e83c.m4a",
+  "ms": 2214,
   "who": "veth"
  },
  "enter the number written in country d's data.": {
@@ -194,9 +224,9 @@
   "ms": 2174,
   "who": "narrator"
  },
- "yes correct! eighty-five lakh sixty-seven thousand two hundred nineteen. country e data verified!": {
-  "file": "narrator-965babeba8.m4a",
-  "ms": 6585,
+ "yes correct! three crore ninety-two lakh seventy-six thousand fifty-four. country e data verified!": {
+  "file": "narrator-0800998640.m4a",
+  "ms": 6689,
   "who": "narrator"
  },
  "the number doesn't match the country's data. try again! check how many lakhs are written in the data.": {
@@ -204,9 +234,9 @@
   "ms": 6011,
   "who": "veth"
  },
- "the number starts with 85 lakh.": {
-  "file": "veth-8897005d1e.m4a",
-  "ms": 2307,
+ "the number starts with three crore ninety-two lakh.": {
+  "file": "veth-1bd6d16cb5.m4a",
+  "ms": 2876,
   "who": "veth"
  },
  "read the data and enter the correct population.": {
@@ -219,19 +249,19 @@
   "ms": 2221,
   "who": "narrator"
  },
- "yes correct! seven lakh twenty-four thousand five hundred sixty-three. country f data verified!": {
-  "file": "narrator-e00cfd0ce3.m4a",
-  "ms": 6608,
+ "yes correct! forty-six lakh eighteen thousand seven hundred thirty. country f data verified!": {
+  "file": "narrator-d8198e0394.m4a",
+  "ms": 6353,
   "who": "narrator"
  },
- "the number doesn't match the country's data. try again! look at the thousands written in the data.": {
-  "file": "veth-b02a024cd5.m4a",
-  "ms": 5756,
+ "the number doesn't match the country's data. try again! look at the thousands written in the data. there are no crores, so put 0 in the crore place.": {
+  "file": "veth-23735f1b98.m4a",
+  "ms": 9320,
   "who": "veth"
  },
- "the data says seven lakh twenty-four thousand.": {
-  "file": "veth-080f676273.m4a",
-  "ms": 2795,
+ "the data says forty-six lakh eighteen thousand.": {
+  "file": "veth-2095e7aa14.m4a",
+  "ms": 2899,
   "who": "veth"
  },
  "complete country f's population record.": {
@@ -244,24 +274,24 @@
   "ms": 2256,
   "who": "narrator"
  },
- "yes correct! six crore forty-three lakh twenty-five thousand eight hundred seventeen. country g data verified!": {
-  "file": "narrator-76dd87dc50.m4a",
-  "ms": 7258,
+ "yes correct! nine crore fifty-seven thousand three hundred twelve. country g data verified!": {
+  "file": "narrator-e2e5276a55.m4a",
+  "ms": 6202,
   "who": "narrator"
  },
- "the number doesn't match the data. try again! check the crore and lakh groups.": {
-  "file": "veth-26350d2949.m4a",
-  "ms": 4850,
+ "the number doesn't match the file. try again! check the crore and lakh groups.": {
+  "file": "veth-bf8aabd41d.m4a",
+  "ms": 4803,
   "who": "veth"
  },
- "the data says six crore forty-three lakh.": {
-  "file": "veth-5bef9a2b56.m4a",
-  "ms": 2505,
+ "the file says nine crore, with no lakhs.": {
+  "file": "veth-882aa30c19.m4a",
+  "ms": 2551,
   "who": "veth"
  },
- "read country g's data and enter the correct population.": {
-  "file": "veth-f4868e7cfa.m4a",
-  "ms": 3491,
+ "read country g's file and enter the correct population.": {
+  "file": "veth-1e23dfba7d.m4a",
+  "ms": 3352,
   "who": "veth"
  },
  "check country h's population data.": {
@@ -269,24 +299,24 @@
   "ms": 2335,
   "who": "narrator"
  },
- "yes correct! fifty-seven lakh thirty-six thousand four hundred twenty-eight. country h data verified!": {
-  "file": "narrator-dc6a224eb9.m4a",
-  "ms": 6759,
+ "yes correct! twelve lakh three thousand five hundred eighty-nine. country h data verified!": {
+  "file": "narrator-6271bf2c9f.m4a",
+  "ms": 5981,
   "who": "narrator"
  },
- "check the population number again. look at the lakhs group in the data.": {
-  "file": "veth-1b1e48bd94.m4a",
-  "ms": 4327,
+ "check the population number again. look at the lakhs group in the file. there are no crores, so put 0 in the crore place.": {
+  "file": "veth-6c1384ee90.m4a",
+  "ms": 7857,
   "who": "veth"
  },
- "the population begins with 57 lakh.": {
-  "file": "veth-ebe7215d8b.m4a",
-  "ms": 2667,
+ "the population begins with 12 lakh.": {
+  "file": "veth-296673f6ec.m4a",
+  "ms": 2342,
   "who": "veth"
  },
- "enter the number written in country h's data.": {
-  "file": "veth-71911bf6bc.m4a",
-  "ms": 2679,
+ "enter the number written in country h's file.": {
+  "file": "veth-a5482cff11.m4a",
+  "ms": 2621,
   "who": "veth"
  },
  "check country i's population data.": {
@@ -294,19 +324,24 @@
   "ms": 2186,
   "who": "narrator"
  },
- "yes correct! eight crore twenty-six lakh forty-three thousand five hundred nineteen. country i data verified!": {
-  "file": "narrator-ad92caf24f.m4a",
-  "ms": 7096,
+ "yes correct! two crore fifty-eight lakh forty thousand one hundred seventy-six. country i data verified!": {
+  "file": "narrator-9466295672.m4a",
+  "ms": 6991,
   "who": "narrator"
  },
- "that number doesn't match. try again! check the lakhs written in the data.": {
-  "file": "veth-5b5b8e5f92.m4a",
-  "ms": 4629,
+ "that number doesn't match. try again! check the lakhs written in the file.": {
+  "file": "veth-44c739c510.m4a",
+  "ms": 4583,
   "who": "veth"
  },
- "the number begins with eight crore twenty-six lakh.": {
-  "file": "veth-e71a64ef10.m4a",
-  "ms": 2899,
+ "the number begins with two crore fifty-eight lakh.": {
+  "file": "veth-02c49cf8d6.m4a",
+  "ms": 2795,
+  "who": "veth"
+ },
+ "read the file and enter the correct population.": {
+  "file": "veth-6df944bcfa.m4a",
+  "ms": 2783,
   "who": "veth"
  },
  "all countries' population data verified!": {
@@ -354,9 +389,9 @@
   "ms": 6011,
   "who": "veth"
  },
- "we read this as four crore thirty-two lakh fifty-six thousand seven hundred eighty-one.": {
-  "file": "veth-23b702dc83.m4a",
-  "ms": 5151,
+ "we read this as seven crore twenty-nine lakh five thousand six hundred fourteen.": {
+  "file": "veth-6cde375431.m4a",
+  "ms": 4838,
   "who": "veth"
  },
  "the international number system uses thousands, millions and billions. here, commas follow a different pattern.": {
@@ -379,9 +414,9 @@
   "ms": 5744,
   "who": "veth"
  },
- "we read this as forty-three million two hundred fifty-six thousand seven hundred eighty-one.": {
-  "file": "veth-685047a613.m4a",
-  "ms": 5256,
+ "we read this as seventy-two million nine hundred five thousand six hundred fourteen.": {
+  "file": "veth-1099b27612.m4a",
+  "ms": 4873,
   "who": "veth"
  },
  "in the indian number system, we group the last three digits first, then the remaining digits in pairs of two.": {
@@ -419,9 +454,9 @@
   "ms": 1841,
   "who": "veth"
  },
- "place the comma before 781.": {
-  "file": "veth-111e18daf1.m4a",
-  "ms": 2897,
+ "place the comma before 426.": {
+  "file": "veth-0aa2e5cdff.m4a",
+  "ms": 2828,
   "who": "veth"
  },
  "place the first comma.": {
@@ -449,9 +484,9 @@
   "ms": 2689,
   "who": "veth"
  },
- "place the comma before 56.": {
-  "file": "veth-3aa0a94cdf.m4a",
-  "ms": 2015,
+ "place the comma before 07.": {
+  "file": "veth-c33bc1d6e3.m4a",
+  "ms": 1934,
   "who": "veth"
  },
  "place the next comma.": {
@@ -479,9 +514,9 @@
   "ms": 1899,
   "who": "veth"
  },
- "place the comma before 32.": {
-  "file": "veth-21cabdb7fc.m4a",
-  "ms": 1876,
+ "place the comma before 83.": {
+  "file": "veth-53efc1d3ba.m4a",
+  "ms": 1899,
   "who": "veth"
  },
  "complete the number.": {
@@ -514,9 +549,9 @@
   "ms": 4326,
   "who": "veth"
  },
- "place the comma before 817.": {
-  "file": "veth-38d8302e9c.m4a",
-  "ms": 2770,
+ "place the comma before 362.": {
+  "file": "veth-b44757aa70.m4a",
+  "ms": 2839,
   "who": "veth"
  },
  "continue counting three digits to the left. place the next comma.": {
@@ -534,13 +569,13 @@
   "ms": 2004,
   "who": "veth"
  },
- "place the comma before 325.": {
-  "file": "veth-babe8fc0a7.m4a",
-  "ms": 2886,
+ "place the comma before 470.": {
+  "file": "veth-27255d2e74.m4a",
+  "ms": 2595,
   "who": "veth"
  },
- "the remaining digits belong to the millions group!": {
-  "file": "veth-b188bcceb1.m4a",
+ "the remaining digits belong to the millions group.": {
+  "file": "veth-2e9e308ae7.m4a",
   "ms": 2702,
   "who": "veth"
  },
@@ -599,19 +634,19 @@
   "ms": 2440,
   "who": "veth"
  },
- "country b population report ready!": {
-  "file": "narrator-ea55154d37.m4a",
-  "ms": 2219,
-  "who": "narrator"
- },
- "complete country b's report.": {
-  "file": "veth-82a3196708.m4a",
-  "ms": 1755,
+ "now place the commas again, the way you just saw.": {
+  "file": "veth-d7b79ad210.m4a",
+  "ms": 3134,
   "who": "veth"
  },
- "country c population report ready!": {
-  "file": "narrator-431cad739d.m4a",
-  "ms": 2242,
+ "correct! the number is 30 lakh 75 thousand 9 hundred 14.": {
+  "file": "veth-422154d731.m4a",
+  "ms": 4704,
+  "who": "veth"
+ },
+ "report is ready in the indian number system!": {
+  "file": "narrator-734cac9e1e.m4a",
+  "ms": 2487,
   "who": "narrator"
  },
  "complete country c's report.": {
@@ -619,9 +654,24 @@
   "ms": 1790,
   "who": "veth"
  },
- "country e population report ready!": {
-  "file": "narrator-a71d2e1109.m4a",
-  "ms": 2149,
+ "correct! the number is 8 crore 64 lakh 2 thousand 1 hundred 35.": {
+  "file": "veth-b0528cf813.m4a",
+  "ms": 5075,
+  "who": "veth"
+ },
+ "complete country d's report.": {
+  "file": "veth-a62ab2abd8.m4a",
+  "ms": 1755,
+  "who": "veth"
+ },
+ "correct! the number is 4 million 918 thousand 2 hundred 63.": {
+  "file": "veth-47702d9a29.m4a",
+  "ms": 5424,
+  "who": "veth"
+ },
+ "report is ready in the international number system!": {
+  "file": "narrator-8d782fa977.m4a",
+  "ms": 2800,
   "who": "narrator"
  },
  "complete country e's report.": {
@@ -629,69 +679,64 @@
   "ms": 1755,
   "who": "veth"
  },
- "country f population report ready!": {
-  "file": "narrator-a88d00b072.m4a",
-  "ms": 2196,
-  "who": "narrator"
+ "correct! the number is 70 million 531 thousand 4 hundred 8.": {
+  "file": "veth-4bcf8f4b70.m4a",
+  "ms": 5389,
+  "who": "veth"
  },
  "complete country f's report.": {
   "file": "veth-3d9eb5f55c.m4a",
   "ms": 1790,
   "who": "veth"
  },
- "country g population report ready!": {
-  "file": "narrator-2b4be8da09.m4a",
-  "ms": 2207,
-  "who": "narrator"
+ "correct! the number is 9 lakh 12 thousand 47.": {
+  "file": "veth-a27f2400c1.m4a",
+  "ms": 3729,
+  "who": "veth"
  },
  "complete country g's report.": {
   "file": "veth-75fd7c9316.m4a",
   "ms": 1778,
   "who": "veth"
  },
- "country h population report ready!": {
-  "file": "narrator-8ff5154b63.m4a",
-  "ms": 2242,
-  "who": "narrator"
+ "correct! the number is 26 million 814 thousand 9 hundred 50.": {
+  "file": "veth-9210925e31.m4a",
+  "ms": 5528,
+  "who": "veth"
  },
  "complete country h's report.": {
   "file": "veth-c5ae4e6609.m4a",
   "ms": 1906,
   "who": "veth"
  },
- "country i population report ready!": {
-  "file": "narrator-dbfb309819.m4a",
-  "ms": 2138,
-  "who": "narrator"
+ "correct! the number is 1 crore 53 lakh 90 thousand 6 hundred 72.": {
+  "file": "veth-ab73efea82.m4a",
+  "ms": 5389,
+  "who": "veth"
  },
  "complete country i's report.": {
   "file": "veth-cdd89ec605.m4a",
   "ms": 1755,
   "who": "veth"
  },
- "country j population report ready!": {
-  "file": "narrator-a17582b50e.m4a",
-  "ms": 2207,
-  "who": "narrator"
+ "correct! the number is 803 thousand 5 hundred 16.": {
+  "file": "veth-3d712a1a06.m4a",
+  "ms": 4530,
+  "who": "veth"
  },
  "complete country j's report.": {
   "file": "veth-4fb0bfc3bb.m4a",
   "ms": 1767,
   "who": "veth"
  },
- "all population reports for both the headquarters are ready!": {
-  "file": "team-fca408bfc9.m4a",
-  "ms": 5694,
-  "who": "team"
- },
  "all population reports delivered successfully!": {
   "file": "rill-c04c9392dd.m4a",
   "ms": 2446,
   "who": "rill"
  },
- "great work, team! earth has received all the reports!": {
-  "file": "veth-52debcfd2a.m4a",
-  "ms": 3770,
+ "great work, team! titan has received all the reports!": {
+  "file": "veth-11a5ab7644.m4a",
+  "ms": 3898,
   "who": "veth"
  }
 }

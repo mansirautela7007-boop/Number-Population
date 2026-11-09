@@ -950,3 +950,43 @@ body.held #pausebtn { display: none; }
 }
 #pausecard .pc-play svg { width: calc(var(--u) * 2.2); height: calc(var(--u) * 2.2); fill: currentColor; }
 #pausecard .pc-play:active { transform: translateY(calc(var(--u) * 0.2)); }
+
+/* 9 Nov 2026: the pause card lists the levels played so far */
+#pausecard .pc-box { cursor: default; }
+#pausecard .pc-levels { display: flex; gap: calc(var(--u) * 1.2); flex-wrap: wrap; justify-content: center; }
+#pausecard .pc-levels[hidden] { display: none; }
+#pausecard .pc-level {
+  padding: calc(var(--u) * 0.8) calc(var(--u) * 2.2);
+  border-radius: calc(var(--u) * 1); cursor: pointer;
+  border: calc(var(--u) * 0.18) solid #7fe3ff;
+  background: rgba(10,30,70,0.85); color: #eafcff;
+  font-family: var(--display); font-weight: 700;
+  font-size: calc(var(--u) * 1.6); letter-spacing: 0.12em;
+  transition: scale 140ms ease, filter 140ms ease;
+}
+#pausecard .pc-level:hover { scale: 1.05; filter: brightness(1.2); }
+#pausecard .pc-level:active { scale: 0.95; }
+
+/* 9 Nov 2026: THE BACK BUTTON — top-left corner, the pause button's twin;
+   while it shows, the pause button sits just to its right */
+#backbtn {
+  position: absolute; left: calc(var(--u) * 1.4); top: calc(var(--u) * 1.4);
+  z-index: 90;
+  width: calc(var(--u) * 4.2); height: calc(var(--u) * 4.2);
+  display: flex; align-items: center; justify-content: center;
+  padding: 0; border-radius: 50%;
+  border: calc(var(--u) * 0.22) solid #FFC24A;
+  background: linear-gradient(180deg, #2a62b0 0%, #163E86 55%, #0E2B66 100%);
+  box-shadow: inset 0 0 0 calc(var(--u) * 0.12) #CFE8FB,
+              0 calc(var(--u) * 0.3) calc(var(--u) * 0.8) rgba(0,0,0,0.5);
+  cursor: pointer;
+  transition: transform 140ms ease, filter 140ms ease;
+}
+#backbtn[hidden] { display: none; }
+#backbtn svg { width: 50%; height: 50%; fill: #FFD45E; margin-left: -8%; }
+#backbtn:hover { filter: brightness(1.15); }
+#backbtn:active { transform: scale(0.94); }
+body.has-back #pausebtn { left: calc(var(--u) * 6.4); }
+body.pre-game #backbtn, body.in-start #backbtn, body.in-post #backbtn,
+body.held #backbtn { display: none; }
+body.held #pausebtn, body.pre-game.has-back #pausebtn { left: calc(var(--u) * 1.4); }
