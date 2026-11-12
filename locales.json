@@ -375,7 +375,7 @@
         "LAKHS"
       ],
       "howTo": [
-        "To change a digit, swipe it up or down, or use the arrows.",
+        "Scroll each digit up or down to change the number.",
         "When the number is ready, tap VERIFY."
       ],
       "doneWho": "rill",
@@ -535,7 +535,7 @@
       },
       {
         "country": "B",
-        "n": 19470362,
+        "n": 19470385,
         "sys": "intl",
         "steps": [
           {
@@ -548,7 +548,7 @@
             "right": "Yes! Correct! You marked the first three digits in the Ones group.",
             "fb1": "Check where you placed the comma.",
             "fb2": "Count three digits from the right.",
-            "fb3": "Place the comma before 362.",
+            "fb3": "Place the comma before 385.",
             "idle": "Place the first comma."
           },
           {
@@ -575,7 +575,7 @@
     "practice": [
       {
         "country": "C",
-        "n": 3075914,
+        "n": 3075928,
         "sys": "in"
       },
       {
@@ -590,12 +590,12 @@
       },
       {
         "country": "F",
-        "n": 70531408,
+        "n": 47053108,
         "sys": "intl"
       },
       {
         "country": "G",
-        "n": 912047,
+        "n": 912041,
         "sys": "in"
       },
       {
@@ -610,7 +610,7 @@
       },
       {
         "country": "J",
-        "n": 803516,
+        "n": 803519,
         "sys": "intl"
       }
     ],
@@ -641,6 +641,6 @@
       "POPULATION REPORT"
     ],
     "vo": "Number Population!",
-    "name": "Number Population"
+    "name": "Titan's Population"
   }
 }

@@ -617,12 +617,14 @@
 #commas .cm-strip.active .cm-tag::before { content: '\25B6\00a0'; }
 #commas .cm-strip.row .cm-digit { width: calc(var(--u) * 5.4); height: calc(var(--u) * 6.8); font-size: calc(var(--u) * 4.4); }
 #commas .cm-strip.row .cm-comma { font-size: calc(var(--u) * 4.4); }
-/* 9 Nov 2026: the other system's row is faded right down, so it is there
-   for comparison but does not read as the answer */
-#commas .cm-strip.ref { opacity: 0.22; filter: saturate(0.4); transition: opacity 600ms ease, filter 600ms ease; }
+/* 11 Nov 2026: the row not being worked on is dimmed a little (about
+   65%), the same size as the active one, so both stay readable; the active
+   row stands out by its gold ▶ tag and its glowing slots. It takes no taps. */
+#commas .cm-strip.ref { opacity: 0.65; transition: opacity 500ms ease; pointer-events: none; }
 #commas .cm-strip.ref .cm-tag { color: #9fb6cc; }
-#commas .cm-strip.ref .cm-digit { width: calc(var(--u) * 4.2); height: calc(var(--u) * 5.2); font-size: calc(var(--u) * 3.4); }
-#commas .cm-strip.ref .cm-comma { font-size: calc(var(--u) * 3.4); color: #7fe3ff; text-shadow: none; }
+#commas .cm-strip.ref button.cm-gap::before { opacity: 0.35; }
+#commas .cm-strip.both { opacity: 1; }
+#commas .cm-strip.both .cm-tag { color: #eafcff; }
 #commas .cm-strip.ref .cm-label { font-size: calc(var(--u) * 1.15); color: #9fb6cc; border-top-color: #4f7090; }
 
 /* ---- a comma in the right place: its slot goes, and the gap closes ---- */
@@ -765,3 +767,78 @@
 #commas .cm-hand img { width: 100%; height: auto; display: block; rotate: 180deg; }
 #commas .cm-hand.tap img { animation: mxHandTap 700ms ease-in-out 2; }
 @keyframes mxHandTap { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--u) * 0.9); } }
+
+/* 11 Nov 2026: the speaker is switched off while a line is being said —
+   dimmed, no glow, no tap — and comes back when the line is over */
+#teach.vo-busy .tc-ask:not(.playing) .tc-speaker,
+#teach.vo-busy .tc-words:not(.playing) .tc-speaker {
+  opacity: 0.35; filter: grayscale(1); box-shadow: none; animation: none;
+}
+#teach.vo-busy .tc-ask:not(.playing), #teach.vo-busy .tc-words:not(.playing) { cursor: default; }
+#teach.vo-busy .tc-ask:not(.playing):hover .tc-speaker,
+#teach.vo-busy .tc-words:not(.playing):hover .tc-speaker { transform: none; }
+
+/* 11 Nov 2026: PLACEHOLDER CHEER for Commander Veth at the end — a happy
+   bounce and sway (individual translate/rotate, so his own centring
+   transform stays), with sparkles twinkling round him. To be replaced by
+   a proper cheering animation asset. */
+#story .sy-finale-art { transform-origin: 50% 100%; }
+#story .sy-finale.cheer .sy-finale-art { animation: syCheer 0.9s ease-in-out infinite; }
+@keyframes syCheer {
+  0%, 100% { translate: 0 0; rotate: 0deg; scale: 1; }
+  25% { translate: 0 -3.5%; rotate: -2deg; scale: 1.02; }
+  50% { translate: 0 0; rotate: 0deg; scale: 1; }
+  75% { translate: 0 -3.5%; rotate: 2deg; scale: 1.02; }
+}
+#story .sy-finale-sparks { position: absolute; left: 4%; top: 4%; width: 40%; height: 92%; pointer-events: none; }
+#story .sy-finale-sparks i {
+  position: absolute; width: calc(var(--u) * 2.6); aspect-ratio: 1; transform: translate(-50%, -50%);
+  background: #fff6d0;
+  clip-path: polygon(50% 0, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0 50%, 42% 42%);
+  filter: drop-shadow(0 0 calc(var(--u) * 0.6) #ffd166);
+  opacity: 0;
+}
+#story .sy-finale.cheer .sy-finale-sparks i { animation: syTwinkle 1.4s ease-in-out var(--d) infinite; }
+@keyframes syTwinkle { 0%, 100% { opacity: 0; scale: 0.3; rotate: 0deg; } 50% { opacity: 1; scale: 1; rotate: 45deg; } }
+@media (prefers-reduced-motion: reduce) {
+  #story .sy-finale.cheer .sy-finale-art, #story .sy-finale-sparks i { animation: none !important; }
+}
+
+/* ==== 11 Nov 2026: HIGHLIGHTS THAT FOLLOW THE VOICE ======================= */
+/* Level 1: "Check the population reports from different countries!" —
+   the country chips light, one after another, while it is said */
+#teach.hl-chips .tc-cty {
+  color: #1a1206; background: #ffd166;
+  box-shadow: 0 0 0 max(2px, calc(var(--u) * 0.18)) #ffd166, 0 0 calc(var(--u) * 1.2) rgba(255,209,102,0.85);
+  animation: syPulseS 0.9s ease-in-out infinite;
+}
+#teach.hl-chips .tc-cty:nth-child(2) { animation-delay: 0.1s; }
+#teach.hl-chips .tc-cty:nth-child(3) { animation-delay: 0.2s; }
+#teach.hl-chips .tc-cty:nth-child(4) { animation-delay: 0.3s; }
+#teach.hl-chips .tc-cty:nth-child(5) { animation-delay: 0.4s; }
+#teach.hl-chips .tc-cty:nth-child(6) { animation-delay: 0.5s; }
+#teach.hl-chips .tc-cty:nth-child(7) { animation-delay: 0.6s; }
+#teach.hl-chips .tc-cty:nth-child(8) { animation-delay: 0.7s; }
+#teach.hl-chips .tc-cty:nth-child(9) { animation-delay: 0.8s; }
+
+/* Level 2: the row whose turn it is wears a gold frame (no layout change:
+   drawn with box-shadow), and pulses with its headquarters as its turn is
+   announced */
+#commas .cm-strip.row .cm-row { border-radius: calc(var(--u) * 1); transition: box-shadow 400ms ease; }
+/* 11 Nov 2026: no line around the row — a soft gold glow, only while the
+   line announcing its turn is said; it fades out as the line ends */
+#commas .cm-strip.turn .cm-row {
+  box-shadow: 0 0 calc(var(--u) * 2.4) rgba(255,209,102,0.32), 0 0 calc(var(--u) * 0.9) rgba(255,209,102,0.22);
+  animation: cmTurn 1.6s ease-in-out infinite;
+}
+#commas .cm-strip.turn .cm-tag { animation: syPulseS 0.9s ease-in-out infinite; }
+@keyframes cmTurn {
+  0%, 100% { box-shadow: 0 0 calc(var(--u) * 2.4) rgba(255,209,102,0.32), 0 0 calc(var(--u) * 0.9) rgba(255,209,102,0.22); }
+  50% { box-shadow: 0 0 calc(var(--u) * 3.2) rgba(255,209,102,0.42), 0 0 calc(var(--u) * 1.2) rgba(255,209,102,0.28); }
+}
+#commas .cm-hq.turn {
+  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 0.14)) #2b4a66, 0 0 calc(var(--u) * 2.2) rgba(255,209,102,0.6);
+  animation: syPulseS 0.9s ease-in-out infinite;
+}
+/* the system's name pulses while the line introducing it is said */
+#commas .cm-sys.say { animation: syPulseS 0.9s ease-in-out infinite; text-shadow: 0 0 calc(var(--u) * 0.8) rgba(255,209,102,0.8); }

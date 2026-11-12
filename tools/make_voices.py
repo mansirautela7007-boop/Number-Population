@@ -157,8 +157,10 @@ def lines(L):
         add('veth', C[k])
     add('veth', C['retry'])
     for p in C['practice']:
-        add('veth', correct_line(p['n'], p['sys'], C['correct']))
-        add(C.get('readyWho', 'computer'), C['readyIn' if p['sys'] == 'in' else 'readyIntl'])
+        # every report is done in both systems, Indian first (11 Nov 2026)
+        for sys in ('in', 'intl'):
+            add('veth', correct_line(p['n'], sys, C['correct']))
+            add(C.get('readyWho', 'computer'), C['readyIn' if sys == 'in' else 'readyIntl'])
         add('veth', C['idle'].replace('{c}', p['country']))
 
     add('rill', S['end']['rill'])
