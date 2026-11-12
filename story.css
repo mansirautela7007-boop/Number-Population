@@ -770,13 +770,14 @@
 
 /* 11 Nov 2026: the speaker is switched off while a line is being said —
    dimmed, no glow, no tap — and comes back when the line is over */
-#teach.vo-busy .tc-ask:not(.playing) .tc-speaker,
-#teach.vo-busy .tc-words:not(.playing) .tc-speaker {
+#teach.vo-busy .tc-ask .tc-speaker,
+#teach.vo-busy .tc-words .tc-speaker {
   opacity: 0.35; filter: grayscale(1); box-shadow: none; animation: none;
 }
-#teach.vo-busy .tc-ask:not(.playing), #teach.vo-busy .tc-words:not(.playing) { cursor: default; }
-#teach.vo-busy .tc-ask:not(.playing):hover .tc-speaker,
-#teach.vo-busy .tc-words:not(.playing):hover .tc-speaker { transform: none; }
+/* 12 Nov 2026: the number name being said switches it off too */
+#teach.vo-busy .tc-ask, #teach.vo-busy .tc-words { cursor: default; }
+#teach.vo-busy .tc-ask:hover .tc-speaker,
+#teach.vo-busy .tc-words:hover .tc-speaker { transform: none; }
 
 /* 11 Nov 2026: PLACEHOLDER CHEER for Commander Veth at the end — a happy
    bounce and sway (individual translate/rotate, so his own centring
@@ -842,3 +843,127 @@
 }
 /* the system's name pulses while the line introducing it is said */
 #commas .cm-sys.say { animation: syPulseS 0.9s ease-in-out infinite; text-shadow: 0 0 calc(var(--u) * 0.8) rgba(255,209,102,0.8); }
+
+/* ==== 12 Nov 2026: THE ×10 ARROWS on the Level 1 card row =================
+   The gold ×10 badge, reshaped as an arrow pointing left (ONES → CRORE): the
+   badge's own gradient, cut to an arrow, with its dark edge and glow drawn
+   as drop-shadows so the arrow's outline keeps them. One per gap. */
+#teach .tc-x10 {
+  padding: 0; background: none; border-radius: 0; box-shadow: none;
+  font-size: calc(var(--u) * 1.3);
+  filter: drop-shadow(0 calc(var(--u) * 0.16) 0 #9C4207) drop-shadow(0 0 calc(var(--u) * 0.5) rgba(255, 194, 74, 0.65));
+}
+#teach .tc-x10-arrow {
+  display: block; white-space: nowrap;
+  padding: calc(var(--u) * 0.28) calc(var(--u) * 0.6) calc(var(--u) * 0.28) calc(var(--u) * 1.25);
+  background: linear-gradient(180deg, #FFE27A, #FFC24A);
+  clip-path: polygon(0 50%, calc(var(--u) * 0.85) 0, 100% 0, 100% 100%, calc(var(--u) * 0.85) 100%);
+}
+
+/* 12 Nov 2026: each Level 1 report's country, as its heading */
+#teach .tc-ask-country {
+  grid-column: 1 / -1; justify-self: center;
+  font-size: calc(var(--u) * 1.35); font-weight: 700; letter-spacing: 0.22em;
+  color: #ffd166; text-shadow: 0 0 calc(var(--u) * 0.6) rgba(255,209,102,0.55);
+}
+/* the hand at the speaker (guided Country A): fingertip pointing left onto
+   it, from its right, tapping */
+#teach .tc-spk-hand {
+  position: absolute; z-index: 9; pointer-events: none;
+  width: calc(var(--u) * 4.4);
+  transform: translate(calc(var(--u) * 0.2), -27%);
+  filter: drop-shadow(0 calc(var(--u) * 0.4) calc(var(--u) * 0.6) rgba(0,0,0,0.55));
+  animation: tcSpkIn 300ms ease both;
+}
+#teach .tc-spk-hand img { width: 100%; height: auto; display: block; rotate: -90deg; animation: tcSpkTap 1.1s ease-in-out 0.3s infinite; }
+@keyframes tcSpkIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes tcSpkTap { 0%, 100% { translate: 0 0; } 50% { translate: calc(var(--u) * -0.8) 0; } }
+
+/* ==== 12 Nov 2026: LEVEL 2 ================================================ */
+/* the reports have no centre heading — the row labels say which is which */
+#commas.practice .cm-sys { display: none; }
+
+/* no headquarters boxes during the tutorial */
+#commas.tut .cm-hq { visibility: hidden; }
+/* the compare rows at the end of the tutorial: groups bracketed and named */
+#commas .cm-strip.compare.bracket { padding-bottom: calc(var(--u) * 2.6); }
+#commas .cm-strip.compare .cm-label { font-size: calc(var(--u) * 1.3); }
+
+/* the tutorial's two rows: grouped and named from the start */
+#commas .cm-strip.teach-row .cm-label { font-size: calc(var(--u) * 1.2); }
+
+/* 12 Nov 2026: Commander Veth's thumbs-up sheet at the closing — one frame
+   showing at a time (game.js steps background-position); the sheet is his
+   animation, so the placeholder bounce is off for it */
+#story .sy-finale-art.sheet {
+  display: block; width: auto; aspect-ratio: 346 / 762;
+  background-repeat: no-repeat; background-size: 600% 600%;
+}
+#story .sy-finale.cheer .sy-finale-art.sheet { animation: none; }
+
+/* 12 Nov 2026: the closing is set in the control room (the artist's
+   picture, behind everything); his line sits on a dark glass card so it
+   reads over the bright window */
+#story .sy-finale {
+  background-color: #0b1020; background-size: cover; background-position: 50% 50%; background-repeat: no-repeat;
+}
+#story .sy-finale::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(6,10,22,0.35) 0%, rgba(6,10,22,0) 30%, rgba(6,10,22,0) 100%);
+}
+#story .sy-finale-panel {
+  padding: calc(var(--u) * 2.2) calc(var(--u) * 2.6);
+  border-radius: calc(var(--u) * 1.4);
+  background: rgba(10,16,36,0.78);
+  box-shadow: inset 0 0 0 max(1px, calc(var(--u) * 0.15)) rgba(182,146,255,0.55),
+              0 calc(var(--u) * 0.8) calc(var(--u) * 2.4) rgba(0,0,0,0.5);
+  -webkit-backdrop-filter: blur(calc(var(--u) * 0.6)); backdrop-filter: blur(calc(var(--u) * 0.6));
+}
+
+/* 12 Nov 2026: Commander Veth at the size of the room — standing on its
+   floor to the left of the consoles, clear of the dialogue box — and the
+   panel (MISSION COMPLETE only) over the window */
+#story .sy-finale-art.sheet { left: 13%; bottom: 15.5%; height: 60%; }
+#story .sy-finale-panel { left: 34%; right: 12%; top: 40%; }
+#story .sy-finale-panel:empty { display: none; }
+#story .sy-finale .sy-done { justify-self: center; justify-items: center; text-align: center; }
+#story .sy-finale-panel { padding: 0; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+#story .sy-finale-sparks { left: 2%; top: 22%; width: 23%; height: 64%; }
+
+/* 12 Nov 2026: THE CLOSING, AS DRAWN — the control room close in and out
+   of focus, Commander Veth large on the left (cut by the bottom edge),
+   his line in a speech bubble by his head, MISSION COMPLETE under it */
+#story .sy-finale { background: #0b1020; }
+#story .sy-finale::before { display: none; }
+#story .sy-finale-room {
+  position: absolute; inset: 0; z-index: 0;
+  background-size: cover; background-position: 50% 45%; background-repeat: no-repeat;
+  transform: scale(1.45); transform-origin: 52% 48%;
+  filter: blur(calc(var(--u) * 0.45)) brightness(0.9);
+}
+#story .sy-finale-art.sheet { left: 29%; bottom: -24%; height: 104%; z-index: 2; }
+#story .sy-finale-sparks { left: 14%; top: 18%; width: 30%; height: 72%; z-index: 3; }
+#story .sy-finale-bubble {
+  position: absolute; left: 37%; top: 21.5%; max-width: 33%; z-index: 4;
+  padding: calc(var(--u) * 1.3) calc(var(--u) * 2.4);
+  border-radius: calc(var(--u) * 1.6);
+  background: linear-gradient(180deg, #1d4796, #12306e);
+  border: max(2px, calc(var(--u) * 0.25)) solid #f2c24a;
+  box-shadow: 0 calc(var(--u) * 0.6) calc(var(--u) * 1.8) rgba(0,0,0,0.45);
+  color: #fff; font-weight: 700; font-size: calc(var(--u) * 2.25); line-height: 1.3;
+  opacity: 0; transform: scale(0.85); transform-origin: 0% 90%;
+  transition: opacity 260ms ease, transform 360ms cubic-bezier(0.34,1.56,0.64,1);
+}
+#story .sy-finale-bubble.on { opacity: 1; transform: none; }
+/* the tail, from the bubble's lower left corner towards his face */
+#story .sy-finale-bubble::before, #story .sy-finale-bubble::after {
+  content: ''; position: absolute; left: calc(var(--u) * -3.2); bottom: calc(var(--u) * 0.4);
+  width: calc(var(--u) * 4); height: calc(var(--u) * 3.2);
+  clip-path: polygon(100% 0, 100% 72%, 0 100%);
+}
+#story .sy-finale-bubble::before { background: #f2c24a; }
+#story .sy-finale-bubble::after {
+  background: #12306e; left: calc(var(--u) * -2.6); bottom: calc(var(--u) * 0.68);
+  width: calc(var(--u) * 3.6); height: calc(var(--u) * 2.6);
+}
+#story .sy-finale-panel { left: 40%; right: 8%; top: 46%; transform: none; z-index: 4; }

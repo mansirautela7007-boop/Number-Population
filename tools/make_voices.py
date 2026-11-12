@@ -114,8 +114,34 @@ def key(text):
     return re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', '', str(text))).strip().lower()
 
 
+def link_countries(L):
+    """the shared list of countries and numbers (locales.json "countries"),
+    joined onto both levels exactly as game.js's linkCountries() does"""
+    lst = L.get('countries', [])
+    by = {c['country']: c['n'] for c in lst}
+    for k, t in enumerate(L['teach']['level4']['tries']):
+        if k < len(lst):
+            t['country'], t['target'] = lst[k]['country'], lst[k]['n']
+    C = L['commas']
+    # Level 2 has its own list (commas.countries), 12 Nov 2026
+    by2 = {c['country']: c['n'] for c in C.get('countries', lst)}
+    for g in C['guided'] + C['practice']:
+        if g['country'] in by2:
+            g['n'] = by2[g['country']]
+
+
+def group_digits(n, system):
+    """the digit groups from the right, as COMMAS.JS's groups() makes them:
+    the digits of each group, ones first"""
+    s = str(n)
+    counts = [3, 5, 7, 9, 11] if system == 'in' else [3, 6, 9, 12]
+    cuts = [len(s)] + [len(s) - r for r in counts if r < len(s)] + [0]
+    return [s[cuts[k + 1]:cuts[k]] for k in range(len(cuts) - 1)]
+
+
 def lines(L):
     """every line the game says, with who says it"""
+    link_countries(L)
     out = []
     add = lambda who, t: t and out.append((who, t))
     S, T4, C = L['story'], L['teach']['level4'], L['commas']
@@ -129,6 +155,7 @@ def lines(L):
         add('veth', b)
     for h in T4.get('howTo', []):
         add('veth', h)
+    add('veth', T4.get('speakerHint'))
     # the number names, said when the number box is tapped
     add('narrator', cap(indian_words(T4['example'])))
     for t in T4['tries']:
@@ -147,9 +174,12 @@ def lines(L):
     for t in C['teach']:
         add('veth', t)
     for g in C['guided']:
-        for st in g['steps']:
-            for k in ('say', 'right', 'fb1', 'fb2', 'fb3', 'idle'):
+        gd = group_digits(g['n'], g['sys'])
+        for j, st in enumerate(g['steps']):
+            for k in ('say', 'right', 'fb1', 'fb2', 'idle'):
                 add('veth', st[k])
+            # "Place the comma before 547." — the digits come from the number
+            add('veth', st['fb3'].replace('{d}', gd[j]))
         for k in ('remaining', 'ready', 'sent'):
             add('veth', g[k])
     for k in ('transitionIdle', 'sendIdle', 'yourTurn', 'prepIn', 'prepIntl', 'wrong1', 'wrong2',

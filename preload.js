@@ -33,6 +33,9 @@ var ASSET_SIZES = /*SIZES*/{
  "assets/Story Assets/Map.webp": 221066,
  "assets/Story Assets/rill talking.webp": 1505662,
  "assets/portraits/rill.webp": 17956,
+ "assets/portraits/veth talking.webp": 1417966,
+ "assets/cover/veth-thumbs-up.webp": 1624736,
+ "assets/cover/control-room.jpg": 427408,
  "assets/Game assets/hand.webp": 14440
 }/*END*/;
 
@@ -56,6 +59,7 @@ var ASSET_SIZES = /*SIZES*/{
      decodes before its first frame, and the narrator's and Veth's lines */
   var PLAYABLE_PICS = FIRST.concat([
     'assets/Story Assets/rill talking.webp', 'assets/portraits/rill.webp',
+    'assets/portraits/veth talking.webp',
     'assets/Game assets/hand.webp'
   ]);
   function isPlayable(p) {
