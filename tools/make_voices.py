@@ -130,6 +130,17 @@ def link_countries(L):
             g['n'] = by2[g['country']]
 
 
+def group_hints(n, H):
+    """one hint per digit group of the 9-place chart, as groupHint() words it"""
+    w = str(n).rjust(9, '0')
+    out = []
+    for name, a, b in (('crore', 0, 2), ('lakh', 2, 4), ('thousand', 4, 6), ('ones', 6, 9)):
+        part = w[a:b]; val = int(part)
+        k = name + ('' if val else '0')
+        out.append(H[k].replace('{n}', part if name == 'ones' else str(val)))
+    return out
+
+
 def group_digits(n, system):
     """the digit groups from the right, as COMMAS.JS's groups() makes them:
     the digits of each group, ones first"""
@@ -163,7 +174,10 @@ def lines(L):
     for t in T4['tries']:
         add(t.get('who', 'veth'), t['say'])
         add(t.get('rightWho', 'computer'), t['right'])
-        add('veth', t['fb1'] + ' ' + t['fb2'])
+        # 13 Nov 2026: the hint names the first wrong group, so every group's
+        # hint for this number is made (TEACH.JS's groupHint())
+        for h in group_hints(t['target'], T4['hints']):
+            add('veth', t['fb1'] + ' ' + h)
         add('veth', t['fb3'])
         add('veth', t['idle'])
         if t.get('after'):
@@ -219,7 +233,9 @@ def main():
     with tempfile.TemporaryDirectory() as tmp:
         for who, text in lines(L):
             voice, rate = VOICES[who]
-            say = spoken(text)
+            # 13 Nov 2026: a breath of silence before and after every line,
+            # so neither its first nor its last syllable can be clipped
+            say = '[[slnc 60]] ' + spoken(text) + ' [[slnc 260]]'
             fid = who + '-' + hashlib.sha1((voice + str(rate) + say).encode()).hexdigest()[:10]
             dst = os.path.join(OUT, fid + '.m4a')
             if not os.path.exists(dst):

@@ -967,3 +967,24 @@
   width: calc(var(--u) * 3.6); height: calc(var(--u) * 2.6);
 }
 #story .sy-finale-panel { left: 40%; right: 8%; top: 46%; transform: none; z-index: 4; }
+
+/* 13 Nov 2026: the dark cross-fade from the cover into the story */
+.sy-xfade {
+  position: absolute; inset: 0; z-index: 35; pointer-events: none;
+  background: radial-gradient(ellipse 85% 80% at 50% 45%, #0a1626, #03080f);
+  transition: opacity 700ms ease;
+}
+.sy-xfade.out { opacity: 0; }
+
+/* 13 Nov 2026: the Level 2 hand from below (lower row): pointing up, the
+   fingertip on the gap's bottom edge */
+#commas .cm-hand.up { transform: translate(-73%, 0); }
+#commas .cm-hand.up img { rotate: 0deg; }
+#commas .cm-hand.up.tap img { animation-name: mxHandTapUp; }
+@keyframes mxHandTapUp { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--u) * -0.9); } }
+/* the tutorial has no HQ boxes, so its system heading sits higher, clear of
+   the hand pointing down onto the top row */
+#commas.tut:has(.cm-strip.row) .cm-sys { top: 14.5%; }
+/* and in the guided reports too: level with the HQ boxes, between them */
+#commas:has(.cm-strip.row) .cm-sys { top: 15.5%; }
+#commas.tut:has(.cm-strip.row) .cm-sys { top: 14.5%; }

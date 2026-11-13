@@ -2152,9 +2152,26 @@ var VOICE = (function () {
      Now the audio's "ended" event ends it, a PACE.clipTail breath later;
      the timer is only a cap. If the browser will not play it at all (no tap
      yet, a failed file) the line falls back to the clip's measured length. */
+  /* 13 Nov 2026: A CLIP IS PLAYED ONLY ONCE IT IS ALL HERE. One the
+     preloader has not fetched yet is downloaded whole first (the line's
+     clock, and its words, wait for it), so it can never stall or stutter
+     part-way through on a slow connection. */
+  var BLOBS = {};
   function startAudio(c, fromMs) {
     stopAudio();
-    var a = audio = new Audio(ASSET('assets/voice/' + c.file));
+    var url = ASSET('assets/voice/' + c.file), line = cur;
+    if (BLOBS[c.file] || /^blob:/.test(url) || !window.fetch || !line) return begin(c, BLOBS[c.file] || url, fromMs);
+    line.loading = true;
+    fetch(url).then(function (r) { return r.ok ? r.blob() : null; })
+      .then(function (b) { if (b && !BLOBS[c.file]) BLOBS[c.file] = URL.createObjectURL(b); })
+      .catch(function () {})
+      .then(function () {
+        line.loading = false;
+        if (cur === line) begin(c, BLOBS[c.file] || url, fromMs);
+      });
+  }
+  function begin(c, src, fromMs) {
+    var a = audio = new Audio(src);
     a.muted = muted;
     if (fromMs > 0) a.addEventListener('loadedmetadata', function () { a.currentTime = fromMs / 1000; }, { once: true });
     var mine = cur;
@@ -2163,6 +2180,7 @@ var VOICE = (function () {
       if (cur === mine && audio === a && cur) cur.ms = elapsed() + PACE.clipTail;
     });
     a.addEventListener('error', timed);
+    if (held) return;                    // paused: unhold() starts it
     var p = a.play();
     if (p && p.catch) p.catch(timed);
   }
@@ -2174,7 +2192,7 @@ var VOICE = (function () {
   function unlock() {
     if (unlocked) return;
     unlocked = true;
-    if (cur && cur.clip && !held && (!audio || audio.paused) && elapsed() < cur.clip.ms - 200) {
+    if (cur && cur.clip && !held && !cur.loading && (!audio || audio.paused) && elapsed() < cur.clip.ms - 200) {
       cur.ms = cur.est + Math.max(4000, cur.clip.ms);
       startAudio(cur.clip, elapsed());
     }
@@ -2211,7 +2229,7 @@ var VOICE = (function () {
          the audio is meant to be playing but has no data yet, the line's
          clock does not run (up to 10 s in all), so a slow file is never cut
          off by its own cap — and the words wait with it. */
-      if (cur.clip && audio && !audio.paused && !audio.ended && audio.readyState < 3 &&
+      if (cur.clip && (cur.loading || (audio && !audio.paused && !audio.ended && audio.readyState < 3)) &&
           (cur.stall = (cur.stall || 0) + dt) < 10000) cur.from += dt;
       if (elapsed() >= cur.ms) {
         var c = cur;
@@ -2292,6 +2310,10 @@ var VOICE = (function () {
     /* the typewriter follows this: 0..1 across the typing part of the line */
     progress: function (text) {
       var k = key(text);
+      /* 13 Nov 2026: with its clip sounding, the words follow the audio's
+         own playhead, so they never run ahead of the voice or lag it */
+      if (cur && cur.k === k && cur.clip && audio && !audio.paused && audio.currentTime > 0)
+        return Math.max(0, Math.min(1, audio.currentTime * 1000 / Math.max(1, cur.type)));
       if (cur && cur.k === k) return Math.max(0, Math.min(1, elapsed() / Math.max(1, cur.type)));
       if (lastK === k) return 1;
       return -1;
@@ -2817,15 +2839,30 @@ var DIALOG = (function () {
     var ms = Math.max(600, (o.ms || line.length * 38) * 0.92), t0 = performance.now();
     box.classList.add('speaking');
     if (REDUCED) { text.textContent = line; }
-    else (function step(t) {
-      /* with a voice, the words follow its playhead (finishing a little
-         before it does); with none, an even pace (QA Bug 19) */
-      var p = VOICE.progress(line);
-      var f = p >= 0 ? Math.min(1, p / 0.92) : (t - t0) / ms;
-      var k = Math.min(line.length, Math.ceil(f * line.length));
-      if (text.textContent.length !== k) text.textContent = line.slice(0, k);
-      if (k < line.length) raf = requestAnimationFrame(step); else raf = null;
-    })(t0);
+    else {
+      /* 13 Nov 2026: SMOOTH TYPING — the whole line is laid out from the
+         start (each letter its own span, invisible), and each letter fades
+         in as the voice reaches it, so the words flow in evenly rather than
+         jumping in chunks, and nothing reflows as they arrive */
+      text.textContent = '';
+      var chars = [], frag = document.createDocumentFragment();
+      for (var ci = 0; ci < line.length; ci++) {
+        var sp = document.createElement('span');
+        sp.textContent = line.charAt(ci);
+        frag.appendChild(sp); chars.push(sp);
+      }
+      text.appendChild(frag);
+      var shown = 0;
+      (function step(t) {
+        /* with a voice, the words follow its playhead (finishing a little
+           before it does); with none, an even pace (QA Bug 19) */
+        var p = VOICE.progress(line);
+        var f = p >= 0 ? Math.min(1, p / 0.92) : (t - t0) / ms;
+        var k = Math.min(line.length, Math.ceil(f * line.length));
+        for (; shown < k; shown++) chars[shown].className = 'in';
+        if (k < line.length) raf = requestAnimationFrame(step); else raf = null;
+      })(t0);
+    }
     hideT = setTimeout(function () { box.classList.remove('speaking'); }, o.ms || ms);
     if (facePlayer && faceWho === who) facePlayer.kick();
   }
@@ -5896,6 +5933,7 @@ var NP_LEVEL = 4;
     outro: i18n(L4 + 'outro'),
     howTo: i18n(L4 + 'howTo'),
     speakerHint: i18n(L4 + 'speakerHint'),
+    hints: i18n(L4 + 'hints'),
     continueIdle: i18n(L4 + 'continueIdle')
   };
   /* who teaches this lesson: Veth on the crore chart, Rill on the others */
@@ -6973,9 +7011,14 @@ var NP_LEVEL = 4;
     lastAct = performance.now();
     /* the storyboard's own feedback for this report: what is wrong, then the
        hint (odd misses); the reveal is said as the drums show it (even) */
+    /* 13 Nov 2026: the hint is about the FIRST GROUP THAT IS WRONG (read
+       left to right: crores, lakhs, thousands, the last three digits),
+       worked out from the digits as they stand when VERIFY was pressed — so
+       it never sends the child back to places that are already right */
+    var hint = groupHint(item);
     if (wrongCount % 2 === 1) {
       whenQuiet(function () {
-        var fb = item.fb1 ? item.fb1 + ' ' + item.fb2
+        var fb = item.fb1 ? item.fb1 + ' ' + (hint || item.fb2 || '')
                           : i18n('teach.wrongFirst', { words: item.words });
         say(teacher(), fb);
         cueKeys(fb);
@@ -6986,6 +7029,28 @@ var NP_LEVEL = 4;
     tryOn = false;
     root.classList.remove('trying');
     whenQuiet(function () { showAnswer(item); });
+  }
+
+  /* the first wrong digit group, as a hint line (teach.level4.hints):
+     "Check the lakhs. It should be 62 lakh." — or, for a group the number
+     does not have, "There are no crores in this number. Put 0 …". The
+     groups are counted from the right: the last three places, then two,
+     two, and the rest (crores). tools/make_voices.py makes the same lines. */
+  function groupHint(item) {
+    var H = script && script.hints;
+    if (!H) return '';
+    var want = pad(item.target), d = digits(), N = cols.length;
+    var gs = [['crore', 0, N - 7], ['lakh', N - 7, N - 5], ['thousand', N - 5, N - 3], ['ones', N - 3, N]];
+    for (var g = 0; g < gs.length; g++) {
+      var from = Math.max(0, gs[g][1]), to = gs[g][2];
+      for (var i = from; i < to; i++) {
+        if (cols[i].el.classList.contains('off') || d[i] === +want.charAt(i)) continue;
+        var part = want.slice(from, to), val = parseInt(part, 10) || 0;
+        var k = gs[g][0] + (val ? '' : '0');
+        return H[k] ? H[k].replace('{n}', gs[g][0] === 'ones' ? part : String(val)) : '';
+      }
+    }
+    return '';
   }
 
   /* spin every drum a full turn and on to its digit, left to right */
@@ -7463,7 +7528,9 @@ var NP_LEVEL = 4;
               INTRO.at(INTRO.now() + TIME.screenGap, function () {
                 if (!root) return;
                 finish();
-                window.COMMAS.play();
+                /* 13 Nov 2026: Level 2 (its LEVEL 2 banner) comes up once the
+                   chart has faded right out, not over it */
+                setTimeout(function () { window.COMMAS.play(); }, T.out + 60);
               });
             });
           });
@@ -7629,6 +7696,13 @@ var NP_LEVEL = 4;
       if (!tryOn || !script) return false;
       var item = script.tries[tryIdx];
       spinTo(pad(item.target).split('').map(Number));
+      after((cols.length - 1) * T.spinGap + DRUM.ms + 300, submit);
+      return true;
+    },
+    /* for a test: set any number (right or wrong) and press CHECK */
+    enter: function (n) {
+      if (!tryOn || !script) return false;
+      spinTo(pad(n).split('').map(Number));
       after((cols.length - 1) * T.spinGap + DRUM.ms + 300, submit);
       return true;
     },
@@ -10163,7 +10237,34 @@ var NP_LEVEL = 4;
        else - no title, no intro, no console. The chart opens over the
        darkened map as soon as the map is decoded. ?dev=1&go=teach:4:b:N /
        teach:4:t:N still opens it at a later step. */
-    ASSETS.whenPlayable(function () { setTimeout(npUp, 0); });
+    /* 13 Nov 2026: NO SPLASH — the cover (home page) opens straight away,
+       as soon as its own pictures are in, instead of waiting on a LOADING
+       bar for the rest of the game. The rest keeps downloading behind it;
+       START goes on into the story once that is here (the bar shows again
+       only if START is pressed before it is). A ?go= jump still waits. */
+    var routed = /^(commas|end|teach)(:|$)/.test(String(window.DEV_GO || ''));
+    if (routed) ASSETS.whenPlayable(function () { setTimeout(npUp, 0); });
+    else setTimeout(coverUp, 0);
+    function coverUp() {
+      hideLoader();
+      document.body.classList.remove('pre-game');
+      finished = true; phase = 'over'; kill();
+      mapImg.src = ASSET(MAP_SRC);
+      restMap();
+      var lv = LEVELS.filter(function (l) { return l.id === NP_LEVEL; })[0];
+      var ready = false;
+      ASSETS.whenPlayable(function () { ready = true; });
+      window.STORY.gate(function () {
+        var barUp = !ready;
+        if (barUp) { loader.classList.remove('gone'); show(loader, true); }
+        ASSETS.whenPlayable(function () {
+          imgReady(mapImg, function () {
+            if (barUp) hideLoader();
+            window.STORY.open(function () { window.TEACH_SCREEN.play(lv, null, null); });
+          });
+        });
+      });
+    }
     function npUp() {
       mapImg.src = ASSET(MAP_SRC);
       restMap();
@@ -11741,6 +11842,10 @@ var STORY = (function () {
       AUDIO.sfx('click'); AUDIO.sfx('swish');
       AUDIO.music('story');
       TRACK.send('game_start');
+      /* 13 Nov 2026: A DARK CROSS-FADE into the story — this veil sits
+         under the cover as it fades, so the bare map is never seen in
+         between; open() fades it away under the story screen */
+      if (!stage.querySelector('.sy-xfade')) el('i', 'sy-xfade', stage);
       root.classList.add('leaving');
       later(function () { stop(); if (then) then(); }, 700);
     });
@@ -11754,8 +11859,17 @@ var STORY = (function () {
       root.classList.add('on');
       /* said as it comes up only if the browser will play it: before any
          tap it would be silent, so the first tap says it instead */
+      /* 13 Nov 2026: and also when the browser will play sound without a
+         tap (autoplay allowed for this site) — found by trying a silent
+         sound first, so the title is never started silently and cut */
       var act = navigator.userActivation;
       if (act && act.hasBeenActive) later(sayTitle, 900);
+      else try {
+        var probe = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
+        probe.volume = 0;
+        var pp = probe.play();
+        if (pp && pp.then) pp.then(function () { probe.pause(); VOICE.unlock(); later(sayTitle, 900); }, function () {});
+      } catch (e) {}
     };
     imgs.forEach(function (im) { imgReady(im, show); });
     var pre = new Image();
@@ -11768,6 +11882,10 @@ var STORY = (function () {
     if (window.BACK) BACK.at('story');
     build('opening');
     TRACK.at('story');
+    [].forEach.call(stage.querySelectorAll('.sy-xfade'), function (x) {
+      later(function () { x.classList.add('out'); }, 450);
+      setTimeout(function () { x.remove(); }, 1400);
+    });
     var L = function (k) { return i18n('story.lines.' + k); };
     run([
       /* Story V2 (9 Nov 2026): Veth's request, then Ril's "ready, send" */
@@ -12461,12 +12579,16 @@ var COMMAS = (function () {
       glow(s, 0, 0, 'glow2');
       s.el.classList.add('right');
       finishRow(s);
-      talk('veth', G.g.ready);
-      waitButton(i18n('commas.send'), i18n('commas.sendIdle'), function () {
-        SFX.play('lock');
-        AUDIO.sfx('correct');
-        talk('veth', G.g.sent, function () {
-          flyTo(s, hqs[G.g.sys], function () { guide = null; G.then(); });
+      /* 13 Nov 2026: SEND switches on only once "The … report is ready" has
+         been said — the step where the child is to press it */
+      talk('veth', G.g.ready, function () {
+        if (!root || guide !== G) return;
+        waitButton(i18n('commas.send'), i18n('commas.sendIdle'), function () {
+          SFX.play('lock');
+          AUDIO.sfx('correct');
+          talk('veth', G.g.sent, function () {
+            flyTo(s, hqs[G.g.sys], function () { guide = null; G.then(); });
+          });
         });
       });
     });
@@ -12554,8 +12676,16 @@ var COMMAS = (function () {
       handEl.innerHTML = SWIPE.hand();
     }
     var R = root.getBoundingClientRect(), r = target.getBoundingClientRect();
+    /* 13 Nov 2026: THE FINGERTIP ON THE TARGET'S EDGE, the hand off the
+       content: from above onto the top edge — or, for a gap in the lower of
+       two rows (where above would be the other row), from below onto its
+       bottom edge, between that row's group names */
+    var st = target.closest && target.closest('.cm-strip.row');
+    var up = !!(st && st.parentNode && st.parentNode.querySelectorAll('.cm-strip.row').length > 1 &&
+                st === st.parentNode.querySelectorAll('.cm-strip.row')[1] && target.classList.contains('cm-gap'));
+    handEl.classList.toggle('up', up);
     handEl.style.left = ((r.left + r.width / 2 - R.left) / R.width * 100) + '%';
-    handEl.style.top = ((r.top + r.height * 0.55 - R.top) / R.height * 100) + '%';
+    handEl.style.top = (((up ? r.bottom - Math.min(r.height * 0.12, 6) : r.top + Math.min(r.height * 0.12, 6)) - R.top) / R.height * 100) + '%';
     handEl.classList.remove('tap'); void handEl.offsetWidth;
     handEl.classList.add('on', 'tap');
   }
@@ -12748,7 +12878,7 @@ var COMMAS = (function () {
     clearStrips();
     titleEl.textContent = i18n('commas.title');
     setSys('both');
-    button(i18n('commas.send'), null);
+    button('', null);                  // 13 Nov 2026: no SEND left on the empty screen
     FX.confetti(70);
     SFX.play('complete', DONE_VOL);
     AUDIO.sfx('fanfare');
@@ -12764,7 +12894,7 @@ var COMMAS = (function () {
     var g = i18n('commas.guided');
     guided(g[0], function () {
       guided(g[1], function () {
-        clearStrips(); setSys('both');
+        clearStrips(); setSys('both'); button('', null);
         titleEl.textContent = i18n('commas.title');
         talk('veth', i18n('commas.yourTurn'), then);
       });
@@ -12793,7 +12923,7 @@ var COMMAS = (function () {
       teach(function () { tutorials(function () { practice(0); }); });
     });
     function tutorials0() {
-      clearStrips(); setSys('both');
+      clearStrips(); setSys('both'); button('', null);
       talk('veth', i18n('commas.yourTurn'), function () { practice(0); });
     }
   }

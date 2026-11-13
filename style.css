@@ -990,3 +990,8 @@ body.has-back #pausebtn { left: calc(var(--u) * 6.4); }
 body.pre-game #backbtn, body.in-start #backbtn, body.in-post #backbtn,
 body.held #backbtn { display: none; }
 body.held #pausebtn, body.pre-game.has-back #pausebtn { left: calc(var(--u) * 1.4); }
+
+/* 13 Nov 2026: smooth typing — every letter of the line is laid out from
+   the start, invisible, and fades in as the voice reaches it */
+.dl-text:not(.dl-sizer) span { opacity: 0; transition: opacity 160ms linear; }
+.dl-text:not(.dl-sizer) span.in { opacity: 1; }
