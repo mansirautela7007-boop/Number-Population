@@ -995,3 +995,20 @@ body.held #pausebtn, body.pre-game.has-back #pausebtn { left: calc(var(--u) * 1.
    the start, invisible, and fades in as the voice reaches it */
 .dl-text:not(.dl-sizer) span { opacity: 0; transition: opacity 160ms linear; }
 .dl-text:not(.dl-sizer) span.in { opacity: 1; }
+
+/* 18 Nov 2026: NO SPLASH — while the cover's pictures arrive the screen is
+   just dark (no LOADING bar); the bar shows only when START has to wait for
+   the rest of the game */
+#loader:not(.wait) .lt, #loader:not(.wait) .bar { visibility: hidden; }
+/* the waiting bar sits above the cross-fade into the story */
+#loader.wait { z-index: 60; background: transparent; }
+
+/* 18 Nov 2026: THE PANEL KEEPS ONE SIZE — always room for two lines of
+   text, so a one-line instruction after a two-line one (or the other way)
+   never makes it jump */
+.dl-text { min-height: calc(2em * 1.35); }
+
+/* 18 Nov 2026: the map coming back after a lesson put it away (body.no-map)
+   fades in with the screen over it instead of switching on at full */
+body.map-in #mapWrap { animation: mapIn 600ms ease both; }
+@keyframes mapIn { from { opacity: 0; } to { opacity: 1; } }

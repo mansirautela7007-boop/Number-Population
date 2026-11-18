@@ -58,6 +58,8 @@
     console.error('[locale] could not read locales.json — ' + why);
     var lt = document.querySelector('#loader .lt');
     if (lt) lt.textContent = 'Could not load locales.json — open the game through a local server.';
+    var ld = document.getElementById('loader');
+    if (ld) ld.classList.add('wait');          // an error is always shown
   }
 
   /* 12 Nov 2026: THE COUNTRIES AND THEIR NUMBERS, one list per level:
@@ -1833,6 +1835,19 @@ var SFX = (function () {
       tone({ f: 2260 * k, type: "sine", dur: 0.08, peak: 0.025, send: 0.4, t: 0.004 });
     },
 
+    /* 18 Nov 2026: LEVEL 2'S COMMAS. Putting one in: a bright, rising pop
+       with a small tick on top — it "snaps" into place. Taking one out: a
+       softer, falling pluck — it lifts away. */
+    commaIn: function () {
+      hiss({ bp: 3200, bp2: 2000, q: 1.4, dur: 0.035, peak: 0.22, send: 0.1 });
+      tone({ f: 520, f2: 880, type: "triangle", dur: 0.09, peak: 0.22, lp: 3200, send: 0.2 });
+      tone({ f: 1760, type: "sine", dur: 0.12, peak: 0.06, send: 0.4, t: 0.03 });
+    },
+    commaOut: function () {
+      hiss({ bp: 1800, bp2: 900, q: 1.2, dur: 0.05, peak: 0.14, send: 0.1 });
+      tone({ f: 700, f2: 330, type: "triangle", dur: 0.13, peak: 0.18, lp: 2000, send: 0.18 });
+    },
+
     /* The servo, while a drag is actually spinning the drum. */
     whir: function () {
       hiss({ bp: 900, bp2: 2200, q: 3.5, dur: 0.14, peak: 0.10, send: 0.15 });
@@ -2747,7 +2762,11 @@ var DIALOG = (function () {
      a closed mouth after. `box` here is that crop, a square in pixels, as a
      % of one frame; the frames, speed and rest frames are the cast's own. */
   var FACES = {
-    rill: faceSheet('rill', { x: 25, y: 0.5, w: 50, h: 29.86 }),   // 252x252 of 504x844
+    /* 18 Nov 2026: the portraits run off SMALL FACE SHEETS (6x6 frames of
+       200px, cut from the full-body talking sheets at the old crops by
+       hand) — decoding the full sheets (13-15 million pixels) for an 80px
+       circle froze the screen on every change of speaker */
+    rill: faceSheet('rill', { x: 0, y: 0, w: 100, h: 100 }, 'assets/portraits/rill-face.webp'),
     /* 19 Oct 2026 (Anmol): NOVA TALKS IN THE PORTRAIT TOO, off the same 6x6
        sheet she talks in during the flight (504x830 a frame); the crop is a
        290px square round her head */
@@ -2758,16 +2777,21 @@ var DIALOG = (function () {
        sheet (436x864 a frame); the crop is a 210px square round his face
        and collar. Frame 0 is a wink, so the loop starts at 1; the rest
        frames are the ones with his mouth closed. */
-    veth: { src: 'assets/portraits/veth talking.webp', cols: 6, rows: 6, fps: 12, from: 1, to: 35,
+    veth: { src: 'assets/portraits/veth-face.webp', cols: 6, rows: 6, fps: 12, from: 1, to: 35,
             rest: [9, 10, 13, 14, 18, 19, 22, 23, 26, 31, 35],
-            box: { x: 24.08, y: 2.89, w: 48.17, h: 24.31 } }
+            box: { x: 0, y: 0, w: 100, h: 100 } }
   };
-  function faceSheet(id, crop) {
+  function faceSheet(id, crop, src) {
     var c = CAST[id], s = {};
     Object.keys(c.sprite).forEach(function (k) { s[k] = c.sprite[k]; });
-    s.src = c.src; s.box = crop;
+    s.src = src || c.src; s.box = crop;
     return s;
   }
+  /* decoded once, up front, so a speaker's first line never waits on it */
+  ['rill', 'veth'].forEach(function (k) {
+    var im = new Image(); im.src = ASSET(FACES[k].src);
+    if (im.decode) im.decode().catch(function () {});
+  });
   var facePlayer = null, faceWho = '';
   function portrait(who) {
     var fs = FACES[who];
@@ -2820,7 +2844,11 @@ var DIALOG = (function () {
     if (!box) build();
     clearTimeout(hideT);
     if (raf) cancelAnimationFrame(raf);
-    var fresh = !box.classList.contains('on') || cur !== who;
+    /* 18 Nov 2026: the panel only flies in when it was not up; a change of
+       speaker while it is up just swaps the face and name (a little pop on
+       the face), so the panel never jumps between lines */
+    var fresh = !box.classList.contains('on');
+    var swap = !fresh && cur !== who;
     cur = who;
     box.className = 'on ' + who + ' ' + (o.pos === 'bottom' ? 'bottom' : 'top');
     portrait(who);
@@ -2834,6 +2862,9 @@ var DIALOG = (function () {
       ], { duration: 460, easing: 'cubic-bezier(0.2, 0.9, 0.3, 1.2)' });
       face.animate([{ transform: 'scale(0.6) rotate(-10deg)' }, { transform: 'scale(1.08) rotate(3deg)', offset: 0.7 }, { transform: 'none' }],
                    { duration: 520, easing: 'ease-out' });
+    } else if (swap && !REDUCED) {
+      face.animate([{ transform: 'scale(0.85)', opacity: 0.4 }, { transform: 'none', opacity: 1 }],
+                   { duration: 260, easing: 'ease-out' });
     }
     /* typed in step with the voice: the last letter lands as the voice ends */
     var ms = Math.max(600, (o.ms || line.length * 38) * 0.92), t0 = performance.now();
@@ -10246,23 +10277,27 @@ var NP_LEVEL = 4;
     if (routed) ASSETS.whenPlayable(function () { setTimeout(npUp, 0); });
     else setTimeout(coverUp, 0);
     function coverUp() {
-      hideLoader();
-      document.body.classList.remove('pre-game');
       finished = true; phase = 'over'; kill();
-      mapImg.src = ASSET(MAP_SRC);
-      restMap();
+      /* 18 Nov 2026: the dark screen stays until the cover is DRAWN, and
+         the map is not put up until START — nothing else is ever seen
+         before the cover */
       var lv = LEVELS.filter(function (l) { return l.id === NP_LEVEL; })[0];
       var ready = false;
       ASSETS.whenPlayable(function () { ready = true; });
       window.STORY.gate(function () {
+        mapImg.src = ASSET(MAP_SRC);
+        restMap();
         var barUp = !ready;
-        if (barUp) { loader.classList.remove('gone'); show(loader, true); }
+        if (barUp) { loader.classList.remove('gone'); loader.classList.add('wait'); show(loader, true); }
         ASSETS.whenPlayable(function () {
           imgReady(mapImg, function () {
             if (barUp) hideLoader();
             window.STORY.open(function () { window.TEACH_SCREEN.play(lv, null, null); });
           });
         });
+      }, function () {
+        hideLoader();
+        document.body.classList.remove('pre-game');
       });
     }
     function npUp() {
@@ -11716,8 +11751,8 @@ var STORY = (function () {
      glass number tags drifting in the sky between them. Every picture is
      the artist's own, cut out of its white page (assets/cover). */
   var CAST_ART = [
-    { key: 'rill', src: 'rill-full.png', h: 79.5, left: 61.4, glow: '#2fd8ff', delay: 260 },
-    { key: 'veth', src: 'veth-full.png', h: 83.5, left: 77.6, glow: '#d27bff', delay: 420 }
+    { key: 'rill', src: 'rill-full.webp', h: 79.5, left: 61.4, glow: '#2fd8ff', delay: 260 },
+    { key: 'veth', src: 'veth-full.webp', h: 83.5, left: 77.6, glow: '#d27bff', delay: 420 }
   ];
   /* faded, behind everything: numbers drifting in the sky */
   var TAGS = [
@@ -11730,7 +11765,7 @@ var STORY = (function () {
   /* the hangar's blue light strips, as placed in the picture */
   var LIGHTS = [[30.5, 2.8, 10], [70.5, 2.8, 10], [21.5, 74.6, 9], [49.6, 81.6, 6.5], [76.5, 74.6, 9], [4.6, 82, 7], [95.4, 82, 7]];
 
-  function gate(then) {
+  function gate(then, shownFn) {
     stop();
     if (window.BACK) BACK.at(null);             // the home screen: nothing before it
     document.body.classList.remove('no-map');
@@ -11792,11 +11827,11 @@ var STORY = (function () {
     var logo = el('img', '', lw);
     logo.alt = i18n('cover.name');
     logo.draggable = false;
-    logo.src = ASSET(COVER + 'logo.png');
+    logo.src = ASSET(COVER + 'logo.webp');
     imgs.push(logo);
     /* a sweep of light across the logo, cut to its shape */
     var ls = el('i', 'cv-shine', lw);
-    ls.style.webkitMaskImage = ls.style.maskImage = 'url("' + ASSET(COVER + 'logo.png') + '")';
+    ls.style.webkitMaskImage = ls.style.maskImage = 'url("' + ASSET(COVER + 'logo.webp') + '")';
     /* sparkles that twinkle on its corners */
     [[88, 8], [57, 30], [9, 86]].forEach(function (p, k) {
       var sp = el('i', 'cv-spark', lw);
@@ -11808,10 +11843,10 @@ var STORY = (function () {
     b.setAttribute('aria-label', i18n('ui.start'));
     var bi = el('img', '', b);
     bi.alt = ''; bi.draggable = false;
-    bi.src = ASSET(COVER + 'start.png');
+    bi.src = ASSET(COVER + 'start.webp');
     imgs.push(bi);
     var bs = el('i', 'cv-shine', b);
-    bs.style.webkitMaskImage = bs.style.maskImage = 'url("' + ASSET(COVER + 'start.png') + '")';
+    bs.style.webkitMaskImage = bs.style.maskImage = 'url("' + ASSET(COVER + 'start.webp') + '")';
 
     /* 9 Nov 2026: THE TITLE, SAID. The narrator reads the game's name as
        the cover comes up (when the browser allows sound by then), and any
@@ -11857,6 +11892,7 @@ var STORY = (function () {
       shown = true;
       void root.offsetWidth;
       root.classList.add('on');
+      if (shownFn) shownFn();
       /* said as it comes up only if the browser will play it: before any
          tap it would be silent, so the first tap says it instead */
       /* 13 Nov 2026: and also when the browser will play sound without a
@@ -11898,7 +11934,17 @@ var STORY = (function () {
     ], 0, function () {
       DIALOG.hide();
       root.classList.add('off');
-      later(function () { stop(); if (then) then(); }, 520);
+      /* 18 Nov 2026: A DIP THROUGH DARK, as from the cover — the dark veil
+         goes in under this screen as it fades, the chart (and its LEVEL 1)
+         fades in over the veil, and the veil goes once the chart is up.
+         Without it the bare map showed for half a second in between. */
+      var veil = el('i', 'sy-xfade', stage);
+      later(function () {
+        stop();
+        if (then) then();
+        setTimeout(function () { veil.classList.add('out'); }, 600);
+        setTimeout(function () { veil.remove(); }, 1400);
+      }, 520);
     });
   }
 
@@ -12145,8 +12191,29 @@ var COMMAS = (function () {
     s.labels.push(l);
     return l;
   }
+  /* 18 Nov 2026: NOTHING VANISHES IN ONE FRAME — what leaves the middle of
+     the screen (a report's rows, the headquarters scene) is lifted out of
+     the layout exactly where it stands and fades out over the next quarter
+     second, while whatever replaces it comes in */
+  function leave(node) {
+    if (!node || !node.parentNode) return;
+    if (!root || INTRO.REDUCED) { node.remove(); return; }
+    var R = root.getBoundingClientRect(), r = node.getBoundingClientRect();
+    if (!r.width) { node.remove(); return; }
+    node.style.position = 'absolute';
+    node.style.margin = '0';
+    /* its layout box, centred where it is drawn (a compare row is drawn
+       scaled down about its centre) */
+    var w = node.offsetWidth, h = node.offsetHeight;
+    node.style.left = (r.left - R.left + (r.width - w) / 2) + 'px';
+    node.style.top = (r.top - R.top + (r.height - h) / 2) + 'px';
+    node.style.width = w + 'px';
+    node.classList.add('cm-leaving');
+    root.appendChild(node);
+    setTimeout(function () { node.remove(); }, 300);
+  }
   function clearStrips() {
-    strips.forEach(function (s) { s.el.remove(); });
+    strips.forEach(function (s) { leave(s.el); });
     strips = [];
     active = null;
   }
@@ -12290,7 +12357,7 @@ var COMMAS = (function () {
     });
   }
   function clearScene() {
-    if (scene && scene.parentNode) scene.parentNode.removeChild(scene);
+    leave(scene);
     scene = null;
   }
 
@@ -12354,7 +12421,7 @@ var COMMAS = (function () {
             VOICE.reach(text, Math.max(0, at) / low.length * VOICE.clipMs(text), function () {
               if (!root) return;
               setComma(r, comma, true);
-              SFX.play('click', 3);
+              SFX.play('commaIn');
               if (handEl) { handEl.classList.remove('tap'); void handEl.offsetWidth; handEl.classList.add('tap'); }
             });
           };
@@ -12392,7 +12459,7 @@ var COMMAS = (function () {
             for (var d = g.from; d < g.to; d++) c.digits[d].classList.add('read');
             if (cuts[k] != null) setComma(c, cuts[k], true);
             if (c.el.isConnected) label(c, g.from, g.to, gname(g.name));
-            SFX.play('click', 3);
+            SFX.play(cuts[k] != null ? 'commaIn' : 'click', 3);
           }, 500 + 650 * k);
         });
       };
@@ -12553,17 +12620,19 @@ var COMMAS = (function () {
       setComma(s, k, true);
       s.gaps[k].classList.remove('hint', 'bad');
       s.gaps[k].classList.add('ok');
+      SFX.play('commaIn');
       SFX.play('lock');
       AUDIO.sfx('correct');
       talk('veth', st.right, nextStep);
       return;
     }
     misses++;
+    SFX.play('commaIn');
     SFX.play('wrong');
     setComma(s, k, true);
     s.gaps[k].classList.add('bad');
     s.el.classList.remove('shake'); void s.el.offsetWidth; s.el.classList.add('shake');
-    later(function () { setComma(s, k, false); s.gaps[k].classList.remove('bad'); }, 700);
+    later(function () { setComma(s, k, false); s.gaps[k].classList.remove('bad'); SFX.play('commaOut'); }, 700);
     if (misses === 1) talk('veth', st.fb1);
     else if (misses === 2) { glow(s, st.glow[0], st.glow[1], 'glow2'); talk('veth', st.fb2); }
     else { s.gaps[st.gap].classList.add('hint'); talk('veth', st.fb3); }
@@ -12715,7 +12784,7 @@ var COMMAS = (function () {
     if (guide) return guidedTap(k);
     setComma(s, k, !s.on[k]);
     s.gaps[k].classList.remove('bad');
-    SFX.play('click', 3);
+    SFX.play(s.on[k] ? 'commaIn' : 'commaOut');
     lastAct = performance.now();
     var any = commaSet(s).length > 0;
     button(i18n('commas.send'), any ? send : null);
@@ -12834,9 +12903,11 @@ var COMMAS = (function () {
     s.gaps.forEach(function (g, k) { g.classList.toggle('bad', !!s.on[k] && want.indexOf(k) < 0); });
     s.el.classList.remove('shake'); void s.el.offsetWidth; s.el.classList.add('shake');
     var dropBad = function () {
+      var out = false;
       s.gaps.forEach(function (g, k) {
-        if (want.indexOf(k) < 0) { setComma(s, k, false); g.classList.remove('bad'); }
+        if (want.indexOf(k) < 0) { if (s.on[k]) out = true; setComma(s, k, false); g.classList.remove('bad'); }
       });
+      if (out) SFX.play('commaOut');
     };
     var again = function () {
       tryOn = true;
@@ -12859,7 +12930,7 @@ var COMMAS = (function () {
           setComma(s, k, true);
           s.gaps[k].classList.remove('bad');
           s.gaps[k].classList.add('reveal');
-          SFX.play('click', 3);
+          SFX.play('commaIn');
         }, 450 * j);
       });
     }, 700);
@@ -12875,7 +12946,9 @@ var COMMAS = (function () {
   }
 
   function finishLevel() {
-    clearStrips();
+    /* 18 Nov 2026: the last report stays up through the celebration (it was
+       cleared to an empty screen for two seconds) and the ending fades in
+       over it */
     titleEl.textContent = i18n('commas.title');
     setSys('both');
     button('', null);                  // 13 Nov 2026: no SEND left on the empty screen
@@ -12884,7 +12957,16 @@ var COMMAS = (function () {
     AUDIO.sfx('fanfare');
     TRACK.send('level_complete', { level: 2 });
     /* L2 V3 has no line here: the celebration, then on to the ending */
-    later(function () { stop(); STORY.end(); }, 1800);
+    /* 18 Nov 2026: A CROSS-FADE, NOT A CUT — the ending fades in OVER this
+       screen, which is taken away only once it is covered (removed first,
+       the bare map showed for the half second the ending took to come up) */
+    later(function () {
+      var old = root;
+      root = null;                     // so stop() leaves it on the stage
+      stop();
+      STORY.end();
+      if (old) setTimeout(function () { if (old.parentNode) old.parentNode.removeChild(old); }, 700);
+    }, 1800);
   }
 
   /* ---- RUN ------------------------------------------------------------- */
@@ -12905,6 +12987,13 @@ var COMMAS = (function () {
   function play(from) {
     if (live) return;
     live = true;
+    /* 18 Nov 2026: the map Level 1 put away comes back FADING IN with this
+       screen — switched straight back on, it flashed up bright for the half
+       second before the screen's veil had faded in over it */
+    if (document.body.classList.contains('no-map')) {
+      document.body.classList.add('map-in');
+      setTimeout(function () { document.body.classList.remove('map-in'); }, 700);
+    }
     document.body.classList.remove('no-map');
     TRACK.at('level 2'); TRACK.send('lesson_start', { level: 2 });
     AUDIO.music('level2');

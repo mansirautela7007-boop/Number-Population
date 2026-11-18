@@ -7,6 +7,13 @@
 <!-- an inline icon: no /favicon.ico request (it was a 404 on every load) -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%9A%80%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
+<!-- 18 Nov 2026: the cover's own pictures start downloading with the page,
+     so the cover can come up the moment the game starts -->
+<link rel="preload" href="assets/cover/hangar.jpg" as="image">
+<link rel="preload" href="assets/cover/logo.webp" as="image">
+<link rel="preload" href="assets/cover/start.webp" as="image">
+<link rel="preload" href="assets/cover/rill-full.webp" as="image">
+<link rel="preload" href="assets/cover/veth-full.webp" as="image">
 <link rel="stylesheet" href="console.css">
 <link rel="stylesheet" href="teach.css">
 <link rel="stylesheet" href="start.css">

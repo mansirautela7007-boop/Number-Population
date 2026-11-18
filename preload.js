@@ -33,7 +33,8 @@ var ASSET_SIZES = /*SIZES*/{
  "assets/Story Assets/Map.webp": 221066,
  "assets/Story Assets/rill talking.webp": 1505662,
  "assets/portraits/rill.webp": 17956,
- "assets/portraits/veth talking.webp": 1417966,
+ "assets/portraits/veth-face.webp": 428576,
+ "assets/portraits/rill-face.webp": 369312,
  "assets/cover/veth-thumbs-up.webp": 1624736,
  "assets/cover/control-room.jpg": 427408,
  "assets/Game assets/hand.webp": 14440
@@ -58,8 +59,8 @@ var ASSET_SIZES = /*SIZES*/{
   /* what START waits for: the title's own pictures, everything the intro
      decodes before its first frame, and the narrator's and Veth's lines */
   var PLAYABLE_PICS = FIRST.concat([
-    'assets/Story Assets/rill talking.webp', 'assets/portraits/rill.webp',
-    'assets/portraits/veth talking.webp',
+    'assets/portraits/rill.webp',
+    'assets/portraits/veth-face.webp', 'assets/portraits/rill-face.webp',
     'assets/Game assets/hand.webp'
   ]);
   function isPlayable(p) {
@@ -251,5 +252,10 @@ var ASSET_SIZES = /*SIZES*/{
   function pump() {
     while (running < CONCURRENCY && queue.length) load(queue.shift());
   }
-  pump();
+  /* 18 Nov 2026: THE COVER FIRST. The background downloads wait until the
+     page itself has loaded — the game's code and the cover's pictures
+     (index.html preloads those) — so they never share the connection with
+     the cover, and the cover comes up as early as it can */
+  if (document.readyState === 'complete') pump();
+  else window.addEventListener('load', function () { pump(); }, { once: true });
 })();

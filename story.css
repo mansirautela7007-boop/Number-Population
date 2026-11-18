@@ -988,3 +988,8 @@
 /* and in the guided reports too: level with the HQ boxes, between them */
 #commas:has(.cm-strip.row) .cm-sys { top: 15.5%; }
 #commas.tut:has(.cm-strip.row) .cm-sys { top: 14.5%; }
+
+/* 18 Nov 2026: a report's rows / the headquarters scene on the way out —
+   lifted out where they stand (COMMAS leave()) and faded, never cut */
+#commas .cm-leaving { z-index: 1; pointer-events: none; animation: cmLeave 260ms ease forwards; }
+@keyframes cmLeave { to { opacity: 0; } }
