@@ -376,7 +376,7 @@ window.PAUSE = PAUSE;
       return;
     }
     if ((k === 'Escape' || k === 'p' || k === 'P') && !document.body.classList.contains('pre-game') &&
-        !document.body.classList.contains('in-start') && !document.body.classList.contains('in-post')) {
+        !document.body.classList.contains('in-start') && !document.body.classList.contains('on-cover') && !document.body.classList.contains('in-post')) {
       e.preventDefault(); set(true);
     }
   }, true);
@@ -1597,7 +1597,7 @@ var SFX = (function () {
   "use strict";
 
   var ctx = null;
-  var master = null, wet = null, dry = null, comp = null, verb = null;
+  var master = null, wet = null, dry = null, comp = null, verb = null, front = null;
   var noiseBuf = null;
   var ambient = null;
   var on = true;
@@ -1671,6 +1671,14 @@ var SFX = (function () {
     wet.connect(verb); verb.connect(master);
     master.connect(comp); comp.connect(ctx.destination);
 
+    /* 19 Nov 2026: THE FRONT BUS — for the few sounds that answer a tap and
+       must be heard over the voice and music (the commas). The compressor
+       above holds everything to about a sixth of full scale, which buried
+       them; these go round it, straight out, at a level set in their voice. */
+    front = ctx.createGain();
+    front.gain.value = on ? 1 : 0;
+    front.connect(ctx.destination);
+
     noiseBuf = buildNoise(2.0);
     ready = true;
     return true;
@@ -1680,7 +1688,8 @@ var SFX = (function () {
 
   /* Route a voice to the room and the direct signal at once. `send` is how
      much of it goes to the reverb. */
-  function out(node, send) {
+  function out(node, send, toFront) {
+    if (toFront) { node.connect(front); return; }
     node.connect(dry);
     if (send > 0) {
       var s = ctx.createGain();
@@ -1733,7 +1742,7 @@ var SFX = (function () {
       node.connect(f); node = f;
     }
     node.connect(g);
-    out(g, o.send === undefined ? 0.25 : o.send);
+    out(g, o.send === undefined ? 0.25 : o.send, o.front);
 
     osc.start(t0);
     osc.stop(t0 + dur + 0.05);
@@ -1774,7 +1783,7 @@ var SFX = (function () {
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
 
     src.connect(f); f.connect(g);
-    out(g, o.send === undefined ? 0.25 : o.send);
+    out(g, o.send === undefined ? 0.25 : o.send, o.front);
     src.start(t0);
     src.stop(t0 + dur + 0.05);
   }
@@ -1839,13 +1848,16 @@ var SFX = (function () {
        with a small tick on top — it "snaps" into place. Taking one out: a
        softer, falling pluck — it lifts away. */
     commaIn: function () {
-      hiss({ bp: 3200, bp2: 2000, q: 1.4, dur: 0.035, peak: 0.22, send: 0.1 });
-      tone({ f: 520, f2: 880, type: "triangle", dur: 0.09, peak: 0.22, lp: 3200, send: 0.2 });
-      tone({ f: 1760, type: "sine", dur: 0.12, peak: 0.06, send: 0.4, t: 0.03 });
+      /* 19 Nov 2026: on the front bus (see init) — under the compressor
+         they came out level with the music and were lost */
+      hiss({ bp: 3200, bp2: 2000, q: 1.4, dur: 0.045, peak: 0.2, front: true });
+      tone({ f: 560, f2: 980, type: "triangle", dur: 0.13, peak: 0.3, lp: 3600, front: true });
+      tone({ f: 1960, type: "sine", dur: 0.16, peak: 0.09, t: 0.035, front: true });
     },
     commaOut: function () {
-      hiss({ bp: 1800, bp2: 900, q: 1.2, dur: 0.05, peak: 0.14, send: 0.1 });
-      tone({ f: 700, f2: 330, type: "triangle", dur: 0.13, peak: 0.18, lp: 2000, send: 0.18 });
+      hiss({ bp: 1800, bp2: 800, q: 1.2, dur: 0.06, peak: 0.16, front: true });
+      tone({ f: 760, f2: 300, type: "triangle", dur: 0.17, peak: 0.28, lp: 2200, front: true });
+      tone({ f: 380, f2: 190, type: "sine", dur: 0.18, peak: 0.12, t: 0.02, front: true });
     },
 
     /* The servo, while a drag is actually spinning the drum. */
@@ -2081,6 +2093,8 @@ var SFX = (function () {
     if (!ready) { if (on) arm(); return; }
     master.gain.cancelScheduledValues(now());
     master.gain.setTargetAtTime(on ? 0.9 : 0, now(), 0.05);
+    front.gain.cancelScheduledValues(now());
+    front.gain.setTargetAtTime(on ? 1 : 0, now(), 0.05);
     if (on && !ambient) startAmbient();
     if (window.VOICE) window.VOICE.mute(!on);
   }
@@ -2108,6 +2122,14 @@ var SFX = (function () {
 /* SFX is a name inside this file's one scope, not a global. The preview page
    (ending-demo.html) and the browser console reach it here. */
 window.SFX = SFX;
+/* 19 Nov 2026: THE FIRST GESTURE ANYWHERE ARMS THE SOUND. It used to be armed
+   only by START and a few screens' own handlers, so a page opened straight on
+   Level 2 (a QA jump reloads with go=) never armed it: the commas' in/out
+   sounds and every other synthesised effect stayed silent there. Capture
+   phase, so a screen that stops its taps (Level 2 does) cannot keep it out. */
+['pointerdown', 'keydown', 'touchstart'].forEach(function (t) {
+  window.addEventListener(t, function () { SFX.arm(); }, true);
+});
 
 /* ########################################################################## */
 /*  VOICE.JS                                                                */
@@ -6881,20 +6903,40 @@ var NP_LEVEL = 4;
     }
     return null;
   }
-  var HAND_MS = 20000, handSeq = 0;
+  /* 19 Nov 2026: the hand comes WITH the idle line (IDLE_MS), not 8 s after
+     it, and always on the next right step: the first place still wrong, or —
+     every place right — the CHECK button, tapping */
+  var HAND_MS = IDLE_MS, handSeq = 0, goHandEl = null;
+  function goHand(on) {
+    if (!on || !root || !goBtn || goBtn.disabled) {
+      if (goHandEl) { goHandEl.remove(); goHandEl = null; }
+      return;
+    }
+    if (goHandEl && goHandEl.isConnected) return;
+    var S = root.getBoundingClientRect(), r = goBtn.getBoundingClientRect();
+    goHandEl = el('i', 'tc-go-hand', root);
+    goHandEl.innerHTML = SWIPE.hand();
+    goHandEl.style.left = ((r.left + r.width / 2 - S.left) / S.width * 100) + '%';
+    goHandEl.style.top = ((r.top + r.height * 0.15 - S.top) / S.height * 100) + '%';
+  }
   function armHand() {
     var shownAt = 0, mine = ++handSeq, shown = false, armedAt = performance.now();
     var quietFor = function () { return performance.now() - Math.max(armedAt, window.lastInputAt || 0); };
+    var hideAll = function () { scrollTo(null); goHand(false); };
     (function tick() {
       after(500, function () {
         if (mine !== handSeq || !root) return;
         var it = script && script.tries[tryIdx];
-        if (!tryOn || !it || it.guide) { if (shown) { scrollTo(null); shown = false; } return tick(); }
+        if (!tryOn || !it) { if (shown) { hideAll(); shown = false; } return tick(); }
         var quiet = quietFor() >= HAND_MS;
+        var at = firstWrong(it.target);
+        /* a guided Try has its own hand on the places (guideHand); idle,
+           with every place right, it too is shown CHECK */
+        if (it.guide && at) { if (goHandEl) goHand(false); return tick(); }
         if (quiet && !shown) {
-          var at = firstWrong(it.target);
-          if (at) { scrollTo(at); shown = true; shownAt = performance.now(); }
-        } else if (!quiet && shown) { scrollTo(null); shown = false; }
+          if (at) { goHand(false); scrollTo(at); shown = true; shownAt = performance.now(); }
+          else if (goBtn && !goBtn.disabled) { scrollTo(null); goHand(true); shown = true; shownAt = performance.now(); }
+        } else if (!quiet && shown) { hideAll(); shown = false; }
         else if (shown && quiet && performance.now() - shownAt > 4000) {
           /* still nothing: tap again every few seconds */
           shown = false;
@@ -6972,6 +7014,7 @@ var NP_LEVEL = 4;
     if (chips[tryIdx]) chips[tryIdx].classList.add('done');
     speakerHand(false);
     SWIPE.hide();
+    goHand(false);
     if (ask) ask.classList.remove('on');
     root.classList.remove('bad', 'trying');
     clearMarks();
@@ -11767,6 +11810,7 @@ var STORY = (function () {
 
   function gate(then, shownFn) {
     stop();
+    document.body.classList.add('on-cover');    // no pause button on the home page
     if (window.BACK) BACK.at(null);             // the home screen: nothing before it
     document.body.classList.remove('no-map');
     root = el('div', 'story cover', stage);
@@ -12057,6 +12101,7 @@ var STORY = (function () {
     timers.forEach(clearTimeout); timers = [];
     if (root && root.parentNode) root.parentNode.removeChild(root);
     root = null; screen = null; marks = []; recs = null; focus = null;
+    document.body.classList.remove('on-cover');
   }
 
   return { gate: gate, open: open, end: end, stop: stop };
@@ -12736,7 +12781,7 @@ var COMMAS = (function () {
      (the step has said where already), SEND when the report is waiting to
      go, and the number row in a report — tapping there; it goes the moment
      the child does anything */
-  var HAND_MS = 20000, handSeq = 0, handEl = null;
+  var HAND_MS = IDLE_MS, handSeq = 0, handEl = null;   // 19 Nov 2026: with the idle line
   function handAt(target) {
     if (!root) return;
     if (!target) { if (handEl) handEl.classList.remove('on'); return; }
@@ -12763,7 +12808,18 @@ var COMMAS = (function () {
     if (!tryOn) return null;
     if (guide) { var st = guide.g.steps[guide.k]; return st ? guide.s.gaps[st.gap] : null; }
     var s = cur();
-    return s ? s.row : null;
+    if (!s) return null;
+    /* 19 Nov 2026: in a report the hand goes to a comma's real place — the
+       next right one still missing, from the right as they are taught (it
+       used to point at the row's middle, which looked like a wrong gap);
+       all in, it goes to a stray comma to take out */
+    var sys = s.sys || (item && item.sys) || 'in';
+    var right = answer(s.n, sys).slice().sort(function (a, b) { return b - a; });
+    for (var i = 0; i < right.length; i++) if (!s.on[right[i]] && s.gaps[right[i]]) return s.gaps[right[i]];
+    var stray = commaSet(s).filter(function (k) { return right.indexOf(k) < 0; })[0];
+    if (stray != null && s.gaps[stray]) return s.gaps[stray];
+    /* every comma right and nothing stray: the next step is SEND */
+    return btn && btn.classList.contains('on') && btn.onpress ? btn : s.row;
   }
   function armHand() {
     var mine = ++handSeq, shownAt = 0, armedAt = performance.now();

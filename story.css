@@ -878,6 +878,16 @@
 #teach .tc-spk-hand img { width: 100%; height: auto; display: block; rotate: -90deg; animation: tcSpkTap 1.1s ease-in-out 0.3s infinite; }
 @keyframes tcSpkIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes tcSpkTap { 0%, 100% { translate: 0 0; } 50% { translate: calc(var(--u) * -0.8) 0; } }
+/* 19 Nov 2026: the idle hand on CHECK once every place is right — pointing
+   down, fingertip on the button's top edge, tapping */
+#teach .tc-go-hand {
+  position: absolute; z-index: 9; pointer-events: none;
+  width: calc(var(--u) * 5.2);
+  transform: translate(-27%, -100%);
+  filter: drop-shadow(0 calc(var(--u) * 0.4) calc(var(--u) * 0.6) rgba(0,0,0,0.55));
+  animation: tcSpkIn 300ms ease both;
+}
+#teach .tc-go-hand img { width: 100%; height: auto; display: block; rotate: 180deg; animation: mxHandTap 1.1s ease-in-out 0.3s infinite; }
 
 /* ==== 12 Nov 2026: LEVEL 2 ================================================ */
 /* the reports have no centre heading — the row labels say which is which */

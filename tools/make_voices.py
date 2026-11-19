@@ -69,6 +69,10 @@ def spoken(text):
     t = re.sub(r'\d{1,2}(?:,\d{2})+,\d{3}|\d{1,3},\d{3}',
                lambda m: indian_words(int(m.group(0).replace(',', ''))), text)
     t = t.replace('→', ' becomes ')
+    # 19 Nov 2026: a plain apostrophe before a space ("countries' ") makes
+    # `say` stop there when the line has [[slnc]] commands - the clip said
+    # only "All countries". The curly one is read the same and does not.
+    t = re.sub(r"'(?=\s)", '’', t)
     t = re.sub(r'\b([A-Z]{2,})\b', lambda m: m.group(1).capitalize(), t)
     return t
 
@@ -218,6 +222,26 @@ def lines(L):
     return uniq
 
 
+def quiet_tail(path, secs):
+    """zero the last `secs` of a 16-bit PCM WAV file, in place"""
+    import struct
+    with open(path, 'r+b') as f:
+        d = f.read()
+        i, rate, block = 12, 0, 0
+        while i < len(d):
+            cid, n = d[i:i + 4], struct.unpack('<I', d[i + 4:i + 8])[0]
+            if cid == b'fmt ':
+                ch, rate = struct.unpack('<HI', d[i + 10:i + 16])
+                block = struct.unpack('<H', d[i + 20:i + 22])[0]
+            if cid == b'data':
+                k = min(n, int(rate * secs) * block)
+                k -= k % max(1, block)
+                f.seek(i + 8 + n - k)
+                f.write(b'\0' * k)
+                return
+            i += 8 + n + (n & 1)
+
+
 def duration_ms(path):
     info = subprocess.run(['afinfo', path], capture_output=True, text=True).stdout
     m = re.search(r'estimated duration:\s*([\d.]+)', info)
@@ -251,7 +275,13 @@ def main():
                 else:
                     print('  SKIPPED (no clip):', text[:60])
                     continue
-                subprocess.run(['afconvert', '-f', 'm4af', '-d', 'aac', '-b', '64000', aiff, dst], check=True)
+                # 19 Nov 2026: `say` can leave a full-scale click in the closing
+                # [[slnc 260]] (Daniel, after a "!") - heard as a glitch as the
+                # line ends. The last 120 ms are that padding: silence them.
+                wav = os.path.join(tmp, fid + '.wav')
+                subprocess.run(['afconvert', '-f', 'WAVE', '-d', 'LEI16', aiff, wav], check=True)
+                quiet_tail(wav, 0.12)
+                subprocess.run(['afconvert', '-f', 'm4af', '-d', 'aac', '-b', '64000', wav, dst], check=True)
                 print('made', fid, '-', text[:60])
             manifest[key(text)] = {'file': fid + '.m4a', 'ms': duration_ms(dst), 'who': who}
             keep.add(fid + '.m4a')
