@@ -7,7 +7,8 @@ in recorded or AI voices later by replacing the files listed in the manifest.
 
     python3 tools/make_voices.py          # run from the game's folder
 
-Writes assets/voice/<id>.m4a and assets/voice/manifest.json. The manifest is
+Writes assets/voice/<id>.ogg (Opus 64k mono — needs ffmpeg with libopus, or
+`pip install imageio-ffmpeg`) and assets/voice/manifest.json. The manifest is
 keyed by the line's own wording (lower-cased, spaces collapsed) — the same key
 VOICE.JS looks a line up by — so changing a line in locales.json only needs
 this script to be run again. A line with no clip is still shown and paced,
@@ -242,6 +243,18 @@ def quiet_tail(path, secs):
             i += 8 + n + (n & 1)
 
 
+def ffmpeg_exe():
+    import shutil
+    exe = shutil.which('ffmpeg')
+    if exe:
+        return exe
+    try:
+        import imageio_ffmpeg
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except ImportError:
+        sys.exit('ffmpeg not found: install it, or `pip install imageio-ffmpeg`')
+
+
 def duration_ms(path):
     info = subprocess.run(['afinfo', path], capture_output=True, text=True).stdout
     m = re.search(r'estimated duration:\s*([\d.]+)', info)
@@ -253,7 +266,12 @@ def main():
         sys.exit('This script uses the macOS voices (say/afconvert) — run it on a Mac.')
     L = json.load(open(os.path.join(ROOT, 'locales.json'), encoding='utf-8'))
     os.makedirs(OUT, exist_ok=True)
-    manifest, keep = {}, set()
+    manifest, keep, ms_of = {}, set(), {}
+    # the clips already made keep their measured length (afinfo cannot read Ogg)
+    try:
+        prev = json.load(open(os.path.join(OUT, 'manifest.json'), encoding='utf-8'))
+    except (OSError, ValueError):
+        prev = {}
     with tempfile.TemporaryDirectory() as tmp:
         for who, text in lines(L):
             voice, rate = VOICES[who]
@@ -261,7 +279,7 @@ def main():
             # so neither its first nor its last syllable can be clipped
             say = '[[slnc 60]] ' + spoken(text) + ' [[slnc 260]]'
             fid = who + '-' + hashlib.sha1((voice + str(rate) + say).encode()).hexdigest()[:10]
-            dst = os.path.join(OUT, fid + '.m4a')
+            dst = os.path.join(OUT, fid + '.ogg')
             if not os.path.exists(dst):
                 aiff = os.path.join(tmp, fid + '.aiff')
                 # `say` can stall the first time a voice is loaded: try again
@@ -281,13 +299,20 @@ def main():
                 wav = os.path.join(tmp, fid + '.wav')
                 subprocess.run(['afconvert', '-f', 'WAVE', '-d', 'LEI16', aiff, wav], check=True)
                 quiet_tail(wav, 0.12)
-                subprocess.run(['afconvert', '-f', 'm4af', '-d', 'aac', '-b', '64000', wav, dst], check=True)
+                # 20 Nov 2026: Ogg Opus (was AAC .m4a) — smaller at the same
+                # quality; plays in Chrome, Edge, Firefox and Safari 18.4+
+                subprocess.run([ffmpeg_exe(), '-hide_banner', '-loglevel', 'error', '-y', '-i', wav,
+                                '-c:a', 'libopus', '-b:a', '64k', '-vbr', 'on', '-compression_level', '10',
+                                '-ac', '1', dst], check=True)
+                ms_of[fid] = duration_ms(wav)
                 print('made', fid, '-', text[:60])
-            manifest[key(text)] = {'file': fid + '.m4a', 'ms': duration_ms(dst), 'who': who}
-            keep.add(fid + '.m4a')
+            old = prev.get(key(text))
+            ms = ms_of.get(fid) or (old['ms'] if old and old.get('file') == fid + '.ogg' else 0)
+            manifest[key(text)] = {'file': fid + '.ogg', 'ms': ms, 'who': who}
+            keep.add(fid + '.ogg')
     # clips for lines that no longer exist go
     for f in os.listdir(OUT):
-        if f.endswith('.m4a') and f not in keep:
+        if f.endswith(('.ogg', '.m4a')) and f not in keep:
             os.remove(os.path.join(OUT, f))
     with open(os.path.join(OUT, 'manifest.json'), 'w', encoding='utf-8') as fh:
         json.dump(manifest, fh, ensure_ascii=False, indent=1)

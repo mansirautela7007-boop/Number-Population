@@ -119,12 +119,16 @@
 #level .strip {
   position: absolute; inset: 0 0 auto 0;
   display: flex; flex-direction: column;
-  will-change: transform;
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
   color: #eef7ff;
   text-shadow: 0 0 calc(var(--u) * 0.5) rgba(120,200,255,0.55);
 }
+/* 20 Nov 2026: a GPU layer only WHILE the strip rolls (a drag rolls it too).
+   Held on every strip all the time, the tall digit strips (8 of them) kept
+   ~49 MB of layers for windows one digit high — enough to overflow a
+   tablet's texture budget and paint blank. */
+#level .strip.rolling { will-change: transform; }
 #level .cell {
   display: flex; align-items: center; justify-content: center;
   line-height: 1;
@@ -964,18 +968,10 @@
 /* THE PLACE NAMES, BIGGER (13 Oct 2026). fitPlates() in game.js measures the
    largest --pl at which every name fits its plate; TEN-THOUSANDS may break
    after its hyphen onto two lines so it no longer shrinks the whole row. */
-@font-face {
-  font-family: 'PlateFace';
-  src: url('assets/fonts/roboto-condensed-latin-700.woff2?v=89e51a47') format('woff2');
-  font-weight: 700; font-style: normal; font-display: swap;
-}
 #level .plate,
 #level .close .plate {
   font-size: calc(var(--u) * 1.0 * var(--pl, 1));
-  /* a CONDENSED face (Roboto Condensed Bold, OFL, bundled): THOUSANDS is
-     what sets the row's size, and a narrow face lets the letters be much
-     taller in the same plate */
-  font-family: 'PlateFace', var(--display);
+  font-family: var(--display);
   font-weight: 700;
   letter-spacing: 0.02em;
   line-height: 1.02;
