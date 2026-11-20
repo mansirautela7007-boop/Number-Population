@@ -966,7 +966,7 @@
    after its hyphen onto two lines so it no longer shrinks the whole row. */
 @font-face {
   font-family: 'PlateFace';
-  src: url('assets/fonts/roboto-condensed-latin-700.woff2') format('woff2');
+  src: url('assets/fonts/roboto-condensed-latin-700.woff2?v=89e51a47') format('woff2');
   font-weight: 700; font-style: normal; font-display: swap;
 }
 #level .plate,

@@ -4,28 +4,53 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Number Population</title>
+<!-- 20 Nov 2026: THE BUILD. Written by tools/stamp_build.py. A browser may
+     show a copy of this page it kept from an earlier visit (a normal window;
+     incognito never does), and that copy would load the older files. So the
+     page asks the server for itself, without the cache, and if the build
+     there is newer it reloads once — every window runs the same game. -->
+<meta name="build" content="5ac1bc26bb">
+<script>
+(function () {
+  var mine = document.querySelector('meta[name="build"]').content;
+  if (!window.fetch || location.protocol === 'file:') return;
+  fetch(location.pathname + location.search, { cache: 'no-cache' })
+    .then(function (r) { return r.ok ? r.text() : ''; })
+    .then(function (t) {
+      var m = /<meta name="build" content="([^"]+)">/.exec(t);
+      if (!m || m[1] === mine) return;
+      try {
+        var k = 'np-build-reload';
+        if (sessionStorage.getItem(k) === m[1]) return;   // reloaded once already
+        sessionStorage.setItem(k, m[1]);
+      } catch (e) { return; }                              // cannot guard: do not risk a loop
+      location.reload();
+    })
+    .catch(function () {});
+})();
+</script>
 <!-- an inline icon: no /favicon.ico request (it was a 404 on every load) -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%9A%80%3C/text%3E%3C/svg%3E">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=55a1152e">
 <!-- 18 Nov 2026: the cover's own pictures start downloading with the page,
      so the cover can come up the moment the game starts -->
-<link rel="preload" href="assets/cover/hangar.jpg" as="image">
-<link rel="preload" href="assets/cover/logo.webp" as="image">
-<link rel="preload" href="assets/cover/start.webp" as="image">
-<link rel="preload" href="assets/cover/rill-full.webp" as="image">
-<link rel="preload" href="assets/cover/veth-full.webp" as="image">
-<link rel="stylesheet" href="console.css">
-<link rel="stylesheet" href="teach.css">
-<link rel="stylesheet" href="start.css">
-<link rel="stylesheet" href="post.css">
+<link rel="preload" href="assets/cover/hangar.jpg?v=86778102" as="image">
+<link rel="preload" href="assets/cover/logo.webp?v=2ee3e05a" as="image">
+<link rel="preload" href="assets/cover/start.webp?v=a1884b17" as="image">
+<link rel="preload" href="assets/cover/rill-full.webp?v=d39fa1d4" as="image">
+<link rel="preload" href="assets/cover/veth-full.webp?v=80b5f8d2" as="image">
+<link rel="stylesheet" href="console.css?v=ebe5c6ba">
+<link rel="stylesheet" href="teach.css?v=aca0fe00">
+<link rel="stylesheet" href="start.css?v=914b2c10">
+<link rel="stylesheet" href="post.css?v=78a04526">
 <!-- the celebration's rounded face, fetched early so the headline never pops
      in the fallback font -->
-<link rel="preload" href="assets/fonts/fredoka-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/fredoka-latin.woff2?v=9591efe1" as="font" type="font/woff2" crossorigin>
 <!-- the place names on the console plates (condensed, so they can be big) -->
-<link rel="preload" href="assets/fonts/roboto-condensed-latin-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="flight.css">
+<link rel="preload" href="assets/fonts/roboto-condensed-latin-700.woff2?v=89e51a47" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="flight.css?v=5cec946e">
 <!-- the storyboard's story, Level 2's comma reports, and the chart's country data -->
-<link rel="stylesheet" href="story.css">
+<link rel="stylesheet" href="story.css?v=4fbb40f9">
 </head>
 <body class="pre-game">
 
@@ -131,7 +156,7 @@
 <!-- The only script tag. game.js is the whole game: it reads locales.json —
      every word on screen lives there — and then starts. Open the game through
      a local server: browsers will not read a .json file from file://. -->
-<script src="preload.js"></script>
-<script src="game.js"></script>
+<script src="preload.js?v=961f5932"></script>
+<script src="game.js?v=aa940c24"></script>
 </body>
 </html>

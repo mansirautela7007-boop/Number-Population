@@ -86,7 +86,7 @@
   }
 
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', 'locales.json');
+  xhr.open('GET', window.VER ? VER('locales.json') : 'locales.json');   // fingerprinted (stamp_build.py)
   xhr.onload = function () {
     /* status 0 is a file:// read that the browser allowed */
     if (xhr.status !== 200 && !(xhr.status === 0 && xhr.responseText)) {
@@ -2176,7 +2176,7 @@ var VOICE = (function () {
   var CLIPS = {}, audio = null, muted = false, unlocked = false;
   (function () {
     var x = new XMLHttpRequest();
-    x.open('GET', 'assets/voice/manifest.json');
+    x.open('GET', VER('assets/voice/manifest.json'));
     x.onload = function () {
       if (x.status !== 200 && !(x.status === 0 && x.responseText)) return;
       try { CLIPS = JSON.parse(x.responseText) || {}; } catch (e) { CLIPS = {}; }
