@@ -2862,7 +2862,11 @@ var DIALOG = (function () {
     if (!NAMES[who] || !line) return hide();
     /* 6 Nov 2026: THE NARRATOR IS HEARD, NOT SHOWN — the voice plays and no
        dialogue box comes up (every module's lines come through here) */
-    if (who === 'narrator') return hide();
+    /* 20 Nov 2026: the narrator's lines are SHOWN now — they carry
+       instructions ("Check Country A's population data.", "Yes correct!…",
+       "Report is ready…"), and a line heard with no words on screen read as
+       missing text. A caller that shows the words elsewhere passes o.hide. */
+    if (o.hide) return hide();
     if (!box) build();
     clearTimeout(hideT);
     if (raf) cancelAnimationFrame(raf);
@@ -6145,7 +6149,7 @@ var NP_LEVEL = 4;
       box.classList.add('playing');
       lastAct = performance.now();
       VOICE.play(text, function () { box.classList.remove('playing'); });
-      DIALOG.say('narrator', text);
+      DIALOG.hide();               // the number name is on the card already
       if (box.dataset.n) cueParts(text, wordParts(+box.dataset.n), box);
     })();
   }
@@ -6701,6 +6705,7 @@ var NP_LEVEL = 4;
   function sayName(item, then) {
     if (!root || !ask || tryIdx < 0 || script.tries[tryIdx] !== item) return;
     var text = cap(indianWords(item.target));
+    nameLine = text;                   // on the card: not repeated in the box
     ask.classList.add('playing');
     say('narrator', text, function () {
       if (ask) ask.classList.remove('playing');
@@ -7216,6 +7221,7 @@ var NP_LEVEL = 4;
 
 
   /* ---- the voice ------------------------------------------------------- */
+  var nameLine = '';
   function say(speaker, text, onEnd, keepHand) {
     if (!root) return 0;
     /* a new line takes down the values the last one put up — the hand stays
@@ -7241,7 +7247,7 @@ var NP_LEVEL = 4;
         end();
       });
     })(ms ? ms + 1500 : 0);
-    DIALOG.say(speaker, text, { pos: 'bottom', ms: ms });
+    DIALOG.say(speaker, text, { pos: 'bottom', ms: ms, hide: text === nameLine });
     /* kept for the value cues: the line, and how long it takes to say (with
        no clip, how long the dialogue box takes to type it — 38ms a letter) */
     lineNo++;
